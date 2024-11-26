@@ -82,15 +82,31 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
+from django import forms  # Import forms if not already done
+from django.forms import modelformset_factory
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import FlashcardSet, Flashcard
+
 @login_required
 def create(request):
-    # Form for FlashcardSet
-    FlashcardSetForm = modelform_factory(FlashcardSet, fields=['name'])
-    # Formset for Flashcards
+    # Define the FlashcardSet form dynamically
+    FlashcardSetForm = modelform_factory(
+        FlashcardSet, 
+        fields=['name'], 
+        widgets={'name': forms.TextInput(attrs={'placeholder': 'Set Name', 'class': 'form-control'})}
+    )
+
+    # Define the Flashcard formset dynamically
     FlashcardFormSet = modelformset_factory(
         Flashcard,
         fields=['term', 'definition'],
-        extra=1,  # Start with one empty form
+        widgets={
+            'term': forms.TextInput(attrs={'placeholder': 'Term', 'class': 'form-control'}),
+            'definition': forms.TextInput(attrs={'placeholder': 'Definition', 'class': 'form-control'})
+        },
+        extra=1,
         can_delete=True,
     )
 
@@ -100,17 +116,17 @@ def create(request):
 
         if set_form.is_valid() and formset.is_valid():
             flashcard_set = set_form.save(commit=False)
-            flashcard_set.user = request.user.profile  # Link to the logged-in user
+            flashcard_set.user = request.user.profile  # Adjust based on your user-profile relationship
             flashcard_set.save()
 
             for form in formset:
                 if form.cleaned_data and not form.cleaned_data.get('DELETE'):
                     flashcard = form.save(commit=False)
-                    flashcard.set = flashcard_set  # Link flashcards to the set
+                    flashcard.set = flashcard_set
                     flashcard.save()
 
             messages.success(request, "Flashcard set created successfully!")
-            return redirect('dashboard')  # Adjust the redirect as needed
+            return redirect('dashboard')  # Adjust to your appropriate redirect
 
         else:
             messages.error(request, "Please correct the errors below.")
@@ -125,7 +141,7 @@ def create(request):
         {
             'flashcard_set_form': set_form,
             'formset': formset,
-        },
+        }
     )
 
 
