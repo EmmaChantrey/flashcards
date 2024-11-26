@@ -9,6 +9,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import SignUpForm
+from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 
 from django.views.generic import (
@@ -19,6 +20,7 @@ from django.views.generic import (
 
 
 import random
+from .models import Flashcard, FlashcardSet, Profile
 
 def landing_page(request):
     return render(request, 'cards/landing.html')
@@ -43,10 +45,9 @@ def signup(request):
             return redirect('signup')
 
         user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()  # This triggers the profile creation via signals
-        login(request, user)  # Log the user in after signup
+        user.save() 
 
-        messages.success(request, "Account created successfully!")
+        login(request, user)
         return redirect('dashboard')
 
     return render(request, 'cards/signup.html')
@@ -57,20 +58,16 @@ def login_view(request):
         username = request.POST['username']
         password = request.POST['password']
         
-        # Authenticate the user
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            # If the user is authenticated, log them in
             login(request, user)
-            messages.success(request, "You have successfully logged in.")
             return redirect('dashboard')
         else:
-            # If authentication fails, show an error message
             messages.error(request, "Invalid username or password.")
-            return redirect('login')  # Redirect to the login page for retry
+            return redirect('login')
     
-    return render(request, 'cards/login.html')  # Render the login template
+    return render(request, 'cards/login.html')
 
 
 
@@ -80,46 +77,83 @@ def dashboard(request):
         'username': request.user.username,
     })
 
+@login_required
 def user_logout(request):
-    logout(request)  # Log out the user
-    return redirect('login')  # Redirect to the login page or home page after logout
+    logout(request)
+    return redirect('login')
 
+@login_required
 def create(request):
-    return render(request, 'cards/create.html')
+    # Form for FlashcardSet
+    FlashcardSetForm = modelform_factory(FlashcardSet, fields=['name'])
+    # Formset for Flashcards
+    FlashcardFormSet = modelformset_factory(
+        Flashcard,
+        fields=['term', 'definition'],
+        extra=1,  # Start with one empty form
+        can_delete=True,
+    )
 
-# #orders cards by box (ascending) and date created (descending)
-# class CardListView(ListView):
-#     model = Card
-#     queryset = Card.objects.all().order_by("box", "-date_created")
+    if request.method == 'POST':
+        set_form = FlashcardSetForm(request.POST)
+        formset = FlashcardFormSet(request.POST, queryset=Flashcard.objects.none())
 
-# class CardCreateView(CreateView):
-#     model = Card
-#     fields = ["question", "answer", "box"]
-#     success_url = reverse_lazy("card-create")
+        if set_form.is_valid() and formset.is_valid():
+            flashcard_set = set_form.save(commit=False)
+            flashcard_set.user = request.user.profile  # Link to the logged-in user
+            flashcard_set.save()
 
-# class CardUpdateView(CardCreateView, UpdateView):
-#     success_url = reverse_lazy("card-list")
+            for form in formset:
+                if form.cleaned_data and not form.cleaned_data.get('DELETE'):
+                    flashcard = form.save(commit=False)
+                    flashcard.set = flashcard_set  # Link flashcards to the set
+                    flashcard.save()
 
-# class BoxView(CardListView):
-#     template_name = "cards/box.html"
-#     form_class = CardCheckForm
+            messages.success(request, "Flashcard set created successfully!")
+            return redirect('dashboard')  # Adjust the redirect as needed
 
-#     def get_queryset(self):
-#         return Card.objects.filter(box=self.kwargs["box_num"])
+        else:
+            messages.error(request, "Please correct the errors below.")
 
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["box_number"] = self.kwargs["box_num"]
+    else:
+        set_form = FlashcardSetForm()
+        formset = FlashcardFormSet(queryset=Flashcard.objects.none())
 
-#         # if there's a card in the box, select a random one to present
-#         if self.object_list:
-#             context["check_card"] = random.choice(self.object_list)
-#         return context
-    
-#     def post(self, request, *args, **kwargs):
-#         form = self.form_class(request.POST)
+    return render(
+        request,
+        'cards/create.html',
+        {
+            'flashcard_set_form': set_form,
+            'formset': formset,
+        },
+    )
+
+
+
+
+# @login_required
+# def view_set(request, set_id):
+#     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user)
+#     flashcards = flashcard_set.flashcards.all()
+#     return render(request, 'cards/view_set.html', {'flashcard_set': flashcard_set, 'flashcards': flashcards})
+
+# @login_required
+# def edit_flashcard(request, card_id):
+#     flashcard = get_object_or_404(Flashcard, id=card_id, set__user=request.user)
+#     if request.method == 'POST':
+#         form = CardForm(request.POST, instance=flashcard)
 #         if form.is_valid():
-#             card = get_object_or_404(Card, id=form.cleaned_data["card_id"])
-#             card.move(form.cleaned_data["solved"])
+#             form.save()
+#             messages.success(request, "Flashcard updated successfully.")
+#             return redirect('view_set', set_id=flashcard.set.id)
+#     else:
+#         form = CardForm(instance=flashcard)
+#     return render(request, 'cards/edit_flashcard.html', {'form': form, 'flashcard': flashcard})
 
-#         return redirect(request.META.get("HTTP_REFERER"))
+# @login_required
+# def delete_flashcard(request, card_id):
+#     flashcard = get_object_or_404(Flashcard, id=card_id, set__user=request.user)
+#     set_id = flashcard.set.id
+#     flashcard.delete()
+#     messages.success(request, "Flashcard deleted successfully.")
+#     return redirect('view_set', set_id=set_id)
