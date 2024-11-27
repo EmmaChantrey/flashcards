@@ -17,7 +17,7 @@
             {{ set.name }}
             <div class="flashcard-buttons">
                 <a href="{% url 'study' set.id %}" class="btn">Study</a>
-                <a href="{% url 'landing' %}" class="btn">Edit</a>
+                <a href="{% url 'edit' set.id %}" class="btn">Edit</a>
                 <form action="{% url 'delete' set.id %}" method="post" class="delete-form" onsubmit="return confirmDelete();">
                     {% csrf_token %}
                     <button type="submit" class="btn">Delete</button>

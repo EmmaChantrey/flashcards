@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .forms import SignUpForm
+from .forms import SignUpForm, FlashcardSetForm, FlashcardFormSet
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms  # Import forms if not already done
@@ -155,6 +155,29 @@ def study_set(request, set_id):
         'flashcard_set': flashcard_set,
         'flashcards': flashcards,
     })
+
+
+def edit_set(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
+
+    if request.method == 'POST':
+        flashcard_set_form = FlashcardSetForm(request.POST, instance=flashcard_set)
+        flashcard_formset = FlashcardFormSet(request.POST, instance=flashcard_set)
+
+        if flashcard_set_form.is_valid() and flashcard_formset.is_valid():
+            flashcard_set_form.save()
+            flashcard_formset.save()
+            return redirect('dashboard')
+    else:
+        flashcard_set_form = FlashcardSetForm(instance=flashcard_set)
+        flashcard_formset = FlashcardFormSet(instance=flashcard_set)
+
+    return render(request, 'cards/edit.html', {
+        'flashcard_set_form': flashcard_set_form,
+        'flashcard_formset': flashcard_formset,
+        'flashcard_set': flashcard_set,
+    })
+
 
 def delete_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)

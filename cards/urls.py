@@ -49,5 +49,7 @@ urlpatterns = [
 
     path('study/<int:set_id>/', views.study_set, name='study'),
 
+    path('edit/<int:set_id>/', views.edit_set, name='edit'),
+
     path('delete/<int:set_id>/', views.delete_set, name='delete'),
 ]

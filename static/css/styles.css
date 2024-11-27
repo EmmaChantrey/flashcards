@@ -101,9 +101,9 @@ header nav a {
     border-radius: 5px;
     text-align: center;
     box-shadow: #000000 0px 0px 5px;
-    float: right; /* Aligns the button to the right side */
-    margin-right: 10px; /* Adds a little space to the right */
-    margin-top: 5px; /* Optional: space above */
+    float: right;
+    margin-right: 10px;
+    margin-top: 5px;
 }
 
 .loginbtn:hover, .signupbtn:hover {
@@ -203,13 +203,12 @@ button:hover {
 }
 
 .flashcard-sidebar {
-    position: fixed;  /* Fixes the sidebar to the left of the page */
-    top: 10;  /* Corrected syntax with px */
-    left: 25;  /* Corrected syntax with px */
-    width: 55%;  /* Width of the sidebar */
-    height: 70%;  /* Sidebar height */
-    background-color: transparent;  /* Invisible background */
-    z-index: 999;  /* Ensure it's above other content */
+    position: fixed;
+    top: 10;
+    left: 25;
+    width: 55%;
+    height: 70%;
+    z-index: 999;
     margin-left: 25px;
     padding: 5px;
     display: flex;
@@ -217,10 +216,10 @@ button:hover {
 }
 
 .flashcard-sets {
-    flex-grow: 1; /* Allow this section to take up available space */
+    flex-grow: 1;
     padding: 10px;
     margin-top: 20px;
-    overflow-y: auto; /* Make only this section scrollable */
+    overflow-y: auto;
     border: 2px solid #00000043;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -228,8 +227,8 @@ button:hover {
 
 .flashcard-nav-header {
     display: flex;
-    align-items: center; /* Align items vertically in the center */
-    gap: 10px; /* Add spacing between the h2 and the image */
+    align-items: center;
+    gap: 10px;
     padding: 10px;
 }
 
@@ -266,51 +265,49 @@ button:hover {
 .flashcard-pair {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* Vertically align items */
+    align-items: center;
     margin-bottom: 15px;
     padding: 15px;
     border: 2px solid #00000043;
     border-radius: 8px;
     background-color: #f8f9fa;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure the flashcard pair box takes the full width */
-    box-sizing: border-box; /* Include padding and border in element's total width */
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Ensure inputs span the width while leaving space for the delete button */
+
 .term-definition {
-    flex-grow: 1; /* Ensure this section takes up all available space */
+    flex-grow: 1;
     display: flex;
-    flex-direction: column; /* Stack the term and definition fields */
-    gap: 10px; /* Space between inputs */
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Delete button container */
 .delete-button {
     display: flex;
-    justify-content: center; /* Center the button in the container */
-    align-items: center; /* Vertically align button with inputs */
-    margin-left: 10px; /* Space between inputs and button */
-    width: auto; /* Allow the container to shrink to fit its content */
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    width: auto;
 }
 
-/* Delete button styles */
 .delete-btn {
     background-color: #0289d1a3;
     color: white;
     border: none;
-    border-radius: 5px; /* Rounded corners for the delete button */
-    width: 24px; /* Smaller, fixed size for the button */
+    border-radius: 5px;
+    width: 24px;
     height: 24px;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0; /* Remove extra padding for a compact button */
+    padding: 0;
 }
 
 .delete-btn img {
-    width: 16px; /* Resize the delete icon */
+    width: 16px;
     height: 16px;
 }
 
@@ -342,7 +339,7 @@ button:hover {
 }
 
 .delete-set-form {
-    display: inline-block; /* Keep the delete form inline */
+    display: inline-block;
     margin: 0;
 }
 
