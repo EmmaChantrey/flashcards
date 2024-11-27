@@ -13,8 +13,16 @@
     </div>
     <div class="flashcard-sets">
         {% for set in flashcard_sets %}
-        <div class="flashcard-set">
-            <a href="{% url 'landing' %}">{{ set.name }}</a>
+        <div class="flashcard-pair">
+            {{ set.name }}
+            <div class="flashcard-buttons">
+                <a href="{% url 'landing' %}" class="btn">Study</a>
+                <a href="{% url 'landing' %}" class="btn">Edit</a>
+                <form action="{% url 'landing' %}" method="post" class="delete-form">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </div>
         </div>
         {% empty %}
         <p>No flashcard sets found.</p>

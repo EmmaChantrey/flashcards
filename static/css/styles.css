@@ -63,11 +63,6 @@ header nav a {
     margin-bottom: 20px;
 }
 
-.button-container {
-    display: flex;
-    gap: 20px;
-    margin-top: 30px;
-}
 
 .loginbtn {
     display: inline-block;
@@ -145,10 +140,10 @@ button {
     color: #fff;
     border: none;
     cursor: pointer;
+    border-radius: 5px;
 }
 
 button:hover {
-    background-color: #023047;
     opacity: 0.75;
 }
 
@@ -225,21 +220,6 @@ button:hover {
     overflow-y: auto; /* Make only this section scrollable */
     max-height: calc(100% - 40px); /* Prevent it from overflowing outside the sidebar */
     background-color: rgba(255, 255, 255, 0.1); /* Optional: slight background for visibility */
-}
-
-/* Style for individual flashcard set items */
-.flashcard-set {
-    padding: 20px;
-    margin-bottom: 10px;
-    background-color: rgba(0, 0, 0, 0.1);  /* Light background for each set */
-    border-radius: 5px;
-    cursor: pointer;  /* Indicate it's clickable */
-    transition: background-color 0.3s;
-}
-
-/* Hover effect for the flashcard sets */
-.flashcard-set:hover {
-    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .flashcard-nav-header {
@@ -332,4 +312,32 @@ button:hover {
 
 .delete-btn:hover {
     background-color: #0277bd;
+}
+
+.flashcard-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #023047;
+    opacity: 0.75;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn:hover {
+    opacity: 0.5;
+}
+
+.delete-set-form {
+    display: inline-block; /* Keep the delete form inline */
+    margin: 0;
 }
