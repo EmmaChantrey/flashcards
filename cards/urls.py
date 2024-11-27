@@ -46,4 +46,8 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
 
     path('create/', views.create, name='create'),
+
+    path('study/<int:set_id>/', views.study_set, name='study'),
+
+    path('delete/<int:set_id>/', views.delete_set, name='delete'),
 ]

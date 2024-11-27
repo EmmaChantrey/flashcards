@@ -41,6 +41,7 @@ header nav {
 header nav a {
     display: inline-block;
     padding: 10px 20px;
+    margin-top: 10px;
     color: #000000;
     text-decoration: none;
     font-size: 16px;
@@ -66,6 +67,7 @@ header nav a {
 
 .loginbtn {
     display: inline-block;
+    margin: 10px;
     padding: 10px 20px;
     background-color: #023047;
     opacity: 0.75;
@@ -79,6 +81,7 @@ header nav a {
 
 .signupbtn {
     display: inline-block;
+    margin: 10px;
     padding: 10px 20px;
     background-color: #023047;
     color: #fff;
@@ -218,8 +221,9 @@ button:hover {
     padding: 10px;
     margin-top: 20px;
     overflow-y: auto; /* Make only this section scrollable */
-    max-height: calc(100% - 40px); /* Prevent it from overflowing outside the sidebar */
-    background-color: rgba(255, 255, 255, 0.1); /* Optional: slight background for visibility */
+    border: 2px solid #00000043;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .flashcard-nav-header {
@@ -341,3 +345,4 @@ button:hover {
     display: inline-block; /* Keep the delete form inline */
     margin: 0;
 }
+

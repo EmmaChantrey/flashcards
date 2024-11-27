@@ -13,7 +13,7 @@ from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms  # Import forms if not already done
 from django.forms import modelformset_factory
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import FlashcardSet, Flashcard
 
 from django.views.generic import (
@@ -148,7 +148,23 @@ def create(request):
     )
 
 
+def study_set(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    flashcards = flashcard_set.flashcards.all()
+    return render(request, 'cards/study.html', {
+        'flashcard_set': flashcard_set,
+        'flashcards': flashcards,
+    })
 
+def delete_set(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    
+    if request.method == 'POST':
+        flashcard_set.delete()
+        messages.success(request, 'Flashcard set deleted successfully.')
+        return redirect('dashboard')
+    
+    return redirect('dashboard')
 
 # @login_required
 # def view_set(request, set_id):

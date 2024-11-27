@@ -4,6 +4,7 @@
 
 {% block content %}
 {% load static %}
+<a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
 <h1>Create Flashcard Set</h1>
 <form method="post" id="flashcard-set-form">
     {% csrf_token %}

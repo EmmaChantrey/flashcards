@@ -1,0 +1,17 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Study: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
+<h1>Study: {{ flashcard_set.name }}</h1>
+<div class="flashcard-list">
+    {% for flashcard in flashcards %}
+    <div class="flashcard-item">
+        <h3 class="term">{{ flashcard.term }}</h3>
+        <p class="definition">{{ flashcard.definition }}</p>
+    </div>
+    {% empty %}
+    <p>No flashcards found in this set.</p>
+    {% endfor %}
+</div>
+{% endblock %}
