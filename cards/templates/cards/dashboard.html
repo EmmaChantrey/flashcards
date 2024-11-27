@@ -1,0 +1,24 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+{% load static %}
+<h1>{{ username }}'s Dashboard</h1>
+<div class="flashcard-sidebar">
+    <div class="flashcard-nav-header">
+        <h2>Flashcard sets</h2>
+        <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
+        <a href="{% url 'create' %}" class="createsetbtn" style="float: right; margin-right: 10px;" >Create set</a>
+    </div>
+    <div class="flashcard-sets">
+        {% for set in flashcard_sets %}
+        <div class="flashcard-set">
+            <a href="{% url 'landing' %}">{{ set.name }}</a>
+        </div>
+        {% empty %}
+        <p>No flashcard sets found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
