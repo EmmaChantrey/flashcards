@@ -249,6 +249,13 @@ button:hover {
     margin-right: 10px;
 }
 
+.flashcard-pair .form-group.delete {
+    flex-basis: 2em;
+    flex-grow: 0;
+    flex-shrink: 0;
+    float: right;
+}
+
 #add-more-btn {
     background-color: #0289d1a3;
     color: white;

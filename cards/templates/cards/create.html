@@ -22,7 +22,7 @@
             <div class="form-group">
                 {{ form.definition }}
             </div>
-            <div class="form-group">
+            <div class="form-group delete">
                 <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
             </div>
         </div>
@@ -39,7 +39,6 @@
         const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
         const newIndex = parseInt(totalForms.value, 10);
 
-        // Create a new flashcard pair row
         let newRow = document.createElement('div');
         newRow.classList.add('flashcard-pair');
         newRow.innerHTML = `
@@ -56,22 +55,17 @@
             </div>
         `;
 
-        // Append the new row to the container
         container.appendChild(newRow);
-
-        // Increment the TOTAL_FORMS count
         totalForms.value = newIndex + 1;
     });
 
-    // Attach a single event listener to the container for all delete buttons
     document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
-        // Check if the clicked element is inside a delete button
+
         if (event.target.closest('.delete-btn')) {
             const row = event.target.closest('.flashcard-pair');
             if (row) {
                 row.remove();
 
-                // Update TOTAL_FORMS count
                 const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
                 const rows = document.querySelectorAll('.flashcard-pair');
                 totalForms.value = rows.length;

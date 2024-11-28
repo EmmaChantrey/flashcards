@@ -82,7 +82,7 @@ def user_logout(request):
     logout(request)
     return redirect('login')
 
-from django import forms  # Import forms if not already done
+from django import forms
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -91,14 +91,12 @@ from .models import FlashcardSet, Flashcard
 
 @login_required
 def create(request):
-    # Define the FlashcardSet form dynamically
     FlashcardSetForm = modelform_factory(
         FlashcardSet, 
         fields=['name'], 
         widgets={'name': forms.TextInput(attrs={'placeholder': 'Set Name', 'class': 'form-control'})}
     )
 
-    # Define the Flashcard formset dynamically
     FlashcardFormSet = modelformset_factory(
         Flashcard,
         fields=['term', 'definition'],
@@ -116,7 +114,7 @@ def create(request):
 
         if set_form.is_valid() and formset.is_valid():
             flashcard_set = set_form.save(commit=False)
-            flashcard_set.user = request.user.profile  # Adjust based on your user-profile relationship
+            flashcard_set.user = request.user.profile
             flashcard_set.save()
 
             for form in formset:
@@ -126,7 +124,7 @@ def create(request):
                     flashcard.save()
 
             messages.success(request, "Flashcard set created successfully!")
-            return redirect('dashboard')  # Adjust to your appropriate redirect
+            return redirect('dashboard')
 
         else:
             messages.error(request, "Please correct the errors below.")

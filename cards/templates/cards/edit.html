@@ -13,8 +13,8 @@
     </div>
 
     <div id="flashcard-form-container">
-        {{ formset.management_form }}
-        {% for form in formset %}
+        {{ flashcard_formset.management_form }}
+        {% for form in flashcard_formset %}
         <div class="flashcard-pair">
             <div class="form-group term-definition">
                 {{ form.term }}
@@ -23,12 +23,9 @@
                 {{ form.definition }}
             </div>
             <div class="form-group delete-button">
-                <button type="button" class="delete-btn">
-                    <img src="{% static 'images/x.png' %}" alt="Delete pair">
-                </button>
-                {% if form.DELETE %}
-                {{ form.DELETE }}
-                {% endif %}
+                <div class="form-group delete">
+                    <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
+                </div>
             </div>
         </div>
         {% endfor %}
