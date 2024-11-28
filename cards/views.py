@@ -163,11 +163,14 @@ def edit_set(request, set_id):
     if request.method == 'POST':
         flashcard_set_form = FlashcardSetForm(request.POST, instance=flashcard_set)
         flashcard_formset = FlashcardFormSet(request.POST, instance=flashcard_set)
-
+        print("trying to save")
         if flashcard_set_form.is_valid() and flashcard_formset.is_valid():
             flashcard_set_form.save()
             flashcard_formset.save()
             return redirect('dashboard')
+        print("failed to save")
+        print("Flashcard set form errors:", flashcard_set_form.errors)
+        print("Flashcard formset errors:", flashcard_formset.errors)
     else:
         flashcard_set_form = FlashcardSetForm(instance=flashcard_set)
         flashcard_formset = FlashcardFormSet(instance=flashcard_set)

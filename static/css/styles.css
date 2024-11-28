@@ -241,7 +241,6 @@ button:hover {
 .flashcard-pair {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
 }
 
 .flashcard-pair .form-group {
@@ -325,6 +324,7 @@ button:hover {
 .flashcard-buttons {
     display: flex;
     gap: 10px;
+    float: center;
 }
 
 .btn {
@@ -339,6 +339,7 @@ button:hover {
     cursor: pointer;
     border-radius: 5px;
     text-decoration: none;
+    float: center;
 }
 
 .btn:hover {

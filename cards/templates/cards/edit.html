@@ -8,76 +8,82 @@
 <h1>Edit Flashcard Set</h1>
 <form method="post" id="flashcard-set-form">
     {% csrf_token %}
+    {{ flashcard_formset.management_form }}
+
     <div class="form-group">
         {{ flashcard_set_form.name }}
     </div>
 
     <div id="flashcard-form-container">
-        {{ flashcard_formset.management_form }}
         {% for form in flashcard_formset %}
         <div class="flashcard-pair">
             <div class="form-group term-definition">
-                {{ form.term }}
+                <input type="text" name="{{ form.term.name }}" id="{{ form.term.id_for_label }}" class="form-control" value="{{ form.term.value }}" placeholder="Term">
             </div>
             <div class="form-group term-definition">
-                {{ form.definition }}
+                <input type="text" name="{{ form.definition.name }}" id="{{ form.definition.id_for_label }}" class="form-control" value="{{ form.definition.value }}" placeholder="Definition">
             </div>
-            <div class="form-group delete-button">
-                <div class="form-group delete">
-                    <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
-                </div>
+            <div class="form-group delete">
+                <button type="button" class="delete-btn">
+                    <img src="{% static 'images/x.png' %}" alt="Delete pair" />
+                </button>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <button type="button" id="add-more-btn"><img src="{% static 'images/plus.png' %}" alt="Add another pair"></button>
+    <button type="button" id="add-more-btn"><img src="{% static 'images/plus.png' %}" alt="Add another pair" /></button>
     <button type="submit">Save Changes</button>
 </form>
-
 <script>
-    document.getElementById('add-more-btn').addEventListener('click', function () {
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM fully loaded and parsed");
+
+        const addButton = document.getElementById('add-more-btn');
         const container = document.getElementById('flashcard-form-container');
-        const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
-        const newIndex = parseInt(totalForms.value, 10);
-
-        // Create a new flashcard pair row
-        let newRow = document.createElement('div');
-        newRow.classList.add('flashcard-pair');
-        newRow.innerHTML = `
-            <div class="form-group term-definition">
-                <input type="text" name="form-${newIndex}-term" id="id_form-${newIndex}-term" class="form-control" placeholder="Term">
-            </div>
-            <div class="form-group term-definition">
-                <input type="text" name="form-${newIndex}-definition" id="id_form-${newIndex}-definition" class="form-control" placeholder="Definition">
-            </div>
-            <div class="form-group delete-button">
-                <button type="button" class="delete-btn">
-                    <img src="{% static 'images/x.png' %}" alt="Delete pair" />
-                </button>
-            </div>
-        `;
-
-        // Append the new row to the container
-        container.appendChild(newRow);
-
-        // Increment the TOTAL_FORMS count
-        totalForms.value = newIndex + 1;
-    });
-
-    // Attach a single event listener to the container for all delete buttons
-    document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
-        if (event.target.closest('.delete-btn')) {
-            const row = event.target.closest('.flashcard-pair');
-            if (row) {
-                row.remove();
-
-                // Update TOTAL_FORMS count
-                const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
-                const rows = document.querySelectorAll('.flashcard-pair');
-                totalForms.value = rows.length;
-            }
+        const totalForms = document.querySelector('#id_flashcards-TOTAL_FORMS');
+        if (!totalForms) {
+            console.error("TOTAL_FORMS element not found in the DOM.");
+            return;
         }
+
+        addButton.addEventListener('click', function () {
+            console.log("Add button clicked");
+
+            const newIndex = parseInt(totalForms.value, 10);
+            let newRow = document.createElement('div');
+            newRow.classList.add('flashcard-pair');
+            newRow.innerHTML = `
+                <div class="form-group term-definition">
+                    <input type="text" name="form-${newIndex}-term" id="id_form-${newIndex}-term" class="form-control" placeholder="Term">
+                </div>
+                <div class="form-group term-definition">
+                    <input type="text" name="form-${newIndex}-definition" id="id_form-${newIndex}-definition" class="form-control" placeholder="Definition">
+                </div>
+                <div class="form-group delete">
+                    <button type="button" class="delete-btn">
+                        <img src="{% static 'images/x.png' %}" alt="Delete pair" />
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(newRow);
+            totalForms.value = newIndex + 1;
+        });
+
+        container.addEventListener('click', function (event) {
+            if (event.target.closest('.delete-btn')) {
+                const row = event.target.closest('.flashcard-pair');
+                if (row) {
+                    row.remove();
+
+                    const rows = document.querySelectorAll('.flashcard-pair');
+                    totalForms.value = rows.length;
+                }
+            }
+        });
     });
 </script>
+
+
 {% endblock %}
