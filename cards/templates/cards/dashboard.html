@@ -8,8 +8,10 @@
 <div class="dashboard">
     <div class="flashcard-sidebar">
         <div class="flashcard-nav-header">
-            <h2>Flashcard Sets</h2>
-            <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
+            <div class="flashcard-nav-title">
+                <h2>Flashcard Sets</h2>
+                <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
+            </div>
             <a href="{% url 'create' %}" class="createsetbtn">Create Set</a>
         </div>
         <div class="scrollbox">
