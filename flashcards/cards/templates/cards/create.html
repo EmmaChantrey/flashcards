@@ -13,7 +13,7 @@
     <div id="flashcard-form-container">
         {{ formset.management_form }}
         {% for form in formset %}
-        <div class="flashcard-pair">
+        <div class="flashcard-box">
             <div class="form-group">
                 {{ form.term }}
             </div>
@@ -39,7 +39,7 @@
         const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
         const newIndex = parseInt(totalForms.value, 10);
 
-        const newFormHtml = container.querySelector('.flashcard-pair').outerHTML.replace(
+        const newFormHtml = container.querySelector('.flashcard-box').outerHTML.replace(
             /form-(\d)-/g,
             `form-${newIndex}-`
         );

@@ -15,7 +15,7 @@
     <div id="flashcard-form-container">
         {{ formset.management_form }}
         {% for form in formset %}
-        <div class="flashcard-pair">
+        <div class="flashcard-box">
             <div class="form-group">
                 {{ form.term }}
             </div>
@@ -40,7 +40,7 @@
         const newIndex = parseInt(totalForms.value, 10);
 
         let newRow = document.createElement('div');
-        newRow.classList.add('flashcard-pair');
+        newRow.classList.add('flashcard-box');
         newRow.innerHTML = `
             <div class="form-group term-definition">
                 <input type="text" name="form-${newIndex}-term" id="id_form-${newIndex}-term" class="form-control" placeholder="Term">
@@ -62,12 +62,12 @@
     document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
 
         if (event.target.closest('.delete-btn')) {
-            const row = event.target.closest('.flashcard-pair');
+            const row = event.target.closest('.flashcard-box');
             if (row) {
                 row.remove();
 
                 const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
-                const rows = document.querySelectorAll('.flashcard-pair');
+                const rows = document.querySelectorAll('.flashcard-box');
                 totalForms.value = rows.length;
             }
         }

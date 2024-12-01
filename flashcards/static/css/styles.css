@@ -211,7 +211,7 @@ button:hover {
     flex-direction: column;
 }
 
-.flashcard-sets {
+.scrollbox {
     flex-grow: 1; /* Allow this section to take up available space */
     padding: 10px;
     margin-top: 20px;
@@ -248,13 +248,13 @@ button:hover {
     display: block;
 }
 
-.flashcard-pair {
+.flashcard-box {
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
 }
 
-.flashcard-pair .form-group {
+.flashcard-box .form-group {
     flex: 1;
     margin-right: 10px;
 }

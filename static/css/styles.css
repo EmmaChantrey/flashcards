@@ -203,6 +203,7 @@ button:hover {
 }
 
 .flashcard-sidebar {
+    /* flex: 3;
     position: fixed;
     top: 10;
     left: 25;
@@ -213,10 +214,16 @@ button:hover {
     padding: 5px;
     display: flex;
     flex-direction: column;
+    min-width: 450px; */
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    min-width: 450px;
 }
 
-.flashcard-sets {
-    flex-grow: 1;
+.scrollbox {
+    width: 100%;
+    height: 80%;
     padding: 10px;
     margin-top: 20px;
     overflow-y: auto;
@@ -225,10 +232,11 @@ button:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.badge-shop .header,
 .flashcard-nav-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
     padding: 10px;
 }
 
@@ -236,24 +244,94 @@ button:hover {
     max-width: 45px;
     height: auto;
     display: block;
+    float: left;
 }
 
-.flashcard-pair {
+.flashcard-box {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 2px solid #00000043;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.flashcard-pair .form-group {
+.flashcard-box .form-group {
     flex: 1;
     margin-right: 10px;
 }
 
-.flashcard-pair .form-group.delete {
+.flashcard-box .form-group.delete {
     flex-basis: 2em;
     flex-grow: 0;
     flex-shrink: 0;
     float: right;
 }
+
+.flashcard-buttons {
+    display: flex;
+    gap: 10%;
+    justify-content: space-between;
+    width: 65%;
+}
+
+.flashcard-buttons .button {
+    all: unset;
+    display: inline-block;
+    width: 70px;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #023047;
+    opacity: 0.75;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.flashcard-buttons .button:hover {
+    opacity: 0.5;
+}
+
+.flashcard-title {
+    flex: 1;
+    margin-right: 20px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.delete-set-form {
+    display: inline-block;
+    margin: 0;
+    width: 100%;
+}
+
+.delete-set-form button {
+    all: unset;
+    width: 70px;
+    text-align: center;
+    font-weight: bold;
+    width: 100%;
+    padding: 10px;
+    background-color: #023047;
+    opacity: 0.75;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+
 
 #add-more-btn {
     background-color: #0289d1a3;
@@ -266,20 +344,6 @@ button:hover {
 
 #add-more-btn:hover {
     background-color: #0277bd;
-}
-
-.flashcard-pair {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding: 15px;
-    border: 2px solid #00000043;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    box-sizing: border-box;
 }
 
 
@@ -321,13 +385,8 @@ button:hover {
     background-color: #0277bd;
 }
 
-.flashcard-buttons {
-    display: flex;
-    gap: 10px;
-    float: center;
-}
 
-.btn {
+/* .btn {
     text-align: center;
     width: 100%;
     font-weight: bold;
@@ -344,10 +403,16 @@ button:hover {
 
 .btn:hover {
     opacity: 0.5;
+} */
+
+
+.badge-shop {
+    float: right;
+    width: 30%;
 }
 
-.delete-set-form {
-    display: inline-block;
-    margin: 0;
+.dashboard{
+    display: flex;
+    gap: 50px;
+    padding: 20px;
 }
-
