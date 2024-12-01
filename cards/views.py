@@ -98,7 +98,7 @@ def create(request):
     FlashcardSetForm = modelform_factory(
         FlashcardSet, 
         fields=['name'], 
-        widgets={'name': forms.TextInput(attrs={'placeholder': 'Set Name', 'class': 'form-control'})}
+        widgets={'name': forms.TextInput(attrs={'placeholder': 'Title', 'class': 'form-control'})}
     )
 
     # Define the Flashcard formset dynamically

@@ -4,33 +4,39 @@
 
 {% block content %}
 {% load static %}
-<a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
-<h1>Create Flashcard Set</h1>
 <form method="post" id="flashcard-set-form">
     {% csrf_token %}
-    <div class="form-group">
-        {{ flashcard_set_form.name }}
+    <div class="flashcard-nav-header">
+        <div class="flashcard-nav-title">
+            <h1>Set Title:</h1>
+            <div class="form-group set-title">
+                {{ flashcard_set_form.name }}
+            </div>
+        </div> 
+            <button type="submit" class="signupbtn">Save</button>
+            <a href = "{% url 'dashboard' %}" class="loginbtn" onclick="return confirmBack()">Back</a>
     </div>
-
-    <div id="flashcard-form-container">
-        {{ formset.management_form }}
-        {% for form in formset %}
-        <div class="flashcard-box">
-            <div class="form-group">
-                {{ form.term }}
+    <div class="create-form">
+        <div class="scrollbox" id="flashcard-form-container">
+            {{ formset.management_form }}
+            {% for form in formset %}
+            <div class="flashcard-box">
+                <div class="form-group">
+                    {{ form.term }}
+                </div>
+                <div class="form-group">
+                    {{ form.definition }}
+                </div>
+                <div class="form-group delete">
+                    <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
+                </div>
             </div>
-            <div class="form-group">
-                {{ form.definition }}
-            </div>
-            <div class="form-group delete">
-                <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        
     </div>
-
     <button type="button" id="add-more-btn"><img src = "{% static 'images/plus.png' %}" alt="Add another pair"/></button>
-    <button type="submit">Create Set</button>
+
 </form>
 
 <script>
@@ -72,5 +78,10 @@
             }
         }
     });
+
+
+    function confirmBack() {
+        return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
+    }
 </script>
 {% endblock %}

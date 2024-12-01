@@ -106,6 +106,10 @@ header nav a {
     margin-top: 5px;
 }
 
+.createsetbtn:hover {
+    background-color: #0056b3;
+}
+
 .loginbtn:hover, .signupbtn:hover {
     background-color: #0056b3;
 }
@@ -119,10 +123,6 @@ header nav a {
     text-align: center;
 }
 
-.form-group {
-    margin-bottom: 15px;
-}
-
 label {
     display: block;
     margin-bottom: 5px;
@@ -131,13 +131,14 @@ label {
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 8px;
+    padding: 20px;
+    font-size: 90%;
     box-sizing: border-box;
+    border-radius: 5px;
 }
 
 button {
     display: inline-block;
-    width: 100%;
     font-weight: bold;
     padding: 10px;
     background-color: #023047;
@@ -216,7 +217,7 @@ button:hover {
     display: flex;
     flex-direction: column;
     min-width: 450px; */
-    width: 65%;
+    width: 55%;
     display: flex;
     flex-direction: column;
     min-width: 450px;
@@ -225,7 +226,7 @@ button:hover {
 .scrollbox {
     width: 100%;
     height: 80%;
-    padding: 10px;
+    padding: 30px;
     margin-top: 20px;
     overflow-y: auto;
     border: 2px solid #00000043;
@@ -235,6 +236,7 @@ button:hover {
 
 .badge-shop .header,
 .flashcard-nav-header {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -258,7 +260,7 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 25px;
     padding: 15px;
     border: 2px solid #00000043;
     border-radius: 8px;
@@ -270,7 +272,9 @@ button:hover {
 
 .flashcard-box .form-group {
     flex: 1;
-    margin-right: 10px;
+    margin-right: 20px;
+    margin-bottom: 0px;
+
 }
 
 .flashcard-box .form-group.delete {
@@ -344,12 +348,14 @@ button:hover {
 
 
 #add-more-btn {
+    display: flex;
     background-color: #0289d1a3;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    margin: auto;
 }
 
 #add-more-btn:hover {
@@ -423,6 +429,12 @@ button:hover {
 
 .dashboard{
     display: flex;
-    gap: 50px;
+    gap: 100px;
     padding: 20px;
 }
+
+.create-form{
+    width: 90%;
+    padding: 20px;
+}
+
