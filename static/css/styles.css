@@ -136,6 +136,7 @@ input[type="password"] {
 }
 
 button {
+    display: inline-block;
     width: 100%;
     font-weight: bold;
     padding: 10px;
@@ -283,7 +284,7 @@ button:hover {
 .flashcard-buttons .button {
     all: unset;
     display: inline-block;
-    width: 70px;
+    width: 100%;
     font-weight: bold;
     padding: 10px;
     background-color: #023047;
@@ -331,6 +332,9 @@ button:hover {
     box-sizing: border-box;
 }
 
+.delete-set-form button:hover {
+    opacity: 0.5;
+}
 
 
 #add-more-btn {
