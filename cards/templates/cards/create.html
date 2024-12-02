@@ -28,7 +28,7 @@
                     {{ form.definition }}
                 </div>
                 <div class="form-group delete">
-                    <button type="button" class="delete-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
+                    <button type="button" class="delete-pair-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
                 </div>
             </div>
             {% endfor %}
@@ -55,7 +55,7 @@
                 <input type="text" name="form-${newIndex}-definition" id="id_form-${newIndex}-definition" class="form-control" placeholder="Definition">
             </div>
             <div class="form-group delete">
-                <button type="button" class="delete-btn">
+                <button type="button" class="delete-pair-btn">
                     <img src="{% static 'images/x.png' %}" alt="Delete pair" />
                 </button>
             </div>
@@ -67,7 +67,7 @@
 
     document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
 
-        if (event.target.closest('.delete-btn')) {
+        if (event.target.closest('.delete-pair-btn')) {
             const row = event.target.closest('.flashcard-box');
             if (row) {
                 row.remove();

@@ -225,7 +225,7 @@ button:hover {
 
 .scrollbox {
     width: 100%;
-    height: 80%;
+    height: 65%;
     padding: 30px;
     margin-top: 20px;
     overflow-y: auto;
@@ -358,6 +358,8 @@ button:hover {
     margin: auto;
 }
 
+
+
 #add-more-btn:hover {
     background-color: #0277bd;
 }
@@ -370,7 +372,7 @@ button:hover {
     gap: 10px;
 }
 
-.delete-button {
+.delete-set-btn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -378,13 +380,13 @@ button:hover {
     width: auto;
 }
 
-.delete-btn {
+.delete-pair-btn {
     background-color: #0289d1a3;
     color: white;
     border: none;
     border-radius: 5px;
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -392,12 +394,12 @@ button:hover {
     padding: 0;
 }
 
-.delete-btn img {
-    width: 16px;
-    height: 16px;
+.delete-pair-btn img {
+    width: 20px;
+    height: 20px;
 }
 
-.delete-btn:hover {
+.delete-pair-btn:hover {
     background-color: #0277bd;
 }
 
@@ -427,14 +429,32 @@ button:hover {
     width: 30%;
 }
 
-.dashboard{
+.dashboard {
     display: flex;
     gap: 100px;
     padding: 20px;
 }
 
-.create-form{
+.create-form {
     width: 90%;
     padding: 20px;
 }
 
+.term-container,
+.definition-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.definition-container {
+    margin-right: 0;
+    text-align: left;
+}
+
+.vertical-divider {
+    width: 1px;
+    background-color: #00000043;
+    margin: 0 20px;
+    height: auto;
+    align-self: stretch;
+}

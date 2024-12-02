@@ -4,14 +4,28 @@
 {% block content %}
 <a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
 <h1>Study: {{ flashcard_set.name }}</h1>
-<div class="flashcard-list">
-    {% for flashcard in flashcards %}
-    <div class="flashcard-item">
-        <h3 class="term">{{ flashcard.term }}</h3>
-        <p class="definition">{{ flashcard.definition }}</p>
+<div class="dashboard">
+    <div class="flashcard-sidebar">
+        <div class="scrollbox">
+            {% for flashcard in flashcards %}
+            <div class="flashcard-box">
+                <div class="term-container">
+                    <h3 class="term-heading">Term</h3>
+                    <p class="term">{{ flashcard.term }}</p>
+                </div>
+                <div class="vertical-divider"></div>
+                <div class="definition-container">
+                    <h3 class="definition-heading">Definition</h3>
+                    <p class="definition">{{ flashcard.definition }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <p>No flashcards found in this set.</p>
+            {% endfor %}
+        </div>
     </div>
-    {% empty %}
-    <p>No flashcards found in this set.</p>
-    {% endfor %}
+    <div class="badge-shop">
+        <h2>Study Options</h2>
+    </div>
 </div>
 {% endblock %}
