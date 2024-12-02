@@ -2,6 +2,7 @@
 
 {% block title %}Study: {{ flashcard_set.name }}{% endblock %}
 {% block content %}
+{% load static %}
 <a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
 <h1>Study: {{ flashcard_set.name }}</h1>
 <div class="dashboard">
@@ -25,7 +26,32 @@
         </div>
     </div>
     <div class="badge-shop">
-        <h2>Study Options</h2>
+        <div class="study-grid">
+            <div class="option-box">
+                <a href="{% url 'landing' %}" class="study-option">
+                    <img src="{% static 'images/true_or_false.png' %}" alt="True or False">
+                </a>
+                True or False
+            </div>
+            <div class="option-box">
+                <a href="{% url 'landing' %}" class="study-option">
+                    <img src="{% static 'images/fill_blank.png' %}" alt="Fill the Blanks">
+                </a>
+                Fill the Blanks
+            </div>
+            <div class="option-box">
+                <a href="{% url 'landing' %}" class="study-option">
+                    <img src="{% static 'images/multiple_choice.png' %}" alt="Quiz">
+                </a>
+                Fill the Blanks
+            </div>
+            <div class="option-box">
+                <a href="{% url 'landing' %}" class="study-option">
+                    <img src="{% static 'images/match.png' %}" alt="Match">
+                </a>
+                Match
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
