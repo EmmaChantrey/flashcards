@@ -6,12 +6,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms.models import inlineformset_factory
 from .models import FlashcardSet, Flashcard
 
-class FlashcardSetForm(forms.ModelForm):
+class FlashcardSetTitle(forms.ModelForm):
     class Meta:
         model = FlashcardSet
         fields = ['name']
 
-FlashcardFormSet = inlineformset_factory(
+FlashcardTermDefs = inlineformset_factory(
     FlashcardSet,
     Flashcard,
     fields=['term', 'definition'],

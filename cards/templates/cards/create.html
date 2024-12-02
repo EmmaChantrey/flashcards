@@ -13,9 +13,30 @@
                 {{ flashcard_set_form.name }}
             </div>
         </div> 
+        <div class="flashcard-nav-buttons">
             <button type="submit" class="signupbtn">Save</button>
             <a href = "{% url 'dashboard' %}" class="loginbtn" onclick="return confirmBack()">Back</a>
+        </div>
     </div>
+    
+    <div id="toast-container" class="toast-container"></div>
+
+        {% if messages %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const messages = [
+                    {% for message in messages %}
+                        "{{ message|escapejs }}"{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+    
+                messages.forEach(function (message) {
+                    showToast(message);
+                });
+            });
+        </script>
+        {% endif %}
+
     <div class="create-form">
         <div class="scrollbox" id="flashcard-form-container">
             {{ formset.management_form }}
@@ -82,6 +103,20 @@
 
     function confirmBack() {
         return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
+    }
+
+    function showToast(message) {
+        console.log(message);
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.classList.add('toast');
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
     }
 </script>
 {% endblock %}

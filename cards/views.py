@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .forms import SignUpForm, FlashcardSetForm, FlashcardFormSet
+from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms  # Import forms if not already done
@@ -31,14 +31,10 @@ def landing_page(request):
 
 def signup(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        confirm_password = request.POST['confirm_password']
-
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match.")
-            return redirect('signup')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
@@ -46,6 +42,10 @@ def signup(request):
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already registered.")
+            return redirect('signup')
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
             return redirect('signup')
 
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -59,8 +59,8 @@ def signup(request):
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         
         user = authenticate(request, username=username, password=password)
         
@@ -68,17 +68,17 @@ def login_view(request):
             login(request, user)
             return redirect('dashboard')
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Incorrect username or password.")
             return redirect('login')
     
     return render(request, 'cards/login.html')
 
 
 
+
 @login_required
 def dashboard(request):
-    # Fetch all flashcard sets for the logged-in user
-    flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)  # Adjust according to your model's relationship
+    flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
 
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
@@ -94,15 +94,13 @@ def user_logout(request):
 
 @login_required
 def create(request):
-    # Define the FlashcardSet form dynamically
-    FlashcardSetForm = modelform_factory(
+    FlashcardSetTitle = modelform_factory(
         FlashcardSet, 
         fields=['name'], 
         widgets={'name': forms.TextInput(attrs={'placeholder': 'Title', 'class': 'form-control'})}
     )
 
-    # Define the Flashcard formset dynamically
-    FlashcardFormSet = modelformset_factory(
+    FlashcardTermDefs = modelformset_factory(
         Flashcard,
         fields=['term', 'definition'],
         widgets={
@@ -114,29 +112,41 @@ def create(request):
     )
 
     if request.method == 'POST':
-        set_form = FlashcardSetForm(request.POST)
-        formset = FlashcardFormSet(request.POST, queryset=Flashcard.objects.none())
+        set_form = FlashcardSetTitle(request.POST)
+        formset = FlashcardTermDefs(request.POST, queryset=Flashcard.objects.none())
 
         if set_form.is_valid() and formset.is_valid():
-            flashcard_set = set_form.save(commit=False)
-            flashcard_set.user = request.user.profile  # Adjust based on your user-profile relationship
-            flashcard_set.save()
-
+            all_filled = True  # Flag to track if all forms are complete
             for form in formset:
-                if form.cleaned_data and not form.cleaned_data.get('DELETE'):
-                    flashcard = form.save(commit=False)
-                    flashcard.set = flashcard_set
-                    flashcard.save()
+                if form.cleaned_data:
+                    term = form.cleaned_data.get('term')
+                    definition = form.cleaned_data.get('definition')
 
-            messages.success(request, "Flashcard set created successfully!")
-            return redirect('dashboard')  # Adjust to your appropriate redirect
+                    # Check if either term or definition is empty
+                    if not term or not definition:
+                        all_filled = False
+                        form.add_error(None, "Both term and definition are required.")
 
+            if all_filled:
+                flashcard_set = set_form.save(commit=False)
+                flashcard_set.user = request.user.profile
+                flashcard_set.save()
+
+                for form in formset:
+                    if form.cleaned_data and not form.cleaned_data.get('DELETE'):
+                        flashcard = form.save(commit=False)
+                        flashcard.set = flashcard_set
+                        flashcard.save()
+
+                messages.success(request, "Flashcard set created successfully!")
+                return redirect('dashboard')
+            else:
+                messages.error(request, "Please fill out all terms and definitions.")
         else:
-            messages.error(request, "Please correct the errors below.")
-
+            messages.error(request, "Error saving the flashcard set. Please make sure all fields are filled out.")
     else:
-        set_form = FlashcardSetForm()
-        formset = FlashcardFormSet(queryset=Flashcard.objects.none())
+        set_form = FlashcardSetTitle()
+        formset = FlashcardTermDefs(queryset=Flashcard.objects.none())
 
     return render(
         request,
@@ -161,19 +171,19 @@ def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
 
     if request.method == 'POST':
-        flashcard_set_form = FlashcardSetForm(request.POST, instance=flashcard_set)
-        flashcard_formset = FlashcardFormSet(request.POST, instance=flashcard_set)
+        flashcard_set_form = FlashcardSetTitle(request.POST, instance=flashcard_set)
+        flashcard_formset = FlashcardTermDefs(request.POST, instance=flashcard_set)
         print("trying to save")
         if flashcard_set_form.is_valid() and flashcard_formset.is_valid():
             flashcard_set_form.save()
             flashcard_formset.save()
             return redirect('dashboard')
-        print("failed to save")
+        print("Failed to save")
         print("Flashcard set form errors:", flashcard_set_form.errors)
         print("Flashcard formset errors:", flashcard_formset.errors)
     else:
-        flashcard_set_form = FlashcardSetForm(instance=flashcard_set)
-        flashcard_formset = FlashcardFormSet(instance=flashcard_set)
+        flashcard_set_form = FlashcardSetTitle(instance=flashcard_set)
+        flashcard_formset = FlashcardTermDefs(instance=flashcard_set)
 
     return render(request, 'cards/edit.html', {
         'flashcard_set_form': flashcard_set_form,

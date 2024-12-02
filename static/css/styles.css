@@ -12,7 +12,7 @@ h1 {
     color: #000000;
     text-align: left;
     display: block;
-    margin-top: 10px;
+    margin: 10px;
 }
 
 
@@ -132,7 +132,7 @@ input[type="text"],
 input[type="password"] {
     width: 100%;
     padding: 20px;
-    font-size: 90%;
+    font-size: 100%;
     box-sizing: border-box;
     border-radius: 5px;
 }
@@ -247,6 +247,14 @@ button:hover {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.flashcard-nav-buttons {
+    display: flex;
+    gap: 10px;
+    float: right;
+    width: 30%;
+    justify-content: center;
 }
 
 .flashcard-img {
@@ -464,6 +472,7 @@ button:hover {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     padding: 20px;
+    height: 95%
 }
 
 .study-option img {
@@ -491,4 +500,30 @@ button:hover {
 
 .option-box:hover {
     transform: scale(1.05);
+}
+
+.toast-container {
+    align-items: center;
+    margin: 0 auto;
+}
+
+.toast {
+    padding: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    background-color: #f44336;
+    color: white;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadein 0.5s, fadeout 0.5s 4.5s;
+}
+
+@keyframes fadein {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeout {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
 }
