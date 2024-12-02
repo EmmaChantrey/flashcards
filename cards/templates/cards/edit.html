@@ -4,24 +4,32 @@
 
 {% block content %}
 {% load static %}
-<a href="{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
-<h1>Edit Flashcard Set</h1>
 <form method="post" id="flashcard-set-form">
     {% csrf_token %}
     {{ flashcard_formset.management_form }}
 
-    <div class="form-group">
-        {{ flashcard_set_form.name }}
+    <div class="flashcard-nav-header">
+        <div class="flashcard-nav-title">
+            <h1>Set Title:</h1>
+            <div class="form-group set-title">
+                {{ set_title.name }}
+            </div>
+        </div> 
+        <div class="flashcard-nav-buttons">
+            <button type="submit" class="signupbtn">Save</button>
+            <a href = "{% url 'dashboard' %}" class="loginbtn" onclick="return confirmBack()">Back</a>
+        </div>
     </div>
 
-    <div id="flashcard-form-container">
+    <div id="flashcard-form-container" class="scrollbox">
         {% for form in flashcard_formset %}
         <div class="flashcard-box">
-            <div class="form-group term-definition">
-                <input type="text" name="{{ form.term.name }}" id="{{ form.term.id_for_label }}" class="form-control" value="{{ form.term.value }}" placeholder="Term">
+            {{ form.id }}
+            <div class="form-group">
+                {{ form.term }}
             </div>
-            <div class="form-group term-definition">
-                <input type="text" name="{{ form.definition.name }}" id="{{ form.definition.id_for_label }}" class="form-control" value="{{ form.definition.value }}" placeholder="Definition">
+            <div class="form-group">
+                {{ form.definition }}
             </div>
             <div class="form-group delete">
                 <button type="button" class="delete-pair-btn">
@@ -33,7 +41,6 @@
     </div>
 
     <button type="button" id="add-more-btn"><img src="{% static 'images/plus.png' %}" alt="Add another pair" /></button>
-    <button type="submit">Save Changes</button>
 </form>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -48,7 +55,6 @@
         }
 
         addButton.addEventListener('click', function () {
-            console.log("Add button clicked");
 
             const newIndex = parseInt(totalForms.value, 10);
             let newRow = document.createElement('div');
@@ -83,6 +89,12 @@
             }
         });
     });
+
+
+    function confirmBack() {
+        return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
+    }
+
 </script>
 
 

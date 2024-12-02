@@ -40,13 +40,13 @@
     <div class="create-form">
         <div class="scrollbox" id="flashcard-form-container">
             {{ formset.management_form }}
-            {% for form in formset %}
+            {% for entry in set_contents %}
             <div class="flashcard-box">
                 <div class="form-group">
-                    {{ form.term }}
+                    {{ entry.term }}
                 </div>
                 <div class="form-group">
-                    {{ form.definition }}
+                    {{ entry.definition }}
                 </div>
                 <div class="form-group delete">
                     <button type="button" class="delete-pair-btn"><img src = "{% static 'images/x.png' %}" alt="Delete pair"/></button>
@@ -70,11 +70,12 @@
         newRow.classList.add('flashcard-box');
         newRow.innerHTML = `
             <div class="form-group term-definition">
-                <input type="text" name="form-${newIndex}-term" id="id_form-${newIndex}-term" class="form-control" placeholder="Term">
+                <input type="text" name="flashcards-${newIndex}-term" id="id_flashcards-${newIndex}-term" class="form-control" placeholder="Term">
             </div>
             <div class="form-group term-definition">
-                <input type="text" name="form-${newIndex}-definition" id="id_form-${newIndex}-definition" class="form-control" placeholder="Definition">
+                <input type="text" name="flashcards-${newIndex}-definition" id="id_flashcards-${newIndex}-definition" class="form-control" placeholder="Definition">
             </div>
+            <input type="hidden" name="flashcards-${newIndex}-id" id="id_flashcards-${newIndex}-id">
             <div class="form-group delete">
                 <button type="button" class="delete-pair-btn">
                     <img src="{% static 'images/x.png' %}" alt="Delete pair" />

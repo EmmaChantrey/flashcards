@@ -112,29 +112,28 @@ def create(request):
     )
 
     if request.method == 'POST':
-        set_form = FlashcardSetTitle(request.POST)
-        formset = FlashcardTermDefs(request.POST, queryset=Flashcard.objects.none())
+        set_title = FlashcardSetTitle(request.POST)
+        set_contents = FlashcardTermDefs(request.POST, queryset=Flashcard.objects.none())
 
-        if set_form.is_valid() and formset.is_valid():
-            all_filled = True  # Flag to track if all forms are complete
-            for form in formset:
+        if set_title.is_valid() and set_contents.is_valid():
+            all_filled = True
+            for form in set_contents:
                 if form.cleaned_data:
                     term = form.cleaned_data.get('term')
                     definition = form.cleaned_data.get('definition')
 
-                    # Check if either term or definition is empty
                     if not term or not definition:
                         all_filled = False
                         form.add_error(None, "Both term and definition are required.")
 
             if all_filled:
-                flashcard_set = set_form.save(commit=False)
+                flashcard_set = set_title.save(commit=False)
                 flashcard_set.user = request.user.profile
                 flashcard_set.save()
 
-                for form in formset:
-                    if form.cleaned_data and not form.cleaned_data.get('DELETE'):
-                        flashcard = form.save(commit=False)
+                for entry in set_contents:
+                    if entry.cleaned_data and not entry.cleaned_data.get('DELETE'):
+                        flashcard = entry.save(commit=False)
                         flashcard.set = flashcard_set
                         flashcard.save()
 
@@ -145,15 +144,15 @@ def create(request):
         else:
             messages.error(request, "Error saving the flashcard set. Please make sure all fields are filled out.")
     else:
-        set_form = FlashcardSetTitle()
-        formset = FlashcardTermDefs(queryset=Flashcard.objects.none())
+        set_title = FlashcardSetTitle()
+        set_contents = FlashcardTermDefs(queryset=Flashcard.objects.none())
 
     return render(
         request,
         'cards/create.html',
         {
-            'flashcard_set_form': set_form,
-            'formset': formset,
+            'flashcard_set_title': set_title,
+            'formset': set_contents,
         }
     )
 
@@ -171,23 +170,29 @@ def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
 
     if request.method == 'POST':
-        flashcard_set_form = FlashcardSetTitle(request.POST, instance=flashcard_set)
-        flashcard_formset = FlashcardTermDefs(request.POST, instance=flashcard_set)
-        print("trying to save")
-        if flashcard_set_form.is_valid() and flashcard_formset.is_valid():
-            flashcard_set_form.save()
-            flashcard_formset.save()
+        set_title = FlashcardSetTitle(request.POST, instance=flashcard_set)
+        set_contents = FlashcardTermDefs(request.POST, instance=flashcard_set)
+
+        print("POST data:", request.POST)
+
+        print(set_contents)
+        if set_title.is_valid() and set_contents.is_valid():
+            set_title.save()
+            set_contents.save()
             return redirect('dashboard')
-        print("Failed to save")
-        print("Flashcard set form errors:", flashcard_set_form.errors)
-        print("Flashcard formset errors:", flashcard_formset.errors)
+
+        else:
+            for form in set_contents:
+                print("Form errors:", form.errors)
+                print("Form data:", form.cleaned_data)
+        
     else:
-        flashcard_set_form = FlashcardSetTitle(instance=flashcard_set)
-        flashcard_formset = FlashcardTermDefs(instance=flashcard_set)
+        set_title = FlashcardSetTitle(instance=flashcard_set)
+        set_contents = FlashcardTermDefs(instance=flashcard_set)
 
     return render(request, 'cards/edit.html', {
-        'flashcard_set_form': flashcard_set_form,
-        'flashcard_formset': flashcard_formset,
+        'set_title': set_title,
+        'flashcard_formset': set_contents,
         'flashcard_set': flashcard_set,
     })
 
