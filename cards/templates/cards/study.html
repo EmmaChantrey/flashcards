@@ -3,10 +3,17 @@
 {% block title %}Study: {{ flashcard_set.name }}{% endblock %}
 {% block content %}
 {% load static %}
-<a href = "{% url 'dashboard' %}" class="loginbtn">Back to Dashboard</a>
-<h1>Study: {{ flashcard_set.name }}</h1>
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Study: {{ flashcard_set.name }}</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href = "{% url 'dashboard' %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
 <div class="dashboard">
-    <div class="flashcard-sidebar">
+    <div class="flashcard-sidebar"> 
         <div class="scrollbox">
             {% for flashcard in flashcards %}
             <div class="flashcard-box">

@@ -129,12 +129,15 @@ label {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"],
+textarea {
     width: 100%;
     padding: 20px;
     font-size: 100%;
     box-sizing: border-box;
     border-radius: 5px;
+    resize: none;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 button {
