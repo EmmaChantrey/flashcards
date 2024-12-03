@@ -10,7 +10,7 @@
         <div class="flashcard-nav-title">
             <h1>Set Title:</h1>
             <div class="form-group set-title">
-                {{ flashcard_set_form.name }}
+                {{ set_title.name }}
             </div>
         </div> 
         <div class="flashcard-nav-buttons">
@@ -40,7 +40,7 @@
     <div class="create-form">
         <div class="scrollbox" id="flashcard-form-container">
             {{ formset.management_form }}
-            {% for entry in set_contents %}
+            {% for entry in formset %}
             <div class="flashcard-box">
                 <div class="form-group">
                     {{ entry.term }}

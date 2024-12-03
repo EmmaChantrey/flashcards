@@ -130,14 +130,11 @@ def create(request):
                 flashcard_set = set_title.save(commit=False)
                 flashcard_set.user = request.user.profile
                 flashcard_set.save()
-
                 for entry in set_contents:
                     if entry.cleaned_data and not entry.cleaned_data.get('DELETE'):
                         flashcard = entry.save(commit=False)
                         flashcard.set = flashcard_set
                         flashcard.save()
-
-                messages.success(request, "Flashcard set created successfully!")
                 return redirect('dashboard')
             else:
                 messages.error(request, "Please fill out all terms and definitions.")
@@ -151,7 +148,7 @@ def create(request):
         request,
         'cards/create.html',
         {
-            'flashcard_set_title': set_title,
+            'set_title': set_title,
             'formset': set_contents,
         }
     )
@@ -160,6 +157,7 @@ def create(request):
 def study_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     flashcards = flashcard_set.flashcards.all()
+    print(flashcards)
     return render(request, 'cards/study.html', {
         'flashcard_set': flashcard_set,
         'flashcards': flashcards,

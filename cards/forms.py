@@ -15,7 +15,7 @@ FlashcardTermDefs = inlineformset_factory(
     FlashcardSet,
     Flashcard,
     fields=['term', 'definition'],
-    extra=0,
+    extra=1,
     can_delete=True
 )
 
