@@ -68,6 +68,7 @@ def quiz_user(flashcard_set):
 
         print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
         flashcard.last_reviewed = now()
+        flashcard.interval = flashcard.interval * flashcard.ease_factor
         flashcard.save()
 
     if num_questions > 0:
