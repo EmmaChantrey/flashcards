@@ -19,6 +19,7 @@ class FlashcardSet(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='flashcard_sets')
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    baseline = models.FloatField(default=0)
 
     def __str__(self):
         return self.name
@@ -32,7 +33,6 @@ class Flashcard(models.Model):
     last_reviewed = models.DateTimeField(null=True, blank=True)
     ease_factor = models.FloatField(default=2.5)
     streak = models.IntegerField(default=0)
-    baseline = models.FloatField(default=0)
 
     def __str__(self):
         return self.term

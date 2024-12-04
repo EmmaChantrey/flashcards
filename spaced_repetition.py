@@ -1,5 +1,4 @@
-import os
-import django
+import os, django, time
 from django.db import models
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flashcards.settings')
@@ -29,17 +28,34 @@ def quiz_user(flashcard_set):
     flashcards = flashcard_set.flashcards.all()
 
     if not flashcards:
-        print("This flashcard set has no cards.")
+        print("This flashcard set is empty.")
         return
+    
+    total_time = 0
+    num_questions = 0
+
+    print(f"Baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
 
     for flashcard in flashcards:
         print(f"Term: {flashcard.term}")
+        start_time = time.time()
+
         user_definition = input("Enter your definition: ")
+        time_taken = time.time() - start_time
+
+        total_time += time_taken
+        num_questions += 1
 
         if user_definition.strip().lower() == flashcard.definition.strip().lower():
             print("Correct!\n")
         else:
-            print(f"Incorrect. The correct definition is: {flashcard.definition}\n")
+            print(f"Incorrect. The correct definition is: {flashcard.definition}")
+
+    if num_questions > 0:
+        average_time = ((total_time / num_questions) + flashcard_set.baseline) / 2
+        flashcard_set.baseline = average_time
+        flashcard_set.save()
+        print(f"New baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
 
 def main():
     username = input("Enter your username: ")
