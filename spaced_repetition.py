@@ -1,5 +1,6 @@
 import os, django, time
 from django.db import models
+from django.utils.timezone import now
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flashcards.settings')
 django.setup()
@@ -37,19 +38,28 @@ def quiz_user(flashcard_set):
     print(f"Baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
 
     for flashcard in flashcards:
-        print(f"Term: {flashcard.term}")
+        print(f"\nTerm: {flashcard.term} (last reviewed: {flashcard.last_reviewed})")
         start_time = time.time()
 
         user_definition = input("Enter your definition: ")
         time_taken = time.time() - start_time
-
+        
         total_time += time_taken
         num_questions += 1
 
         if user_definition.strip().lower() == flashcard.definition.strip().lower():
-            print("Correct!\n")
+            print("Correct!")
+            if time_taken > 1.25 * flashcard_set.baseline:
+                print("Performance level 2: Slow")
+            elif time_taken > 0.75*flashcard_set.baseline and time_taken <= 1.25*flashcard_set.baseline:
+                print("Performance level 3: Average")
+            else:
+                print("Performance level 4: Fast")
         else:
             print(f"Incorrect. The correct definition is: {flashcard.definition}")
+
+        flashcard.last_reviewed = now()
+        flashcard.save()
 
     if num_questions > 0:
         average_time = ((total_time / num_questions) + flashcard_set.baseline) / 2
