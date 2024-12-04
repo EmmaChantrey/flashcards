@@ -1,4 +1,3 @@
-# need to edit
 
 # The view will assemble requested data and style it before generating a HTTP response
 
@@ -11,7 +10,7 @@ from django.contrib.auth.models import User
 from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
-from django import forms  # Import forms if not already done
+from django import forms
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import FlashcardSet, Flashcard
@@ -204,30 +203,3 @@ def delete_set(request, set_id):
         return redirect('dashboard')
     
     return redirect('dashboard')
-
-# @login_required
-# def view_set(request, set_id):
-#     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user)
-#     flashcards = flashcard_set.flashcards.all()
-#     return render(request, 'cards/view_set.html', {'flashcard_set': flashcard_set, 'flashcards': flashcards})
-
-# @login_required
-# def edit_flashcard(request, card_id):
-#     flashcard = get_object_or_404(Flashcard, id=card_id, set__user=request.user)
-#     if request.method == 'POST':
-#         form = CardForm(request.POST, instance=flashcard)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Flashcard updated successfully.")
-#             return redirect('view_set', set_id=flashcard.set.id)
-#     else:
-#         form = CardForm(instance=flashcard)
-#     return render(request, 'cards/edit_flashcard.html', {'form': form, 'flashcard': flashcard})
-
-# @login_required
-# def delete_flashcard(request, card_id):
-#     flashcard = get_object_or_404(Flashcard, id=card_id, set__user=request.user)
-#     set_id = flashcard.set.id
-#     flashcard.delete()
-#     messages.success(request, "Flashcard deleted successfully.")
-#     return redirect('view_set', set_id=set_id)
