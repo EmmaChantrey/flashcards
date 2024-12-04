@@ -14,6 +14,37 @@
             <input type="password" id="password" name="password" placeholder="Password" required>
         </div>
         <button type="submit">Login</button>
+        <a href="" class="forgot">Forgot password</a>
     </form>
+    <div id="toast-container" class="toast-container"></div>
 </div>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const messages = [
+            {% for message in messages %}
+                "{{ message|escapejs }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        messages.forEach(function (message) {
+            showToast(message);
+        });
+    });
+
+    function showToast(message) {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.classList.add('toast');
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+</script>
 {% endblock %}

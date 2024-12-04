@@ -1,0 +1,273 @@
+body {
+    font-family: 'Inter', Arial, sans-serif;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-left: 20px;
+    color: #023047;
+}
+
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    background-color: #ffffff;
+    color: #000000;
+    padding: 10px 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-logo {
+    max-width: 175px;
+    height: auto;
+}
+
+header nav {
+    display: flex;
+    gap: 15px;
+    margin-right: 20px;
+}
+
+header nav a {
+    display: inline-block;
+    padding: 10px 20px;
+    color: #000000;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+
+.landing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+}
+
+.landing-logo {
+    max-width: 200px;
+    margin-bottom: 20px;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.loginbtn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #023047;
+    opacity: 0.75;
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: #000000 0px 0px 5px;
+}
+
+.signupbtn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #023047;
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: #000000 0px 0px 5px;
+}
+
+.createsetbtn {
+    padding: 10px 20px;
+    background-color: #023047;
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: #000000 0px 0px 5px;
+    float: right; /* Aligns the button to the right side */
+    margin-right: 10px; /* Adds a little space to the right */
+    margin-top: 5px; /* Optional: space above */
+}
+
+.loginbtn:hover, .signupbtn:hover {
+    background-color: #0056b3;
+}
+
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #023047;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #023047;
+    opacity: 0.75;
+}
+
+.signup-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-radius: 10px;
+}
+
+.signup-container h2 {
+    margin-bottom: 20px;
+}
+
+.signup-container .form-group {
+    margin-bottom: 15px;
+}
+
+.signup-container label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.signup-container input[type="text"],
+.signup-container input[type="email"],
+.signup-container input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.signup-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #023047;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.signup-container button:hover {
+    background-color: #023047;
+    opacity: 0.75; 
+}
+
+.flashcard-sidebar {
+    position: fixed;  /* Fixes the sidebar to the left of the page */
+    top: 10;  /* Corrected syntax with px */
+    left: 25;  /* Corrected syntax with px */
+    width: 55%;  /* Width of the sidebar */
+    height: 70%;  /* Sidebar height */
+    background-color: transparent;  /* Invisible background */
+    z-index: 999;  /* Ensure it's above other content */
+    margin-left: 25px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollbox {
+    flex-grow: 1; /* Allow this section to take up available space */
+    padding: 10px;
+    margin-top: 20px;
+    overflow-y: auto; /* Make only this section scrollable */
+    max-height: calc(100% - 40px); /* Prevent it from overflowing outside the sidebar */
+    background-color: rgba(255, 255, 255, 0.1); /* Optional: slight background for visibility */
+}
+
+/* Style for individual flashcard set items */
+.flashcard-set {
+    padding: 20px;
+    margin-bottom: 10px;
+    background-color: rgba(0, 0, 0, 0.1);  /* Light background for each set */
+    border-radius: 5px;
+    cursor: pointer;  /* Indicate it's clickable */
+    transition: background-color 0.3s;
+}
+
+/* Hover effect for the flashcard sets */
+.flashcard-set:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.flashcard-nav-header {
+    display: flex;
+    align-items: center; /* Align items vertically in the center */
+    gap: 10px; /* Add spacing between the h2 and the image */
+    padding: 10px;
+}
+
+.flashcard-img {
+    max-width: 45px;
+    height: auto;
+    display: block;
+}
+
+.flashcard-box {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.flashcard-box .form-group {
+    flex: 1;
+    margin-right: 10px;
+}
+
+#add-more-btn {
+    background-color: #0289d1a3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#add-more-btn:hover {
+    background-color: #0277bd;
+}

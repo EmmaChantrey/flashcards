@@ -1,4 +1,3 @@
-# tell the app whether you knew the answer or not
 
 from django import forms
 from django.contrib.auth.models import User
@@ -34,9 +33,4 @@ class SignUpForm(UserCreationForm):
             'password1': forms.PasswordInput(attrs={'placeholder': 'Password'}),
             'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}),
         }
-
-
-# class CardCheckForm(forms.Form):
-#     card_id = forms.IntegerField(required=True)
-#     solved = forms.BooleanField(required=False)
 

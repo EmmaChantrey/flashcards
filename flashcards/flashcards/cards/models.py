@@ -1,4 +1,3 @@
-# need to edit this
 
 # The model defines database tables, behaviours, and supports queries from the database
 # This data is sent back to the view.
@@ -43,6 +42,7 @@ class Badge(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
     description = models.TextField()
+    image = models.ImageField(upload_to='badges/', null=True, blank=True)
 
     def __str__(self):
         return self.name

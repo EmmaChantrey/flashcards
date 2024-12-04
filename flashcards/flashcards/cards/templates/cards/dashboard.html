@@ -5,22 +5,101 @@
 {% block content %}
 {% load static %}
 <h1>{{ username }}'s Dashboard</h1>
-<div class="flashcard-sidebar">
-    <div class="flashcard-nav-header">
-        <h2>Flashcard sets</h2>
-        <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
-        <a href="{% url 'landing' %}" class="createsetbtn" style="float: right; margin-right: 10px;" >Create set</a>
+<div id="toast-container" class="toast-container"></div>
+
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const messages = [
+            {% for message in messages %}
+                "{{ message|escapejs }}"{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        messages.forEach(function (message) {
+            showToast(message);
+        });
+    });
+</script>
+{% endif %}
+
+<div class="dashboard">
+
+    <div class="flashcard-sidebar">
+        <div class="flashcard-nav-header">
+            <div class="flashcard-nav-title">
+                <h2>Flashcard Sets</h2>
+                <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
+            </div>
+            <a href="{% url 'create' %}" class="createsetbtn">Create Set</a>
+        </div>
+        <div class="scrollbox">
+            {% for set in flashcard_sets %}
+            <div class="flashcard-box">
+                <div class="flashcard-title">{{ set.name }}</div>
+                <div class="flashcard-buttons">
+                    <a href="{% url 'study' set.id %}" class="button">Study</a>
+                    <a href="{% url 'edit' set.id %}" class="button">Edit</a>
+                    <form action="{% url 'delete' set.id %}" method="post" class="delete-set-form" onsubmit="return confirmDelete();">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p>You have no flashcard sets yet! Click above to make your first.</p>
+            {% endfor %}
+        </div>
     </div>
-    <div class="scrollbox">
-        <div class="flashcard-set">Flashcard Set 1</div>
-        <div class="flashcard-set">Flashcard Set 2</div>
-        <div class="flashcard-set">Flashcard Set 3</div>
-        <div class="flashcard-set">Flashcard Set 1</div>
-        <div class="flashcard-set">Flashcard Set 2</div>
-        <div class="flashcard-set">Flashcard Set 3</div>
-        <div class="flashcard-set">Flashcard Set 1</div>
-        <div class="flashcard-set">Flashcard Set 2</div>
-        <div class="flashcard-set">Flashcard Set 3</div>
+
+    <div class="badge-shop">
+        <div class="header">
+            <h2>BrainBucks Badge Shop</h2>
+        </div>
+        <div class="scrollbox">
+            <p>Badge shop contents here</p>
+        </div>
     </div>
 </div>
+        <!-- <div class="badges">
+            {% for badge in badges %}
+            <div class="badge-box">
+                <div class="badge-title">
+                    {{ badge.name }}
+                </div>
+                <div class="badge-description">
+                    {{ badge.description }}
+                </div>
+                <div class="badge-image">
+                    <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                </div>
+            </div>
+            {% empty %}
+            <p>No badges found.</p>
+            {% endfor %}
+        </div> -->
+
+    </div>
+</div>
+
+
+<script>
+    function confirmDelete() {
+        return confirm('Are you sure you want to delete this flashcard set? This action cannot be undone.');
+    }
+
+    function showToast(message) {
+        console.log(message);
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.classList.add('toast');
+        toast.textContent = message;
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+</script>
 {% endblock %}
