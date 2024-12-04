@@ -38,7 +38,7 @@ def quiz_user(flashcard_set):
     print(f"Baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
 
     for flashcard in flashcards:
-        print(f"\nTerm: {flashcard.term} (last reviewed: {flashcard.last_reviewed})")
+        print(f"\nTerm: {flashcard.term} (last reviewed: {flashcard.last_reviewed}), ease factor: {flashcard.ease_factor}")
         start_time = time.time()
 
         user_definition = input("Enter your definition: ")
@@ -51,13 +51,22 @@ def quiz_user(flashcard_set):
             print("Correct!")
             if time_taken > 1.25 * flashcard_set.baseline:
                 print("Performance level 2: Slow")
+                # decrease ease factor
+                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 2) * (0.08 + (4 - 2) * 0.02))
             elif time_taken > 0.75*flashcard_set.baseline and time_taken <= 1.25*flashcard_set.baseline:
                 print("Performance level 3: Average")
+                # keep ease factor the same
+                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 3) * (0.08 + (4 - 3) * 0.02))
             else:
                 print("Performance level 4: Fast")
+                # increase ease factor
+                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 4) * (0.08 + (4 - 4) * 0.02))
         else:
             print(f"Incorrect. The correct definition is: {flashcard.definition}")
+            # assuming incorrect, not skipped
+            flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 1) * (0.08 + (4 - 1) * 0.02))
 
+        print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
         flashcard.last_reviewed = now()
         flashcard.save()
 
