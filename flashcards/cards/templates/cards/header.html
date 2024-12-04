@@ -15,7 +15,8 @@
             </a>
             <nav>
                 {% if user.is_authenticated %}
-                <a href="{% url 'landing' %}">Profile</a>
+                <a href="{% url 'landing' %}">About</a>
+                <a href="{% url 'landing' %}" class="signupbtn">Profile</a>
                 <a href="{% url 'logout' %}" class="loginbtn">Logout</a>
                 {% else %}
                 <a href="{% url 'landing' %}">About</a>
@@ -30,4 +31,7 @@
         {% endblock %}
     </main>
 </body>
+
 </html>
+
+

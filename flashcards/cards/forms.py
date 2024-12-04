@@ -3,6 +3,21 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.forms.models import inlineformset_factory
+from .models import FlashcardSet, Flashcard
+
+class FlashcardSetTitle(forms.ModelForm):
+    class Meta:
+        model = FlashcardSet
+        fields = ['name']
+
+FlashcardTermDefs = inlineformset_factory(
+    FlashcardSet,
+    Flashcard,
+    fields=['term', 'definition'],
+    extra=1,
+    can_delete=True
+)
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(
@@ -20,6 +35,8 @@ class SignUpForm(UserCreationForm):
             'password2': forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}),
         }
 
-class CardCheckForm(forms.Form):
-    card_id = forms.IntegerField(required=True)
-    solved = forms.BooleanField(required=False)
+
+# class CardCheckForm(forms.Form):
+#     card_id = forms.IntegerField(required=True)
+#     solved = forms.BooleanField(required=False)
+

@@ -156,7 +156,6 @@ def create(request):
 def study_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     flashcards = flashcard_set.flashcards.all()
-    print(flashcards)
     return render(request, 'cards/study.html', {
         'flashcard_set': flashcard_set,
         'flashcards': flashcards,

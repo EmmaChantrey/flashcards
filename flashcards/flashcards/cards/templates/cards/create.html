@@ -1,0 +1,50 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Create Flashcard Set{% endblock %}
+
+{% block content %}
+<h1>Create Flashcard Set</h1>
+<form method="post" id="flashcard-set-form">
+    {% csrf_token %}
+    <div class="form-group">
+        {{ flashcard_set_form.name }}
+    </div>
+
+    <div id="flashcard-form-container">
+        {{ formset.management_form }}
+        {% for form in formset %}
+        <div class="flashcard-box">
+            <div class="form-group">
+                {{ form.term }}
+            </div>
+            <div class="form-group">
+                {{ form.definition }}
+            </div>
+            <div class="form-group">
+                {{ form.DELETE }}
+                <label>Delete this pair</label>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button type="button" id="add-more-btn">Add More Pairs</button>
+    <button type="submit">Create Set</button>
+</form>
+
+<script>
+    // Add dynamic formset row logic (optional enhancement)
+    document.getElementById('add-more-btn').addEventListener('click', function () {
+        const container = document.getElementById('flashcard-form-container');
+        const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
+        const newIndex = parseInt(totalForms.value, 10);
+
+        const newFormHtml = container.querySelector('.flashcard-box').outerHTML.replace(
+            /form-(\d)-/g,
+            `form-${newIndex}-`
+        );
+        container.insertAdjacentHTML('beforeend', newFormHtml);
+        totalForms.value = newIndex + 1;
+    });
+</script>
+{% endblock %}
