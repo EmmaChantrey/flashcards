@@ -8,6 +8,7 @@
         <h1>Study: {{ flashcard_set.name }}</h1>
     </div>
     <div class="flashcard-nav-buttons">
+        <a href = "{% url 'edit' flashcard_set.id %}"><img src = "{% static 'images/Edit.png' %}"></a>
         <a href = "{% url 'dashboard' %}" class="loginbtn">Back</a>
     </div>
 </div>

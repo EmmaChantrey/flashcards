@@ -70,12 +70,12 @@
         newRow.classList.add('flashcard-box');
         newRow.innerHTML = `
             <div class="form-group term-definition">
-                <input type="text" name="flashcards-${newIndex}-term" id="id_flashcards-${newIndex}-term" class="form-control" placeholder="Term">
+                <input type="text" name="entry-${newIndex}-term" id="id_entry-${newIndex}-term" class="form-control" placeholder="Term">
             </div>
             <div class="form-group term-definition">
-                <input type="text" name="flashcards-${newIndex}-definition" id="id_flashcards-${newIndex}-definition" class="form-control" placeholder="Definition">
+                <input type="text" name="entry-${newIndex}-definition" id="id_entry-${newIndex}-definition" class="form-control" placeholder="Definition">
             </div>
-            <input type="hidden" name="flashcards-${newIndex}-id" id="id_flashcards-${newIndex}-id">
+            <input type="hidden" name="entry-${newIndex}-id" id="id_entry-${newIndex}-id">
             <div class="form-group delete">
                 <button type="button" class="delete-pair-btn">
                     <img src="{% static 'images/x.png' %}" alt="Delete pair" />
