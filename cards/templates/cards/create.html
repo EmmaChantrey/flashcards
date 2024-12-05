@@ -61,21 +61,21 @@
 </form>
 
 <script>
-document.getElementById('add-more-btn').addEventListener('click', function () {
+    document.getElementById('add-more-btn').addEventListener('click', function () {
         const container = document.getElementById('flashcard-form-container');
         const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
         const newIndex = parseInt(totalForms.value, 10);
 
-        let newRow = document.createElement('div');
+        const newRow = document.createElement('div');
         newRow.classList.add('flashcard-box');
         newRow.innerHTML = `
             <div class="form-group term-definition">
-                <input type="text" name="entry-${newIndex}-term" id="id_entry-${newIndex}-term" class="form-control" placeholder="Term">
+                <input type="text" name="form-${newIndex}-term" id="id_form-${newIndex}-term" class="form-control" placeholder="Term">
             </div>
             <div class="form-group term-definition">
-                <input type="text" name="entry-${newIndex}-definition" id="id_entry-${newIndex}-definition" class="form-control" placeholder="Definition">
+                <input type="text" name="form-${newIndex}-definition" id="id_form-${newIndex}-definition" class="form-control" placeholder="Definition">
             </div>
-            <input type="hidden" name="entry-${newIndex}-id" id="id_entry-${newIndex}-id">
+            <input type="hidden" name="form-${newIndex}-id" id="id_form-${newIndex}-id">
             <div class="form-group delete">
                 <button type="button" class="delete-pair-btn">
                     <img src="{% static 'images/x.png' %}" alt="Delete pair" />
@@ -86,6 +86,7 @@ document.getElementById('add-more-btn').addEventListener('click', function () {
         container.appendChild(newRow);
         totalForms.value = newIndex + 1;
     });
+
 
     document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
 
