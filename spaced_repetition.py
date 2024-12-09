@@ -52,19 +52,19 @@ def quiz_user(flashcard_set):
             if time_taken > 1.25 * flashcard_set.baseline:
                 print("Performance level 2: Slow")
                 # decrease ease factor
-                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 2) * (0.08 + (4 - 2) * 0.02))
+                flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 2)
             elif time_taken > 0.75*flashcard_set.baseline and time_taken <= 1.25*flashcard_set.baseline:
                 print("Performance level 3: Average")
                 # keep ease factor the same
-                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 3) * (0.08 + (4 - 3) * 0.02))
+                flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 3)
             else:
                 print("Performance level 4: Fast")
                 # increase ease factor
-                flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 4) * (0.08 + (4 - 4) * 0.02))
+                flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 4)
         else:
             print(f"Incorrect. The correct definition is: {flashcard.definition}")
             # assuming incorrect, not skipped
-            flashcard.ease_factor =  flashcard.ease_factor + (0.1 - (4 - 1) * (0.08 + (4 - 1) * 0.02))
+            flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 1)
 
         print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
         flashcard.last_reviewed = now()
@@ -76,6 +76,10 @@ def quiz_user(flashcard_set):
         flashcard_set.baseline = average_time
         flashcard_set.save()
         print(f"New baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
+
+
+def ease_factor_calculation(ease_factor, performance_level):
+    return ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02))
 
 def main():
     username = input("Enter your username: ")
