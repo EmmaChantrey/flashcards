@@ -31,6 +31,7 @@
             <div class="form-group">
                 {{ form.definition }}
             </div>
+            <input type="hidden" name="flashcards-{{ forloop.counter0 }}-DELETE" value="false" class="delete-input">
             <div class="form-group delete">
                 <button type="button" class="delete-pair-btn">
                     <img src="{% static 'images/x.png' %}" alt="Delete pair" />
@@ -61,10 +62,10 @@
             newRow.classList.add('flashcard-box');
             newRow.innerHTML = `
                 <div class="form-group term-definition">
-                    <input type="text" name="flashcards-${newIndex}-term" id="id_flashcards-${newIndex}-term" class="form-control" placeholder="Term">
+                    <textarea name="flashcards-${newIndex}-term" id="id_flashcards-${newIndex}-term" class="form-control" placeholder="Term"></textarea>
                 </div>
                 <div class="form-group term-definition">
-                    <input type="text" name="flashcards-${newIndex}-definition" id="id_flashcards-${newIndex}-definition" class="form-control" placeholder="Definition">
+                    <textarea name="flashcards-${newIndex}-definition" id="id_flashcards-${newIndex}-definition" class="form-control" placeholder="Definition"></textarea>
                 </div>
                 <div class="form-group delete">
                     <button type="button" class="delete-pair-btn">
@@ -79,14 +80,22 @@
 
         container.addEventListener('click', function (event) {
             if (event.target.closest('.delete-pair-btn')) {
-                const row = event.target.closest('.flashcard-box');
-                if (row) {
-                    row.remove();
-
-                    const rows = document.querySelectorAll('.flashcard-box');
-                    totalForms.value = rows.length;
+            const row = event.target.closest('.flashcard-box');
+            if (row) {
+                // Mark the row as deleted
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.value = "true";
                 }
+
+                // Hide the row
+                row.style.display = 'none';
+
+                // Update the total form count, if necessary
+                const rows = document.querySelectorAll('.flashcard-box');
+                totalForms.value = rows.length;
             }
+        }
         });
     });
 

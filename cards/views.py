@@ -172,6 +172,10 @@ def edit_set(request, set_id):
         print("POST data:", request.POST)
 
         print(set_contents)
+        for form in set_contents.forms:
+            if not form.cleaned_data.get('term') and not form.cleaned_data.get('definition'):
+                form.cleaned_data['DELETE'] = True
+
         if set_title.is_valid() and set_contents.is_valid():
             set_title.save()
             set_contents.save()
