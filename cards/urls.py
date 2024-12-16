@@ -22,6 +22,8 @@ urlpatterns = [
 
     path('study/<int:set_id>/', views.study_set, name='study'),
 
+    path('true_false/<int:set_id>/setup/', views.setup_true_false, name='setup_true_false'),
+
     path('true_false/<int:set_id>/', views.true_false, name='true_false'),
 
     path('true_false/<int:set_id>/check/', views.true_false_check, name='true_false_check'),

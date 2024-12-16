@@ -22,12 +22,24 @@
         </div>
     </div>
     <div class="game-footer">
-        <a href="{% url 'true_false_check' flashcard_set.id %}?answer=true">
+        <a href="#" onclick="submitAnswer(true)">
             <img src="{% static 'images/true.png' %}" alt="True" class="game-button">
         </a>
-        <a href="{% url 'true_false_check' flashcard_set.id %}?answer=false">
+        <a href="#" onclick="submitAnswer(false)">
             <img src="{% static 'images/false.png' %}" alt="False" class="game-button">
         </a>
     </div>
-</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const startTime = Date.now();
+
+        window.submitAnswer = function(answer) {
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000); // in seconds
+            const url = `{% url 'true_false_check' flashcard_set.id %}?answer=${answer}&time=${elapsedTime}`;
+            window.location.href = url;
+        };
+    });
+</script>
+
 {% endblock %}

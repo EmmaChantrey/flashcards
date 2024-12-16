@@ -3,8 +3,8 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
+from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
@@ -12,9 +12,8 @@ from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
 from django.forms import modelformset_factory
-from django.shortcuts import render, redirect, get_object_or_404
 from .models import FlashcardSet, Flashcard
-from spaced_repetition import get_lineup, get_overdue_flashcards
+from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 
 from django.views.generic import (
     ListView,
@@ -24,6 +23,7 @@ from django.views.generic import (
 
 
 import random
+import datetime
 from .models import Flashcard, FlashcardSet, Profile
 
 def landing_page(request):
@@ -162,14 +162,45 @@ def study_set(request, set_id):
         'flashcards': flashcards,
     })
 
+
+def setup_true_false(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    # Generate a new lineup
+    flashcards = list(flashcard_set.flashcards.all())  # Convert to list for serialization
+    new_lineup = get_lineup(flashcards)  # Generate a fresh lineup
+
+    # Store the lineup and reset the index
+    request.session['lineup'] = [card.id for card in new_lineup]
+    request.session['current_index'] = 0
+
+    # Redirect to the game page
+    return redirect('true_false', set_id=set_id)
+
+
 def true_false(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-    flashcards = flashcard_set.flashcards.all()
-    lineup = get_lineup(flashcards)
 
-    flashcard = lineup[0]
+    # Retrieve the lineup and current index
+    lineup_ids = request.session.get('lineup', [])
+    if not lineup_ids:
+        # If no lineup exists in the session, redirect to setup
+        return redirect('setup_true_false', set_id=set_id)
+
+    lineup = Flashcard.objects.filter(id__in=lineup_ids)
+    current_index = request.session.get('current_index', 0)
+
+    # End the game if all pairs have been shown
+    if current_index >= len(lineup):
+        return redirect('landing')
+
+    # Get the current flashcard
+    flashcard = lineup[current_index]
+    request.session['current_flashcard_id'] = flashcard.id
+
     term = flashcard.term
 
+    # Randomize the definition for True/False logic
     if random.choice([True, False]):
         definition = flashcard.definition
         is_correct = True
@@ -179,6 +210,7 @@ def true_false(request, set_id):
         is_correct = False
 
     request.session['is_correct'] = is_correct
+
     return render(request, 'cards/true_false.html', {
         'flashcard_set': flashcard_set,
         'flashcard': {'term': term, 'definition': definition},
@@ -186,17 +218,64 @@ def true_false(request, set_id):
 
 
 def true_false_check(request, set_id):
-    answer = request.GET.get('answer', '').lower() == 'true'
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    # Retrieve lineup and current flashcard from the session
+    lineup_ids = request.session.get('lineup', [])
+    lineup = Flashcard.objects.filter(id__in=lineup_ids)
+    current_index = request.session.get('current_index', 0)
+
+    # Ensure current index is within bounds
+    if current_index >= len(lineup):
+        return redirect('game_finished', set_id=set_id)
+
+    flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
+
+    # Get user response and elapsed time from request
+    user_answer = request.GET.get('answer', 'false') == 'true'
+    elapsed_time = int(request.GET.get('time', 0))  # Time in seconds
+
     is_correct = request.session.get('is_correct', False)
 
-    if answer == is_correct:
-        print("Correct!")
-        messages.success(request, "Correct!")
+    # Evaluate the user's answer
+    if user_answer == is_correct:
+        if elapsed_time > 1.25 * flashcard_set.baseline:
+            print("Slow")
+            performance_level = 2  # Slow
+        elif elapsed_time > 0.75 * flashcard_set.baseline:
+            print("Average")
+            performance_level = 3  # Average
+        else:
+            print("Fast")
+            performance_level = 4  # Fast
     else:
-        print("Incorrect!")
-        messages.error(request, "Incorrect!")
+        print("Incorrect")
+        performance_level = 1  # Incorrect
+
+    # Update flashcard's ease factor, interval, and last reviewed
+    flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+    print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
+    flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)  # Minimum interval of 1 day
+    flashcard.last_reviewed = now()
+    flashcard.save()
+
+    # Update the flashcard set's baseline
+    if performance_level > 1:  # Only update for valid responses
+        new_baseline = (flashcard_set.baseline + elapsed_time) / 2
+        flashcard_set.baseline = new_baseline
+        flashcard_set.save()
+
+    # Increment the current index for the next flashcard
+    current_index += 1
+    request.session['current_index'] = current_index
+
+    # Redirect to the next question or finish the game
+    if current_index >= len(lineup):
+        return redirect('landing')
 
     return redirect('true_false', set_id=set_id)
+
+
 
 
 def edit_set(request, set_id):
