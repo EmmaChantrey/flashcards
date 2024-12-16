@@ -185,6 +185,20 @@ def true_false(request, set_id):
     })
 
 
+def true_false_check(request, set_id):
+    answer = request.GET.get('answer', '').lower() == 'true'
+    is_correct = request.session.get('is_correct', False)
+
+    if answer == is_correct:
+        print("Correct!")
+        messages.success(request, "Correct!")
+    else:
+        print("Incorrect!")
+        messages.error(request, "Incorrect!")
+
+    return redirect('true_false', set_id=set_id)
+
+
 def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
 

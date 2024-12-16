@@ -24,6 +24,8 @@ urlpatterns = [
 
     path('true_false/<int:set_id>/', views.true_false, name='true_false'),
 
+    path('true_false/<int:set_id>/check/', views.true_false_check, name='true_false_check'),
+
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
 
     path('delete/<int:set_id>/', views.delete_set, name='delete'),
