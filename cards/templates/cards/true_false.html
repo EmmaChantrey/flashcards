@@ -1,0 +1,18 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}True or False? {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+{% load static %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>True or False?</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="dashboard">
+    True or False game
+</div>
+{% endblock %}

@@ -82,16 +82,12 @@
             if (event.target.closest('.delete-pair-btn')) {
             const row = event.target.closest('.flashcard-box');
             if (row) {
-                // Mark the row as deleted
                 const deleteInput = row.querySelector('input[name$="-DELETE"]');
                 if (deleteInput) {
                     deleteInput.value = "true";
                 }
 
-                // Hide the row
                 row.style.display = 'none';
-
-                // Update the total form count, if necessary
                 const rows = document.querySelectorAll('.flashcard-box');
                 totalForms.value = rows.length;
             }

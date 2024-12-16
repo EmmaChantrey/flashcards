@@ -161,6 +161,14 @@ def study_set(request, set_id):
         'flashcards': flashcards,
     })
 
+def true_false(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    flashcards = flashcard_set.flashcards.all()
+    return render(request, 'cards/true_false.html', {
+        'flashcard_set': flashcard_set,
+        'flashcards': flashcards,
+    })
+
 
 def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
