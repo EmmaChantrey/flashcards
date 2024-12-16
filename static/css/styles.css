@@ -238,6 +238,21 @@ button:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.game-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 2px solid #00000043;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    height: 750px;
+    box-sizing: border-box;
+}
+
 .badge-shop .header,
 .flashcard-nav-header {
     width: 100%;
