@@ -14,6 +14,7 @@ from django import forms
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import FlashcardSet, Flashcard
+from spaced_repetition import get_lineup, get_overdue_flashcards
 
 from django.views.generic import (
     ListView,
@@ -164,9 +165,23 @@ def study_set(request, set_id):
 def true_false(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     flashcards = flashcard_set.flashcards.all()
+    lineup = get_lineup(flashcards)
+
+    flashcard = lineup[0]
+    term = flashcard.term
+
+    if random.choice([True, False]):
+        definition = flashcard.definition
+        is_correct = True
+    else:
+        other_flashcard = random.choice([card for card in lineup if card != flashcard])
+        definition = other_flashcard.definition
+        is_correct = False
+
+    request.session['is_correct'] = is_correct
     return render(request, 'cards/true_false.html', {
         'flashcard_set': flashcard_set,
-        'flashcards': flashcards,
+        'flashcard': {'term': term, 'definition': definition},
     })
 
 

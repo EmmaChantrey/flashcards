@@ -43,11 +43,10 @@ def get_overdue_flashcards(flashcards):
 
 
 def get_lineup(flashcards):
-    print("\nget_lineup")
     lineup = []
     overdue_flashcards = get_overdue_flashcards(flashcards)
     lineup.extend(overdue_flashcards[:10])
-    print("\nlineup", lineup)
+    
     while(len(lineup) < 10):
         non_overdue_flashcards = [
             card for card in flashcards if card not in overdue_flashcards
@@ -59,7 +58,7 @@ def get_lineup(flashcards):
             min(additional_cards_needed, len(non_overdue_flashcards))
         )
         lineup.extend(random_additional_cards)
-    print("\nnew lineup", lineup)
+
     return lineup
 
 
