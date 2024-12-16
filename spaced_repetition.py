@@ -1,4 +1,6 @@
+from datetime import timedelta
 import os, django, time
+import random
 from django.db import models
 from django.utils.timezone import now
 
@@ -24,6 +26,42 @@ def select_flashcard_set(profile):
     else:
         print("Invalid choice.")
         return None
+    
+
+def get_overdue_flashcards(flashcards):
+    overdue_flashcards = []
+
+    for flashcard in flashcards:
+        last_reviewed = flashcard.last_reviewed or now()
+        next_review_date = last_reviewed + timedelta(seconds=flashcard.interval)
+        if next_review_date <= now():
+            overdue_flashcards.append((flashcard, next_review_date))
+
+    overdue_flashcards = sorted(overdue_flashcards, key=lambda x: x[1])
+
+    return [flashcard for flashcard, _ in overdue_flashcards]
+
+
+def get_lineup(flashcards):
+    print("\nget_lineup")
+    lineup = []
+    overdue_flashcards = get_overdue_flashcards(flashcards)
+    lineup.extend(overdue_flashcards[:10])
+    print("\nlineup", lineup)
+    while(len(lineup) < 10):
+        non_overdue_flashcards = [
+            card for card in flashcards if card not in overdue_flashcards
+        ]
+        
+        additional_cards_needed = 10 - len(lineup)
+        random_additional_cards = random.sample(
+            non_overdue_flashcards, 
+            min(additional_cards_needed, len(non_overdue_flashcards))
+        )
+        lineup.extend(random_additional_cards)
+    print("\nnew lineup", lineup)
+    return lineup
+
 
 def quiz_user(flashcard_set):
     flashcards = flashcard_set.flashcards.all()
@@ -35,9 +73,11 @@ def quiz_user(flashcard_set):
     total_time = 0
     num_questions = 0
 
+    lineup = get_lineup(flashcards)
+
     print(f"Baseline for the set '{flashcard_set.name}' is: {flashcard_set.baseline:.2f} seconds.")
 
-    for flashcard in flashcards:
+    for flashcard in lineup:
         print(f"\nTerm: {flashcard.term} (last reviewed: {flashcard.last_reviewed}), ease factor: {flashcard.ease_factor}")
         start_time = time.time()
 
@@ -68,7 +108,7 @@ def quiz_user(flashcard_set):
 
         print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
         flashcard.last_reviewed = now()
-        flashcard.interval = flashcard.interval * flashcard.ease_factor
+        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
         flashcard.save()
 
     if num_questions > 0:

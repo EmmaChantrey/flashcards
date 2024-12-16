@@ -29,7 +29,7 @@ class Flashcard(models.Model):
     set = models.ForeignKey(FlashcardSet, on_delete=models.CASCADE, related_name='flashcards')
     term = models.TextField()
     definition = models.TextField()
-    interval = models.IntegerField(default=1)
+    interval = models.FloatField(default=86400)
     last_reviewed = models.DateTimeField(null=True, blank=True)
     ease_factor = models.FloatField(default=2.5)
     streak = models.IntegerField(default=0)
