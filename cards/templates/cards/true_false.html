@@ -13,7 +13,7 @@
 </div>
 
 <div class="game-box">
-    <div class="flashcard-box">
+    <div class="question-container">
         <div class="flashcard">
             Term
             <h2>{{ flashcard.term }}</h2>
@@ -21,15 +21,16 @@
         <div class="flashcard">
             Definition
             <h2>{{ flashcard.definition }}</h2>
+        </div>
     </div>
-    <div class="flashcard-buttons">
+    <div class="game-footer">
         <a href="{% url 'landing' %}">
         <!-- <a href="{% url 'true_false' flashcard_set.id %}?answer=true" class="loginbtn"> -->
-            <img src="{% static 'images/true.png' %}" alt="True">
+            <img src="{% static 'images/true.png' %}" alt="True" class="game-button">
         </a>
         <a href="{% url 'landing' %}">
         <!-- <a href="{% url 'true_false' flashcard_set.id %}?answer=false" class="loginbtn"> -->
-            <img src="{% static 'images/false.png' %}" alt="False">
+            <img src="{% static 'images/false.png' %}" alt="False" class="game-button">
         </a>
     </div>
 </div>

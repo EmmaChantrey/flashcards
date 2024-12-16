@@ -241,6 +241,7 @@ button:hover {
 .game-box {
     display: flex;
     justify-content: center;
+    flex-direction: column;
     align-items: center;
     margin-bottom: 25px;
     padding: 15px;
@@ -250,6 +251,52 @@ button:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 90%;
     height: 750px;
+    box-sizing: border-box;
+}
+
+.game-button {
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.game-button:hover {
+    transform: scale(1.05);
+}
+
+.game-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    width: 50%;
+    box-sizing: border-box;
+}
+
+.question-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    /* border: 2px solid #00000043; */
+    border-radius: 8px;
+    /* background-color: #f8f9fa; */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+    width: 90%;
+    height: 200px;
+    box-sizing: border-box;
+}
+
+.flashcard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 2px solid #00000043;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
     box-sizing: border-box;
 }
 
