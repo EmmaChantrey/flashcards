@@ -30,10 +30,17 @@ def select_flashcard_set(profile):
 
 def get_overdue_flashcards(flashcards):
     overdue_flashcards = []
+    max_interval = 31536000
 
     for flashcard in flashcards:
         last_reviewed = flashcard.last_reviewed or now()
-        next_review_date = last_reviewed + timedelta(seconds=flashcard.interval)
+        interval = min(flashcard.interval, max_interval)
+        try:
+            next_review_date = last_reviewed + timedelta(seconds=interval)
+        except OverflowError:
+            print(f"OverflowError: Flashcard ID {flashcard.id} has an invalid interval: {flashcard.interval}")
+            continue
+        
         if next_review_date <= now():
             overdue_flashcards.append((flashcard, next_review_date))
 

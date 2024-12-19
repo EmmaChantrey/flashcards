@@ -196,6 +196,10 @@ def true_false(request, set_id):
 
     if current_index >= len(lineup):
         return redirect('landing')
+    
+    # calculate progress percentage
+    total_questions = len(lineup)
+    progress_percentage = (current_index / total_questions) * 100
 
     flashcard = lineup[current_index]
     request.session['current_flashcard_id'] = flashcard.id
@@ -216,6 +220,7 @@ def true_false(request, set_id):
     return render(request, 'cards/true_false.html', {
         'flashcard_set': flashcard_set,
         'flashcard': {'term': term, 'definition': definition},
+        'progress_percentage': progress_percentage,
     })
 
 
