@@ -31,4 +31,7 @@ urlpatterns = [
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
 
     path('delete/<int:set_id>/', views.delete_set, name='delete'),
+
+    path('game_end/<int:set_id>/', views.game_end, name='game_end'),
+
 ]

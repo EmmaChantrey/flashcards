@@ -1,6 +1,8 @@
 
 # The view will assemble requested data and style it before generating a HTTP response
 
+import sys
+import time
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate, logout
@@ -177,6 +179,8 @@ def setup_true_false(request, set_id):
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
 
+    print("Session data size:", sys.getsizeof(request.session.get('lineup', [])))
+    
     return redirect('true_false', set_id=set_id)
 
 
@@ -191,7 +195,6 @@ def true_false(request, set_id):
     flashcard_map = {card.id: card for card in flashcards}
     lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
 
-    print("Lineup:", lineup)
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
@@ -233,9 +236,6 @@ def true_false_check(request, set_id):
     lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
     current_index = request.session.get('current_index', 0)
 
-    if current_index >= len(lineup):
-        return redirect('game_finished', set_id=set_id)
-
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
     # get the user's answer and time taken
@@ -275,12 +275,16 @@ def true_false_check(request, set_id):
     request.session['current_index'] = current_index
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=flashcard_set.id)
 
     return redirect('true_false', set_id=set_id)
 
 
-
+def game_end(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    return render(request, 'cards/game_end.html', {
+        'flashcard_set': flashcard_set,
+    })
 
 def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)

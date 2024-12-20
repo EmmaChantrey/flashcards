@@ -66,7 +66,6 @@ def get_lineup(flashcards):
         )
         lineup.extend(random_additional_cards)
 
-    print("Lineup:", lineup)
     return lineup
 
 
