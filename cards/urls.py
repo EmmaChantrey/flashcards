@@ -28,6 +28,12 @@ urlpatterns = [
 
     path('true_false/<int:set_id>/check/', views.true_false_check, name='true_false_check'),
 
+    path('fill_the_blanks/<int:set_id>/setup/', views.setup_fill_the_blanks, name='setup_fill_the_blanks'),
+
+    path('fill_the_blanks/<int:set_id>/', views.fill_the_blanks, name='fill_the_blanks'),
+
+    path('fill_the_blanks/<int:set_id>/check/', views.fill_the_blanks_check, name='fill_the_blanks_check'),
+
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
 
     path('delete/<int:set_id>/', views.delete_set, name='delete'),

@@ -173,13 +173,10 @@ def setup_true_false(request, set_id):
     # generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
     new_lineup = get_lineup(flashcards)
-    print("New lineup:", new_lineup)
 
     # store the lineup and reset the index
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
-
-    print("Session data size:", sys.getsizeof(request.session.get('lineup', [])))
     
     return redirect('true_false', set_id=set_id)
 
@@ -279,6 +276,87 @@ def true_false_check(request, set_id):
 
     return redirect('true_false', set_id=set_id)
 
+
+
+def create_blank_definition(definition):
+    words = definition.split()
+    # Randomly select a word or small phrase
+    start_index = random.randint(0, len(words) - 1)
+    end_index = min(start_index + random.randint(1, 2), len(words))  # 1-2 word phrases
+    blanked_phrase = " ".join(words[start_index:end_index])
+    
+    # Replace the phrase with an HTML input field
+    words[start_index:end_index] = [f'<input type="text" name="answer" placeholder="Fill here" required />']
+    blanked_definition = " ".join(words)
+    
+    return blanked_definition, blanked_phrase
+
+
+def setup_fill_the_blanks(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    # Generate a new lineup
+    flashcards = list(flashcard_set.flashcards.all())
+    new_lineup = get_lineup(flashcards)
+
+    # Process each flashcard to create blanks in definitions
+    blanked_flashcards = []
+    for card in new_lineup:
+        blanked_definition, blanked_phrase = create_blank_definition(card.definition)
+        blanked_flashcards.append({
+            'id': card.id,
+            'term': card.term,
+            'blanked_definition': blanked_definition,
+            'correct_answer': blanked_phrase,
+        })
+
+    # Store the processed lineup and reset the index
+    request.session['lineup'] = blanked_flashcards
+    request.session['current_index'] = 0
+    
+    return redirect('fill_the_blanks', set_id=set_id)
+
+
+def fill_the_blanks(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup):
+        return redirect('landing')
+    
+    # Get current flashcard details
+    current_flashcard = lineup[current_index]
+    progress_percentage = (current_index / len(lineup)) * 100
+
+    # Store the correct answer in the session for validation later
+    request.session['correct_answer'] = current_flashcard['correct_answer']
+
+    return render(request, 'cards/fill_the_blanks.html', {
+        'flashcard_set': flashcard_set,
+        'flashcard': current_flashcard,
+        'progress_percentage': progress_percentage,
+    })
+
+
+def fill_the_blanks_check(request, set_id):
+    if request.method == 'POST':
+        user_answer = request.POST.get('answer', '').strip()
+        correct_answer = request.session.get('correct_answer', '')
+
+        # Compare answers (case-insensitive)
+        if user_answer.lower() == correct_answer.lower():
+            messages.success(request, "Correct!")
+        else:
+            messages.error(request, f"Incorrect. The correct answer was: {correct_answer}")
+
+        # Increment the index
+        current_index = request.session.get('current_index', 0) + 1
+        request.session['current_index'] = current_index
+
+        return redirect('fill_the_blanks', set_id=set_id)
+    
 
 def game_end(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)

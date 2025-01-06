@@ -1,0 +1,42 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Fill the Blanks: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Fill the Blanks</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="game-box">
+    <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
+        {% csrf_token %}
+        <div class="question-container">
+            <p><strong>Term:</strong> {{ flashcard.term }}</p>
+            <p><strong>Definition:</strong> 
+                {{ flashcard.blanked_definition|safe }}
+            </p>
+        </div>
+
+        <button type="submit" class="game-button">Submit</button>
+    </form>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-info">
+        <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const percentage = parseFloat("{{ progress_percentage|default:0 }}");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = percentage + '%';
+    });
+</script>
+{% endblock %}
