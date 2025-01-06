@@ -290,7 +290,7 @@ def create_blank_definition(definition):
     blanked_phrase = " ".join(words[start_index:end_index])
     
     # Replace the phrase with an HTML input field
-    words[start_index:end_index] = [f'<input type="text" name="answer" placeholder="Fill here" required />']
+    words[start_index:end_index] = [f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />']
     blanked_definition = " ".join(words)
     
     return blanked_definition, blanked_phrase

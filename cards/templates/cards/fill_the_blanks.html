@@ -14,12 +14,11 @@
 <div class="game-box">
     <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
         {% csrf_token %}
-        <div class="question-container">
             <p><strong>Term:</strong> {{ flashcard.term }}</p>
             <p><strong>Definition:</strong> 
                 {{ flashcard.blanked_definition|safe }}
             </p>
-        </div>
+
 
         <button type="submit" class="game-button">Submit</button>
     </form>
