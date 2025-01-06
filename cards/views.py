@@ -241,7 +241,18 @@ def true_false_check(request, set_id):
 
     is_correct = request.session.get('is_correct', False)
 
-    # evaluate the user's answer
+    evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
+
+    current_index += 1
+    request.session['current_index'] = current_index
+
+    if current_index >= len(lineup):
+        return redirect('game_end', set_id=flashcard_set.id)
+
+    return redirect('true_false', set_id=set_id)
+
+
+def evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
     if user_answer == is_correct:
         if elapsed_time > 1.25 * flashcard_set.baseline:
             print("Slow")
@@ -256,26 +267,19 @@ def true_false_check(request, set_id):
         print("Incorrect")
         performance_level = 1
 
-    # update flashcard's ease factor, interval, and last reviewed
+    # Update flashcard's ease factor, interval, and last reviewed date
     flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
     print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
-    flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+    flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)  # Ensure at least one day
     flashcard.last_reviewed = now()
     flashcard.save()
 
-    # update the flashcard set's baseline
+    # Update flashcard set's baseline
     new_baseline = (flashcard_set.baseline + elapsed_time) / 2
     flashcard_set.baseline = new_baseline
     flashcard_set.save()
 
-    current_index += 1
-    request.session['current_index'] = current_index
-
-    if current_index >= len(lineup):
-        return redirect('game_end', set_id=flashcard_set.id)
-
-    return redirect('true_false', set_id=set_id)
-
+    return performance_level
 
 
 def create_blank_definition(definition):
