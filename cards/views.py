@@ -3,6 +3,7 @@
 
 import sys
 import time
+from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate, logout
@@ -367,6 +368,92 @@ def fill_the_blanks_check(request, set_id):
         return redirect('game_end', set_id=flashcard_set.id)
 
     return redirect('fill_the_blanks', set_id=set_id)
+
+
+
+def setup_quiz(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    # Generate a new lineup
+    flashcards = list(flashcard_set.flashcards.all())
+    new_lineup = get_lineup(flashcards)
+
+    # Process each flashcard to create multiple-choice options
+    multiple_choice_flashcards = []
+    for card in new_lineup:
+        # Get the correct definition
+        correct_definition = card.definition
+
+        # Get other flashcards' definitions as incorrect options
+        other_cards = [f.definition for f in flashcards if f.id != card.id]
+        incorrect_definitions = sample(other_cards, min(3, len(other_cards)))
+
+        # Combine correct and incorrect definitions and shuffle
+        all_options = incorrect_definitions + [correct_definition]
+        shuffle(all_options)
+
+        multiple_choice_flashcards.append({
+            'id': card.id,
+            'term': card.term,
+            'options': all_options,
+            'correct_answer': correct_definition,
+        })
+
+    # Store the processed lineup and reset the index
+    request.session['lineup'] = multiple_choice_flashcards
+    request.session['current_index'] = 0
+    
+    return redirect('quiz', set_id=set_id)
+
+
+def quiz(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup):
+        return redirect('landing')
+    
+    # Get current flashcard details
+    current_flashcard = lineup[current_index]
+    progress_percentage = (current_index / len(lineup)) * 100
+
+    # Store the correct answer in the session for validation later
+    request.session['correct_answer'] = current_flashcard['correct_answer']
+
+    return render(request, 'cards/quiz.html', {
+        'flashcard_set': flashcard_set,
+        'flashcard': current_flashcard,
+        'progress_percentage': progress_percentage,
+    })
+
+
+def quiz_check(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+    flashcard_data = lineup[current_index]
+    flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
+
+    # get the user's answer, correct answer, and time taken
+    user_answer = request.POST.get('answer', '').strip()
+    correct_answer = flashcard_data['correct_answer']
+    elapsed_time = int(request.POST.get('elapsed_time', 0))
+
+    # evaluate the user's answer and update the flashcard
+    is_correct = user_answer.lower() == correct_answer.lower()
+    evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
+
+    current_index += 1
+    request.session['current_index'] = current_index
+
+    if current_index >= len(lineup):
+        return redirect('game_end', set_id=flashcard_set.id)
+
+    return redirect('quiz', set_id=set_id)
+
     
 
 def game_end(request, set_id):

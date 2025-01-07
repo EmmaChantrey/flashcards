@@ -34,6 +34,12 @@ urlpatterns = [
 
     path('fill_the_blanks/<int:set_id>/check/', views.fill_the_blanks_check, name='fill_the_blanks_check'),
 
+    path('quiz/<int:set_id>/setup/', views.setup_quiz, name='setup_quiz'),
+
+    path('quiz/<int:set_id>/', views.quiz, name='quiz'),
+
+    path('quiz/<int:set_id>/check/', views.quiz_check, name='quiz_check'),
+
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
 
     path('delete/<int:set_id>/', views.delete_set, name='delete'),

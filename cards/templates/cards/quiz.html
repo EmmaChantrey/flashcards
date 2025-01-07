@@ -1,0 +1,59 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Quiz: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Quiz</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="game-box">
+    <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
+        {% csrf_token %}
+        <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
+        <div class="definition-options">
+            <p><strong>Choose the correct definition:</strong></p>
+            {% for option in flashcard.options %}
+                <div class="option">
+                    <label>
+                        <input type="radio" name="selected_answer" value="{{ option }}" required>
+                        {{ option }}
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
+        <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
+        <button type="submit" class="check-button">Check</button>
+    </form>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-info">
+        <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const startTime = Date.now();
+
+        // updates elapsed time in hidden input before form submission
+        const form = document.querySelector('form');
+        form.addEventListener('submit', () => {
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            document.getElementById('elapsed_time').value = elapsedTime;
+        });
+
+        const percentage = parseFloat("{{ progress_percentage|default:0 }}");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = percentage + '%';
+    });
+</script>
+{% endblock %}
