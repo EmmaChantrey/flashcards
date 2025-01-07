@@ -19,7 +19,8 @@
                 {{ flashcard.blanked_definition|safe }}
             </p>
 
-
+            <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
+            <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
         <button type="submit" class="game-button">Submit</button>
     </form>
 
@@ -33,6 +34,16 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const startTime = Date.now();
+
+        // updates elapsed time in hidden input before form submission
+        const form = document.querySelector('form');
+        form.addEventListener('submit', () => {
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            document.getElementById('elapsed_time').value = elapsedTime;
+        });
+
+
         const percentage = parseFloat("{{ progress_percentage|default:0 }}");
         const progressBar = document.getElementById('progress-bar');
         progressBar.style.width = percentage + '%';

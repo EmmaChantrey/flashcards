@@ -240,7 +240,6 @@ def true_false_check(request, set_id):
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
-
     evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
     current_index += 1
@@ -345,21 +344,29 @@ def fill_the_blanks(request, set_id):
 
 
 def fill_the_blanks_check(request, set_id):
-    if request.method == 'POST':
-        user_answer = request.POST.get('answer', '').strip()
-        correct_answer = request.session.get('correct_answer', '')
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
-        # Compare answers (case-insensitive)
-        if user_answer.lower() == correct_answer.lower():
-            messages.success(request, "Correct!")
-        else:
-            messages.error(request, f"Incorrect. The correct answer was: {correct_answer}")
+    lineup = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+    flashcard_data = lineup[current_index]
+    flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-        # Increment the index
-        current_index = request.session.get('current_index', 0) + 1
-        request.session['current_index'] = current_index
+    # get the user's answer, correct answer, and time taken
+    user_answer = request.POST.get('answer', '').strip()
+    correct_answer = flashcard_data['correct_answer']
+    elapsed_time = int(request.POST.get('elapsed_time', 0))
 
-        return redirect('fill_the_blanks', set_id=set_id)
+    # evaluate the user's answer and update the flashcard
+    is_correct = user_answer.lower() == correct_answer.lower()
+    evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
+
+    current_index += 1
+    request.session['current_index'] = current_index
+
+    if current_index >= len(lineup):
+        return redirect('game_end', set_id=flashcard_set.id)
+
+    return redirect('fill_the_blanks', set_id=set_id)
     
 
 def game_end(request, set_id):
