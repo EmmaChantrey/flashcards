@@ -12,7 +12,7 @@
 </div>
 
 <div class="game-box">
-    <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
+    <form method="POST" action="{% url 'quiz_check' flashcard_set.id %}">
         {% csrf_token %}
         <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
         <div class="definition-options">

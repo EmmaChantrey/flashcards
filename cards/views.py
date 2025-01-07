@@ -438,12 +438,12 @@ def quiz_check(request, set_id):
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
     # get the user's answer, correct answer, and time taken
-    user_answer = request.POST.get('answer', '').strip()
+    user_answer = request.POST.get('selected_answer', '').strip()
     correct_answer = flashcard_data['correct_answer']
     elapsed_time = int(request.POST.get('elapsed_time', 0))
 
     # evaluate the user's answer and update the flashcard
-    is_correct = user_answer.lower() == correct_answer.lower()
+    is_correct = user_answer == correct_answer
     evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     current_index += 1
