@@ -14,14 +14,14 @@
 <div class="game-box">
     <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
         {% csrf_token %}
-            <p><strong>Term:</strong> {{ flashcard.term }}</p>
-            <p><strong>Definition:</strong> 
+            <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
+            <h2><strong>Definition:</strong> 
                 {{ flashcard.blanked_definition|safe }}
-            </p>
+            </h2>
 
             <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
             <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
-        <button type="submit" class="game-button">Submit</button>
+        <button type="submit" class="check-button">Check</button>
     </form>
 
     <div class="progress-container">

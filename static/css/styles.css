@@ -262,6 +262,30 @@ button:hover {
     transform: scale(1.05);
 }
 
+.check-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 15%;
+    font-weight: bold;
+    padding: 10px;
+    background-color: #023047;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    box-sizing: border-box;
+    text-align: center;
+    margin: auto;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.check-button:hover {
+    transform: scale(1.05);
+}
+
+
 .game-footer {
     display: flex;
     justify-content: space-between;
