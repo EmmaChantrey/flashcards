@@ -19,10 +19,8 @@
             <p><strong>Choose the correct definition:</strong></p>
             {% for option in flashcard.options %}
                 <div class="option">
-                    <label>
-                        <input type="radio" name="selected_answer" value="{{ option }}" required>
-                        {{ option }}
-                    </label>
+                    <input type="radio" id="option{{ forloop.counter }}" name="selected_answer" value="{{ option }}" required>
+                    <label for="option{{ forloop.counter }}" class="custom-radio">{{ option }}</label>
                 </div>
             {% endfor %}
         </div>

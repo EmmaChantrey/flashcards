@@ -469,9 +469,6 @@ def edit_set(request, set_id):
         set_title = FlashcardSetTitle(request.POST, instance=flashcard_set)
         set_contents = FlashcardTermDefs(request.POST, instance=flashcard_set)
 
-        print("POST data:", request.POST)
-
-        print(set_contents)
         for form in set_contents.forms:
             if not form.cleaned_data.get('term') and not form.cleaned_data.get('definition'):
                 form.cleaned_data['DELETE'] = True
@@ -481,11 +478,6 @@ def edit_set(request, set_id):
             set_contents.save()
             return redirect('dashboard')
 
-        else:
-            for form in set_contents:
-                print("Form errors:", form.errors)
-                print("Form data:", form.cleaned_data)
-        
     else:
         set_title = FlashcardSetTitle(instance=flashcard_set)
         set_contents = FlashcardTermDefs(instance=flashcard_set)

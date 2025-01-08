@@ -288,6 +288,36 @@ button:hover {
 }
 
 
+
+input[type="radio"] {
+    display: none;
+}
+
+.custom-radio {
+    display: block;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="radio"]:checked + label.custom-radio {
+    background-color: #023047;
+    color: white;
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.custom-radio:hover {
+    border-color: #023047;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+
 .game-footer {
     display: flex;
     justify-content: space-between;
