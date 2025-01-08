@@ -23,13 +23,12 @@
             <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
         <button type="submit" class="check-button">Check</button>
     </form>
-
-    <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-    </div>
-    <div class="progress-info">
-        <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
-    </div>
+</div>
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div class="progress-info">
+    <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
 </div>
 
 <script>

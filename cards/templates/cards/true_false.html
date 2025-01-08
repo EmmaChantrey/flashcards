@@ -29,13 +29,12 @@
             <img src="{% static 'images/false.png' %}" alt="False" class="game-button">
         </a>
     </div>
-
-    <div class="progress-container">
-        <div class="progress-bar" id="progress-bar"></div>
-    </div>
-    <div class="progress-info">
-        <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
-    </div>
+</div>
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div class="progress-info">
+    <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
 </div>
 
 <script>
