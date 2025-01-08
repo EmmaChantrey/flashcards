@@ -40,6 +40,8 @@ urlpatterns = [
 
     path('quiz/<int:set_id>/check/', views.quiz_check, name='quiz_check'),
 
+    path('clear_feedback/', views.clear_feedback, name='clear_feedback'),
+
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
 
     path('delete/<int:set_id>/', views.delete_set, name='delete'),

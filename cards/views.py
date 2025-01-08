@@ -5,6 +5,7 @@ import sys
 import time
 from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate, logout
 from django.utils.timezone import now
@@ -446,15 +447,59 @@ def quiz_check(request, set_id):
     is_correct = user_answer == correct_answer
     evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
 
+    if is_correct:
+        messages.success(request, 'Correct!')
+    else:
+        messages.error(request, f'Incorrect. The correct answer is "{correct_answer}".')
+
     current_index += 1
     request.session['current_index'] = current_index
 
     if current_index >= len(lineup):
         return redirect('game_end', set_id=flashcard_set.id)
 
+    return redirect('quiz_feedback', set_id=set_id)
+
+
+def quiz_check(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup):
+        return redirect('game_end', set_id=set_id)
+
+    flashcard_data = lineup[current_index]
+    flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
+
+    # Get user's answer, correct answer, and elapsed time
+    user_answer = request.POST.get('selected_answer', '').strip()
+    correct_answer = flashcard_data['correct_answer']
+    elapsed_time = int(request.POST.get('elapsed_time', 0))
+
+    # Evaluate the user's answer
+    is_correct = user_answer == correct_answer
+    evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
+
+    # Add feedback to the session
+    request.session['feedback'] = {
+        'is_correct': is_correct,
+        'message': "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
+    }
+    print("Feedback set in session:", request.session['feedback'])  # Debugging line
+
+    # Increment current_index for the next question
+    request.session['current_index'] += 1
+
     return redirect('quiz', set_id=set_id)
 
-    
+
+def clear_feedback(request):
+    if 'feedback' in request.session:
+        del request.session['feedback']
+    return JsonResponse({'status': 'success'})
+
 
 def game_end(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)

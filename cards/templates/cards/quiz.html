@@ -29,6 +29,11 @@
         <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
         <button type="submit" class="check-button">Check</button>
     </form>
+
+    <div id="feedback-bar" class="feedback-bar hidden">
+        <p id="feedback-message"></p>
+        <button id="next-button" class="next-button hidden">Next</button>
+    </div>
 </div>
 <div class="progress-container">
     <div class="progress-bar" id="progress-bar"></div>
@@ -41,7 +46,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const startTime = Date.now();
 
-        // updates elapsed time in hidden input before form submission
+        // Updates elapsed time in hidden input before form submission
         const form = document.querySelector('form');
         form.addEventListener('submit', () => {
             const elapsedTime = Math.round((Date.now() - startTime) / 1000);
@@ -52,5 +57,33 @@
         const progressBar = document.getElementById('progress-bar');
         progressBar.style.width = percentage + '%';
     });
+
+    (function () {
+        const feedback = JSON.parse(document.getElementById('feedback-data').textContent);
+        const feedbackBar = document.getElementById('feedback-bar');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const nextButton = document.getElementById('next-button');
+
+        if (feedback) {
+            feedbackMessage.textContent = feedback.message;
+            feedbackBar.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+        }
+
+        // Clear feedback from the session
+        fetch("{% url 'clear_feedback' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        });
+
+        // Handle "Next" button click
+        nextButton.addEventListener('click', () => {
+            window.location.reload(); // Reloads the page to progress to the next question
+        });
+    })();
+</script>
+
+<script id="feedback-data" type="application/json">
+    {{ request.session.feedback|default_if_none:"{}"|safe }}
 </script>
 {% endblock %}

@@ -349,6 +349,63 @@ input[type="radio"]:checked + label.custom-radio {
     display: none;
 }
 
+
+.feedback-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-bar.hidden {
+    display: none;
+}
+
+.next-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.next-button:hover {
+    background-color: #0056b3;
+}
+
+
+.next-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.next-button:hover {
+    background-color: #0056b3;
+}
+
+
+
+
+
 .question-container {
     display: flex;
     justify-content: center;
