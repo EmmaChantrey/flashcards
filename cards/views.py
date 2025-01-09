@@ -414,7 +414,7 @@ def quiz(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=set_id)
     
     # Get current flashcard details
     current_flashcard = lineup[current_index]
@@ -436,6 +436,8 @@ def quiz_check(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
+        del request.session['lineup']  # Clear lineup when the game ends
+        del request.session['current_index']  # Reset the index
         return JsonResponse({'redirect': True, 'url': reverse('game_end', args=[set_id])})
 
     flashcard_data = lineup[current_index]

@@ -88,22 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.redirect) {
                 // Redirect to the end page
-                console.log('Redirecting to end page');
                 window.location.href = data.url;
-            } else {
-                // Update feedback bar and make it visible
-                feedbackMessage.textContent = data.feedback_message;
-                feedbackBar.classList.remove('hidden');
-                feedbackBar.style.display = 'block';
-
-                // Show the "Next" button
-                nextButton.classList.remove('hidden');
-                nextButton.style.display = 'inline-block';
-
-                // Update progress bar
-                progressBar.style.width = `${data.progress_percentage}%`;
-                progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
+                return;
             }
+
+            // Update feedback and progress
+            feedbackMessage.textContent = data.feedback_message;
+            feedbackBar.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+            progressBar.style.width = `${data.progress_percentage}%`;
+            progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
+
+            // Hide form after submission
+            form.classList.add('hidden');
         } catch (error) {
             console.error('Error during form submission:', error);
         }
@@ -119,18 +116,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const parser = new DOMParser();
-            const doc = parser.parseFromString(await response.text(), 'text/html');
+            const responseText = await response.text();
+            const doc = parser.parseFromString(responseText, 'text/html');
 
-            // Replace the game box content with the next question
+            // Log fetched HTML for debugging
+            console.log('Fetched HTML:', responseText);
+
+            // Select the new game box content
             const newGameBox = doc.querySelector('.game-box');
+
+            if (!newGameBox) {
+                throw new Error('No game box found in the server response');
+            }
+
+            // Replace the game box content with the new question
             const gameBox = document.querySelector('.game-box');
             gameBox.innerHTML = newGameBox.innerHTML;
 
             // Reset visibility of feedback and form
             feedbackBar.classList.add('hidden');
-            feedbackBar.style.display = 'none';
             nextButton.classList.add('hidden');
-            nextButton.style.display = 'none';
 
             // Reattach listeners to the new form
             attachListeners();
