@@ -448,11 +448,18 @@ def quiz_check(request, set_id):
 
     evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
 
+    # Increment current index
+    request.session['current_index'] += 1
+
+    # Calculate progress percentage
+    progress_percentage = (request.session['current_index'] / len(lineup)) * 100
+
     feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
         'is_correct': is_correct,
         'feedback_message': feedback_message,
+        'progress_percentage': progress_percentage,
     })
 
 
