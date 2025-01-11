@@ -44,6 +44,8 @@ urlpatterns = [
 
     path('match/<int:set_id>/', views.match, name='match'),
 
+    path('evaluate_match/<int:set_id>/', views.evaluate_match, name='evaluate_match'),
+
     path('clear_feedback/', views.clear_feedback, name='clear_feedback'),
 
     path('edit/<int:set_id>/', views.edit_set, name='edit'),

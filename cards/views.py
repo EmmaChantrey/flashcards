@@ -495,7 +495,7 @@ def match(request, set_id):
         items.append({'id': flashcard.id, 'value': flashcard.term})
         items.append({'id': flashcard.id, 'value': flashcard.definition})
         print(flashcard.id)
-        
+
     random.shuffle(items)
 
     return render(request, 'cards/match.html', {
@@ -503,6 +503,19 @@ def match(request, set_id):
         'items': items,
     })
 
+
+def evaluate_match(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    flashcard_id = request.GET.get('first_id')
+    is_correct = request.GET.get('is_correct') == 'true'
+    elapsed_time = int(request.GET.get('time', 0))
+
+    flashcard = get_object_or_404(Flashcard, id=flashcard_id)
+
+    evaluate_and_update_flashcard(flashcard, flashcard_set, is_correct, is_correct, elapsed_time)
+
+    return JsonResponse({'success': True, 'message': 'Evaluation complete'})
 
 
 def clear_feedback(request):
