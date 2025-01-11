@@ -20,6 +20,8 @@ urlpatterns = [
 
     path('create/', views.create, name='create'),
 
+    path('about/', views.about, name='about'),
+
     path('study/<int:set_id>/', views.study_set, name='study'),
 
     path('true_false/<int:set_id>/setup/', views.setup_true_false, name='setup_true_false'),

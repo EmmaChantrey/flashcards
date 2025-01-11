@@ -35,6 +35,9 @@ from .models import Flashcard, FlashcardSet, Profile
 def landing_page(request):
     return render(request, 'cards/landing.html')
 
+def about(request):
+    return render(request, 'cards/about.html')
+
 def signup(request):
     if request.method == 'POST':
         username = request.POST.get('username')

@@ -414,9 +414,11 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .grid-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 20px;
     border: 1px solid #ccc;
-    text-align: center;
     background-color: #f9f9f9;
     cursor: pointer;
     border-radius: 5px;
@@ -428,8 +430,9 @@ input[type="radio"]:checked + label.custom-radio {
 } 
 
 .grid-item.selected {
-    background-color: #cce5ff; /* Color for selected items */
-    border-color: #80bfff;
+    background-color: #023047; /* Color for selected items */
+    color: white;
+    border-color: #023047;
 }
 
 .grid-item.hidden {
