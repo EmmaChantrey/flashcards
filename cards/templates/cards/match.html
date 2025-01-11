@@ -13,9 +13,8 @@
 
 <div class="game-box">
     <div class="grid-container">
-        {% csrf_token %}
         {% for item in items %}
-            <div class="grid-item {{ item.type }}">
+            <div class="grid-item" id="{{ item.id }}">
                 {{ item.value }}
             </div>
         {% endfor %}
@@ -28,5 +27,45 @@
 <div class="progress-info">
     <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
 </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded');
+    const gridItems = document.querySelectorAll('.grid-item');
+    let selectedItems = []; // To track selected items
+
+    gridItems.forEach(item => {
+        item.addEventListener('click', () => {
+            if (item.classList.contains('selected')) {
+                item.classList.remove('selected');
+                selectedItems = selectedItems.filter(el => el !== item);
+            } else {
+                item.classList.add('selected');
+                selectedItems.push(item);
+            }
+
+            if (selectedItems.length === 2) {
+                const [first, second] = selectedItems;
+
+                if (first.id === second.id) {
+                    first.classList.add('hidden');
+                    second.classList.add('hidden');
+                    console.log(`Matched: ${first.textContent} and ${second.textContent}`);
+                } else {
+                    console.log(`No match: ${first.textContent} and ${second.textContent}`);
+                }
+
+                // Reset selection state
+                setTimeout(() => {
+                    selectedItems.forEach(el => el.classList.remove('selected'));
+                    selectedItems = [];
+                }, 1000); // Delay for better visual feedback
+            }
+        });
+    });
+});
+
+</script>
 
 {% endblock %}

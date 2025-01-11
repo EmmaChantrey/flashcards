@@ -492,9 +492,10 @@ def match(request, set_id):
 
     items = []
     for flashcard in flashcards:
-        items.append({'type': 'term', 'value': flashcard.term})
-        items.append({'type': 'definition', 'value': flashcard.definition})
-
+        items.append({'id': flashcard.id, 'value': flashcard.term})
+        items.append({'id': flashcard.id, 'value': flashcard.definition})
+        print(flashcard.id)
+        
     random.shuffle(items)
 
     return render(request, 'cards/match.html', {
