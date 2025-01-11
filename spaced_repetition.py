@@ -49,17 +49,17 @@ def get_overdue_flashcards(flashcards):
     return [flashcard for flashcard, _ in overdue_flashcards]
 
 
-def get_lineup(flashcards):
+def get_lineup(flashcards, number):
     lineup = []
     overdue_flashcards = get_overdue_flashcards(flashcards)
-    lineup.extend(overdue_flashcards[:10])
+    lineup.extend(overdue_flashcards[:number])
     
-    while(len(lineup) < 10):
+    while(len(lineup) < number):
         non_overdue_flashcards = [
             card for card in flashcards if card not in overdue_flashcards
         ]
         
-        additional_cards_needed = 10 - len(lineup)
+        additional_cards_needed = number - len(lineup)
         random_additional_cards = random.sample(
             non_overdue_flashcards, 
             min(additional_cards_needed, len(non_overdue_flashcards))

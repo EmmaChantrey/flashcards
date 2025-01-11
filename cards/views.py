@@ -174,7 +174,7 @@ def setup_true_false(request, set_id):
 
     # generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
-    new_lineup = get_lineup(flashcards)
+    new_lineup = get_lineup(flashcards, 10)
 
     # store the lineup and reset the index
     request.session['lineup'] = [card.id for card in new_lineup]
@@ -302,7 +302,7 @@ def setup_fill_the_blanks(request, set_id):
 
     # Generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
-    new_lineup = get_lineup(flashcards)
+    new_lineup = get_lineup(flashcards, 10)
 
     # Process each flashcard to create blanks in definitions
     blanked_flashcards = []
@@ -377,7 +377,7 @@ def setup_quiz(request, set_id):
 
     # Generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
-    new_lineup = get_lineup(flashcards)
+    new_lineup = get_lineup(flashcards, 10)
 
     # Process each flashcard to create multiple-choice options
     multiple_choice_flashcards = []
@@ -470,7 +470,7 @@ def setup_match(request, set_id):
 
     # generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
-    new_lineup = get_lineup(flashcards)
+    new_lineup = get_lineup(flashcards, 6)
 
     # store the lineup and reset the index
     request.session['lineup'] = [card.id for card in new_lineup]
@@ -489,39 +489,11 @@ def match(request, set_id):
     flashcards = Flashcard.objects.filter(id__in=lineup_ids)
     flashcard_map = {card.id: card for card in flashcards}
     lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
-
-    current_index = request.session.get('current_index', 0)
-
-    if current_index >= len(lineup):
-        return redirect('landing')
-    
-    # calculate progress percentage
-    total_questions = len(lineup)
-    progress_percentage = (current_index / total_questions) * 100
-
-    flashcard = lineup[current_index]
-    request.session['current_flashcard_id'] = flashcard.id
-
-    term = flashcard.term
-
-    # randomise the definition
-    if random.choice([True, False]):
-        definition = flashcard.definition
-        is_correct = True
-    else:
-        other_flashcard = random.choice([card for card in lineup if card != flashcard])
-        definition = other_flashcard.definition
-        is_correct = False
-
-    request.session['is_correct'] = is_correct
-
+    print(lineup)
     return render(request, 'cards/match.html', {
         'flashcard_set': flashcard_set,
-        'flashcard': {'term': term, 'definition': definition},
-        'progress_percentage': progress_percentage,
+        'flashcards': lineup,
     })
-
-
 
 
 
