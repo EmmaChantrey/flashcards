@@ -12,17 +12,14 @@
 </div>
 
 <div class="game-box">
-    {% csrf_token %}
-        <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
-        <div class="definition-options">
-            <p><strong>Choose the correct definition:</strong></p>
-            {% for option in flashcard.options %}
-                <div class="option">
-                    <input type="button" id="option{{ forloop.counter }}" name="selected_answer" value="{{ option }}" required>
-                    <label for="option{{ forloop.counter }}" class="custom-radio">{{ option }}</label>
-                </div>
-            {% endfor %}
-        </div>
+    <div class="grid-container">
+        {% csrf_token %}
+        {% for item in items %}
+            <div class="grid-item {{ item.type }}">
+                {{ item.value }}
+            </div>
+        {% endfor %}
+    </div>
 </div>
 
 <div class="progress-container">

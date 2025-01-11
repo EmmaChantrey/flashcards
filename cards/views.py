@@ -488,11 +488,18 @@ def match(request, set_id):
 
     flashcards = Flashcard.objects.filter(id__in=lineup_ids)
     flashcard_map = {card.id: card for card in flashcards}
-    lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
-    print(lineup)
+    flashcards = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
+
+    items = []
+    for flashcard in flashcards:
+        items.append({'type': 'term', 'value': flashcard.term})
+        items.append({'type': 'definition', 'value': flashcard.definition})
+
+    random.shuffle(items)
+
     return render(request, 'cards/match.html', {
         'flashcard_set': flashcard_set,
-        'flashcards': lineup,
+        'items': items,
     })
 
 

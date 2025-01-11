@@ -246,7 +246,7 @@ button:hover {
     flex-direction: column;
     align-items: center;
     margin-bottom: 25px;
-    padding: 15px;
+    padding: 30px;
     border: 2px solid #00000043;
     border-radius: 8px;
     background-color: #fff;
@@ -403,7 +403,28 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20%, 1fr)); /* Up to 4 across */
+    gap: 30px; /* Space between items */
+    justify-content: center;
+    width: 100%; /* Set a max width for layout */
+    height: 100%;
+    margin: 0 auto; /* Center the grid on the page */
+}
 
+.grid-item {
+    padding: 20px;
+    border: 1px solid #ccc;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.grid-item:hover {
+    transform: scale(1.05);
+} 
 
 
 .question-container {
