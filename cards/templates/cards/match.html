@@ -1,0 +1,25 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Match: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Match</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="game-box">
+    Match game here
+</div>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div class="progress-info">
+    <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
+</div>
+
+{% endblock %}

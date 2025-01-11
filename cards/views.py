@@ -465,6 +465,66 @@ def quiz_check(request, set_id):
     })
 
 
+def setup_match(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    # generate a new lineup
+    flashcards = list(flashcard_set.flashcards.all())
+    new_lineup = get_lineup(flashcards)
+
+    # store the lineup and reset the index
+    request.session['lineup'] = [card.id for card in new_lineup]
+    request.session['current_index'] = 0
+    
+    return redirect('match', set_id=set_id)
+
+
+def match(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup_ids = request.session.get('lineup', [])
+    if not lineup_ids:
+        return redirect('setup_match', set_id=set_id)
+
+    flashcards = Flashcard.objects.filter(id__in=lineup_ids)
+    flashcard_map = {card.id: card for card in flashcards}
+    lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
+
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup):
+        return redirect('landing')
+    
+    # calculate progress percentage
+    total_questions = len(lineup)
+    progress_percentage = (current_index / total_questions) * 100
+
+    flashcard = lineup[current_index]
+    request.session['current_flashcard_id'] = flashcard.id
+
+    term = flashcard.term
+
+    # randomise the definition
+    if random.choice([True, False]):
+        definition = flashcard.definition
+        is_correct = True
+    else:
+        other_flashcard = random.choice([card for card in lineup if card != flashcard])
+        definition = other_flashcard.definition
+        is_correct = False
+
+    request.session['is_correct'] = is_correct
+
+    return render(request, 'cards/match.html', {
+        'flashcard_set': flashcard_set,
+        'flashcard': {'term': term, 'definition': definition},
+        'progress_percentage': progress_percentage,
+    })
+
+
+
+
+
 def clear_feedback(request):
     request.session.pop('feedback', None)
     return JsonResponse({'success': True})

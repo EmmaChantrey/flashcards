@@ -40,6 +40,10 @@ urlpatterns = [
 
     path('quiz/<int:set_id>/check/', views.quiz_check, name='quiz_check'),
 
+    path('match/<int:set_id>/setup/', views.setup_match, name='setup_match'),
+
+    path('match/<int:set_id>/', views.match, name='match'),
+
     path('clear_feedback/', views.clear_feedback, name='clear_feedback'),
 
     path('edit/<int:set_id>/', views.edit_set, name='edit'),
