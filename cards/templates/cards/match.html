@@ -14,29 +14,39 @@
 <div class="game-box">
     <div class="grid-container">
         {% for item in items %}
-            <div class="grid-item" id="{{ item.id }}">
+            <div class="grid-item" id="{{ item.id }}" tabindex="0">
                 {{ item.value }}
             </div>
         {% endfor %}
     </div>
 </div>
 
-<div class="progress-container">
-    <div class="progress-bar" id="progress-bar"></div>
-</div>
-<div class="progress-info">
-    <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
-</div>
+
+<a href="{% url 'game_end' flashcard_set.id %}" style="display: none;" class="check-button">Next</a>
+
+
 
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-    const gridItems = document.querySelectorAll('.grid-item');
-    let selectedItems = []; // To track selected items
-
-    gridItems.forEach(item => {
-        item.addEventListener('click', () => {
+    document.addEventListener('DOMContentLoaded', () => {
+        const gridItems = document.querySelectorAll('.grid-item');
+        const nextButtonContainer = document.querySelector('.check-button');
+        let selectedItems = [];
+    
+        gridItems.forEach(item => {
+            // Click event handler for mouse interaction
+            item.addEventListener('click', () => handleSelection(item));
+    
+            // Keydown event handler for keyboard interaction (Tab + Enter/Space)
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    handleSelection(item);
+                }
+            });
+        });
+    
+        function handleSelection(item) {
+            // Toggle selection state
             if (item.classList.contains('selected')) {
                 item.classList.remove('selected');
                 selectedItems = selectedItems.filter(el => el !== item);
@@ -44,10 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.classList.add('selected');
                 selectedItems.push(item);
             }
-
+    
+            // If two items are selected, check for a match
             if (selectedItems.length === 2) {
                 const [first, second] = selectedItems;
-
+    
                 if (first.id === second.id) {
                     first.classList.add('hidden');
                     second.classList.add('hidden');
@@ -55,17 +66,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     console.log(`No match: ${first.textContent} and ${second.textContent}`);
                 }
-
-                // Reset selection state
+    
+                // Reset selection state after delay
                 setTimeout(() => {
                     selectedItems.forEach(el => el.classList.remove('selected'));
                     selectedItems = [];
-                }, 1000); // Delay for better visual feedback
+                }, 1000);
             }
-        });
+    
+            // Check if all items are matched
+            if ([...gridItems].every(item => item.classList.contains('hidden'))) {
+                nextButtonContainer.style.display = 'block'; // Show the "Next" button
+            }
+        }
     });
-});
-
-</script>
+    </script>
 
 {% endblock %}
