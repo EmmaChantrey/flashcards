@@ -19,9 +19,10 @@
             </div>
         {% endfor %}
     </div>
+    <a href="{% url 'game_end' flashcard_set.id %}" style="display: none;" class="check-button">Next</a>
 </div>
 
-<a href="{% url 'game_end' flashcard_set.id %}" style="display: none;" class="check-button">Next</a>
+
 
 <script>
     // Passing 'items' from Django context into JavaScript
@@ -31,7 +32,7 @@
         const gridItems = document.querySelectorAll('.grid-item');
         const nextButtonContainer = document.querySelector('.check-button');
         let selectedItems = [];
-        let startTime = Date.now(); // Track start time for elapsed time
+        let gameStartTime = Date.now(); // Track start time for elapsed time
 
         gridItems.forEach(item => {
             item.addEventListener('click', () => handleSelection(item));
@@ -90,6 +91,7 @@
             // Check if all items are matched
             if ([...gridItems].every(item => item.classList.contains('hidden'))) {
                 nextButtonContainer.style.display = 'block'; // Show the "Next" button
+                const gameEndTime = Math.round((Date.now() - startTime) / 1000);
             }
         }
 

@@ -3,6 +3,8 @@
 
 import sys
 import time
+from datetime import datetime
+import random
 from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
@@ -15,7 +17,6 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from django.forms import modelformset_factory
 from .models import FlashcardSet, Flashcard
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
@@ -26,11 +27,6 @@ from django.views.generic import (
     CreateView,
     UpdateView
 )
-
-
-import random
-import datetime
-from .models import Flashcard, FlashcardSet, Profile
 
 def landing_page(request):
     return render(request, 'cards/landing.html')
@@ -182,6 +178,7 @@ def setup_true_false(request, set_id):
     # store the lineup and reset the index
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
+    request.session['start_time'] = None
     
     return redirect('true_false', set_id=set_id)
 
@@ -321,6 +318,7 @@ def setup_fill_the_blanks(request, set_id):
     # Store the processed lineup and reset the index
     request.session['lineup'] = blanked_flashcards
     request.session['current_index'] = 0
+    request.session['start_time'] = None
     
     return redirect('fill_the_blanks', set_id=set_id)
 
@@ -406,6 +404,7 @@ def setup_quiz(request, set_id):
     # Store the processed lineup and reset the index
     request.session['lineup'] = multiple_choice_flashcards
     request.session['current_index'] = 0
+    request.session['start_time'] = None
     
     return redirect('quiz', set_id=set_id)
 
@@ -479,6 +478,7 @@ def setup_match(request, set_id):
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
     
+    request.session['start_time'] = datetime.now().isoformat()
     return redirect('match', set_id=set_id)
 
 
@@ -528,8 +528,17 @@ def clear_feedback(request):
 
 def game_end(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    start_time_str = request.session.get('start_time')
+
+    if start_time_str:
+        start_time = datetime.fromisoformat(start_time_str)
+        total_time = (datetime.now() - start_time).total_seconds()
+    else:
+        total_time = None  # Fallback if start_time isn't available
+
     return render(request, 'cards/game_end.html', {
         'flashcard_set': flashcard_set,
+        'total_time': total_time,
     })
 
 def edit_set(request, set_id):

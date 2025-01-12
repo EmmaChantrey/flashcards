@@ -7,13 +7,16 @@
     <div class="flashcard-nav-title">
         <h1>Finish!</h1>
     </div>
-    <div class="flashcard-nav-buttons">
-        <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
-    </div>
 </div>
 
 <div class="game-box">
     Congratulations! You have completed the set.
+    {% if total_time %}
+        <p>Total Time Taken: {{ total_time|floatformat:2 }} seconds</p>
+    {% else %}
+        <p>none match game played</p>
+    {% endif %}
+    <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
 </div>
 
 {% endblock %}
