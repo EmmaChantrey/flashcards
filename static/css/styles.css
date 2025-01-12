@@ -405,12 +405,12 @@ input[type="radio"]:checked + label.custom-radio {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20%, 1fr)); /* Up to 4 across */
-    gap: 30px; /* Space between items */
+    grid-template-columns: repeat(auto-fit, minmax(20%, 1fr));
+    gap: 30px;
     justify-content: center;
-    width: 100%; /* Set a max width for layout */
+    width: 100%;
     height: 100%;
-    margin: 0 auto; /* Center the grid on the page */
+    margin: 0 auto;
 }
 
 .grid-item {
@@ -430,14 +430,14 @@ input[type="radio"]:checked + label.custom-radio {
 } 
 
 .grid-item.selected {
-    background-color: #023047; /* Color for selected items */
+    background-color: #023047;
     color: white;
     border-color: #023047;
 }
 
 .grid-item.hidden {
     opacity: 0;
-    pointer-events: none; /* Prevent further interaction */
+    pointer-events: none;
 }
 
 

@@ -125,7 +125,7 @@ def quiz_user(flashcard_set):
 
 
 def ease_factor_calculation(ease_factor, performance_level):
-    return ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02))
+    return max(ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02)), 0)
 
 def main():
     username = input("Enter your username: ")

@@ -53,6 +53,10 @@
                 selectedItems.push(item);
             }
 
+            if (selectedItems.length === 1) {
+                startTime = Date.now();
+            }
+
             // If two items are selected, check for a match
             if (selectedItems.length === 2) {
                 const [first, second] = selectedItems;
@@ -65,14 +69,14 @@
                     first.classList.add('hidden');
                     second.classList.add('hidden');
                     console.log(`Matched: ${first.textContent} and ${second.textContent}`);
-                    startTime = Date.now();
+                    
                 } else {
                     console.log(`No match: ${first.textContent} and ${second.textContent}`);
                 }
 
                 const elapsedTime = Math.round((Date.now() - startTime) / 1000);
                 console.log('Elapsed time:', elapsedTime);
-                
+
                 // Call the evaluate function with the selected items' data
                 evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime);
 
