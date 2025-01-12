@@ -287,6 +287,22 @@ button:hover {
     transform: scale(1.05);
 }
 
+.check-button.hidden {
+    display: none;
+}
+
+button:disabled {
+    background-color: #ccc;
+    color: #666;          
+    cursor: not-allowed;
+    border: 1px solid #aaa;
+}
+
+button.disabled {
+    opacity: 0.6;
+}
+
+
 input[type="radio"] {
     display: none;
 }
@@ -370,7 +386,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .next-button {
-    background-color: #007bff;
+    background-color: #023047;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -381,23 +397,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .next-button:hover {
-    background-color: #0056b3;
-}
-
-
-.next-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s;
-}
-
-.next-button:hover {
-    background-color: #0056b3;
+    opacity: 0.75;
 }
 
 
