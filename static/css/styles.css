@@ -373,7 +373,7 @@ input[type="radio"]:checked + label.custom-radio {
     text-align: center;
     font-size: 1.2em;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     z-index: 1000;
     background-color: #f8f9fa;
@@ -484,6 +484,12 @@ input[type="radio"]:checked + label.custom-radio {
     box-sizing: border-box;
 }
 
+
+.badge-shop {
+    float: right;
+    width: 35%;
+}
+
 .badge-shop .header,
 .flashcard-nav-header {
     width: 100%;
@@ -491,6 +497,24 @@ input[type="radio"]:checked + label.custom-radio {
     align-items: center;
     justify-content: space-between;
     padding: 10px;
+}
+
+.badge-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    gap: 10px;
+}
+
+.brainbucks {
+    font-weight: bold;
+    font-size: medium;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .flashcard-nav-title{
@@ -690,11 +714,6 @@ input[type="radio"]:checked + label.custom-radio {
     opacity: 0.5;
 } */
 
-
-.badge-shop {
-    float: right;
-    width: 30%;
-}
 
 .dashboard {
     display: flex;

@@ -88,6 +88,7 @@ def dashboard(request):
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
         'username': request.user.username,
+        'brainbucks': request.user.profile.brainbucks,
         'badges': badges,
     })
 
@@ -273,14 +274,14 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
         print("Incorrect")
         performance_level = 1
 
-    # Update flashcard's ease factor, interval, and last reviewed date
+    # update flashcard's ease factor, interval, and last reviewed date
     flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
     print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
     flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)  # Ensure at least one day
     flashcard.last_reviewed = now()
     flashcard.save()
 
-    # Update flashcard set's baseline
+    # update flashcard set's baseline time
     new_baseline = (flashcard_set.baseline + elapsed_time) / 2
     flashcard_set.baseline = new_baseline
     flashcard_set.save()
@@ -290,12 +291,13 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
 
 def create_blank_definition(definition):
     words = definition.split()
-    # Randomly select a word or small phrase
+
+    # randomly select a word or small phrase
     start_index = random.randint(0, len(words) - 1)
-    end_index = min(start_index + random.randint(1, 2), len(words))  # 1-2 word phrases
+    end_index = min(start_index + random.randint(1, 2), len(words))
     blanked_phrase = " ".join(words[start_index:end_index])
     
-    # Replace the phrase with an HTML input field
+    # replace the phrase with an HTML input field
     words[start_index:end_index] = [f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />']
     blanked_definition = " ".join(words)
     
@@ -305,11 +307,10 @@ def create_blank_definition(definition):
 def setup_fill_the_blanks(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
-    # Generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
     new_lineup = get_lineup(flashcards, 10)
 
-    # Process each flashcard to create blanks in definitions
+    # process each flashcard to create blanks in definitions
     blanked_flashcards = []
     for card in new_lineup:
         blanked_definition, blanked_phrase = create_blank_definition(card.definition)
@@ -320,10 +321,12 @@ def setup_fill_the_blanks(request, set_id):
             'correct_answer': blanked_phrase,
         })
 
-    # Store the processed lineup and reset the index
+    # store the processed lineup and reset the index
     request.session['lineup'] = blanked_flashcards
     request.session['current_index'] = 0
     request.session['start_time'] = None
+
+    # keep track of correct and incorrect answers
     request.session['correct'] = 0
     request.session['incorrect'] = 0
     
@@ -339,11 +342,11 @@ def fill_the_blanks(request, set_id):
     if current_index >= len(lineup):
         return redirect('landing')
     
-    # Get current flashcard details
+    # get current flashcard details
     current_flashcard = lineup[current_index]
     progress_percentage = (current_index / len(lineup)) * 100
 
-    # Store the correct answer in the session for validation later
+    # store the correct answer in the session for validation later
     request.session['correct_answer'] = current_flashcard['correct_answer']
 
     return render(request, 'cards/fill_the_blanks.html', {
@@ -383,21 +386,21 @@ def fill_the_blanks_check(request, set_id):
 def setup_quiz(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
-    # Generate a new lineup
+    # generate a new lineup
     flashcards = list(flashcard_set.flashcards.all())
     new_lineup = get_lineup(flashcards, 10)
 
-    # Process each flashcard to create multiple-choice options
+    # process each flashcard to create multiple-choice options
     multiple_choice_flashcards = []
     for card in new_lineup:
-        # Get the correct definition
+        # get the correct definition
         correct_definition = card.definition
 
-        # Get other flashcards' definitions as incorrect options
+        # get other flashcards' definitions as incorrect options
         other_cards = [f.definition for f in flashcards if f.id != card.id]
         incorrect_definitions = sample(other_cards, min(3, len(other_cards)))
 
-        # Combine correct and incorrect definitions and shuffle
+        # combine correct and incorrect definitions and shuffle
         all_options = incorrect_definitions + [correct_definition]
         shuffle(all_options)
 
@@ -408,10 +411,12 @@ def setup_quiz(request, set_id):
             'correct_answer': correct_definition,
         })
 
-    # Store the processed lineup and reset the index
+    # store the processed lineup and reset the index
     request.session['lineup'] = multiple_choice_flashcards
     request.session['current_index'] = 0
     request.session['start_time'] = None
+
+    # keep track of correct and incorrect answers
     request.session['correct'] = 0
     request.session['incorrect'] = 0
     
@@ -427,11 +432,11 @@ def quiz(request, set_id):
     if current_index >= len(lineup):
         return redirect('game_end', set_id=set_id)
     
-    # Get current flashcard details
+    # get current flashcard details
     current_flashcard = lineup[current_index]
     progress_percentage = (current_index / len(lineup)) * 100
 
-    # Store the correct answer in the session for validation later
+    # store the correct answer in the session for validation later
     request.session['correct_answer'] = current_flashcard['correct_answer']
 
     return render(request, 'cards/quiz.html', {
@@ -447,8 +452,8 @@ def quiz_check(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        del request.session['lineup']  # Clear lineup when the game ends
-        del request.session['current_index']  # Reset the index
+        del request.session['lineup']  # clear lineup when the game ends
+        del request.session['current_index']
         return JsonResponse({'redirect': True, 'url': reverse('game_end', args=[set_id])})
 
     flashcard_data = lineup[current_index]
@@ -461,12 +466,8 @@ def quiz_check(request, set_id):
 
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
-    # Increment current index
     request.session['current_index'] += 1
-
-    # Calculate progress percentage
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-
     feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
@@ -508,7 +509,6 @@ def match(request, set_id):
     for flashcard in flashcards:
         items.append({'id': flashcard.id, 'value': flashcard.term})
         items.append({'id': flashcard.id, 'value': flashcard.definition})
-        print(flashcard.id)
 
     random.shuffle(items)
 
@@ -527,7 +527,7 @@ def evaluate_match(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=flashcard_id)
 
-    evaluate_and_update_flashcard(request, flashcard, flashcard_set, is_correct, is_correct, elapsed_time)
+    evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     return JsonResponse({'success': True, 'message': 'Evaluation complete'})
 
@@ -542,6 +542,7 @@ def game_end(request, set_id):
     start_time_str = request.session.get('start_time')
     correct = request.session.get('correct', 0)
     incorrect = request.session.get('incorrect', 0)
+    score = 0
 
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)
@@ -563,10 +564,6 @@ def edit_set(request, set_id):
     if request.method == 'POST':
         set_title = FlashcardSetTitle(request.POST, instance=flashcard_set)
         set_contents = FlashcardTermDefs(request.POST, instance=flashcard_set)
-
-        for form in set_contents.forms:
-            if not form.cleaned_data.get('term') and not form.cleaned_data.get('definition'):
-                form.cleaned_data['DELETE'] = True
 
         if set_title.is_valid() and set_contents.is_valid():
             set_title.save()
