@@ -17,10 +17,9 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard
+from .models import FlashcardSet, Flashcard, Badge
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
-
 
 from django.views.generic import (
     ListView,
@@ -84,10 +83,12 @@ def login_view(request):
 @login_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
+    badges = Badge.objects.all()
 
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
         'username': request.user.username,
+        'badges': badges,
     })
 
 

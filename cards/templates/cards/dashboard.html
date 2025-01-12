@@ -57,31 +57,33 @@
             <h2>BrainBucks Badge Shop</h2>
         </div>
         <div class="scrollbox">
-            <p>Badge shop contents here</p>
-        </div>
-    </div>
-</div>
-        <!-- <div class="badges">
-            {% for badge in badges %}
-            <div class="badge-box">
-                <div class="badge-title">
-                    {{ badge.name }}
-                </div>
-                <div class="badge-description">
-                    {{ badge.description }}
-                </div>
-                <div class="badge-image">
-                    <img src="{% static badge.image %}" alt="{{ badge.name }}">
-                </div>
+            <div class="study-grid">
+                {% for badge in badges %}
+                    <!-- <div class="badge-title">
+                        {{ badge.name }}
+                    </div>
+                    <div class="badge-description">
+                        {{ badge.description }}
+                    </div> -->
+                    <div class="badge-box">
+                        <div class="badge-image">
+                            <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                        </div>
+                        <div class="badge-buttons">
+                            <form action="" method="post" class="purchase-badge-form">
+                                {% csrf_token %}
+                                <button type="submit">{{ badge.price }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks"></button>
+                            </form>
+                        </div>
+                    </div>
+
+                {% empty %}
+                <p>No badges found.</p>
+                {% endfor %}
             </div>
-            {% empty %}
-            <p>No badges found.</p>
-            {% endfor %}
-        </div> -->
-
+        </div> 
     </div>
 </div>
-
 
 <script>
     function confirmDelete() {
