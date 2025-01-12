@@ -287,8 +287,6 @@ button:hover {
     transform: scale(1.05);
 }
 
-
-
 input[type="radio"] {
     display: none;
 }

@@ -179,6 +179,8 @@ def setup_true_false(request, set_id):
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
     request.session['start_time'] = None
+    request.session['correct'] = 0
+    request.session['incorrect'] = 0
     
     return redirect('true_false', set_id=set_id)
 
@@ -242,7 +244,7 @@ def true_false_check(request, set_id):
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
-    evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
+    evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
     current_index += 1
     request.session['current_index'] = current_index
@@ -253,8 +255,9 @@ def true_false_check(request, set_id):
     return redirect('true_false', set_id=set_id)
 
 
-def evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
+def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
     if user_answer == is_correct:
+        request.session['correct'] += 1
         if elapsed_time > 1.25 * flashcard_set.baseline:
             print("Slow")
             performance_level = 2
@@ -265,6 +268,7 @@ def evaluate_and_update_flashcard(flashcard, flashcard_set, user_answer, is_corr
             print("Fast")
             performance_level = 4
     else:
+        request.session['incorrect'] += 1
         print("Incorrect")
         performance_level = 1
 
@@ -319,6 +323,8 @@ def setup_fill_the_blanks(request, set_id):
     request.session['lineup'] = blanked_flashcards
     request.session['current_index'] = 0
     request.session['start_time'] = None
+    request.session['correct'] = 0
+    request.session['incorrect'] = 0
     
     return redirect('fill_the_blanks', set_id=set_id)
 
@@ -361,7 +367,7 @@ def fill_the_blanks_check(request, set_id):
 
     # evaluate the user's answer and update the flashcard
     is_correct = user_answer.lower() == correct_answer.lower()
-    evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
+    evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     current_index += 1
     request.session['current_index'] = current_index
@@ -405,6 +411,8 @@ def setup_quiz(request, set_id):
     request.session['lineup'] = multiple_choice_flashcards
     request.session['current_index'] = 0
     request.session['start_time'] = None
+    request.session['correct'] = 0
+    request.session['incorrect'] = 0
     
     return redirect('quiz', set_id=set_id)
 
@@ -450,7 +458,7 @@ def quiz_check(request, set_id):
     elapsed_time = int(request.POST.get('elapsed_time', 0))
     is_correct = user_answer == correct_answer
 
-    evaluate_and_update_flashcard(flashcard, flashcard_set, True, is_correct, elapsed_time)
+    evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     # Increment current index
     request.session['current_index'] += 1
@@ -477,8 +485,10 @@ def setup_match(request, set_id):
     # store the lineup and reset the index
     request.session['lineup'] = [card.id for card in new_lineup]
     request.session['current_index'] = 0
-    
+    request.session['correct'] = 0
+    request.session['incorrect'] = 0
     request.session['start_time'] = datetime.now().isoformat()
+
     return redirect('match', set_id=set_id)
 
 
@@ -516,7 +526,7 @@ def evaluate_match(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=flashcard_id)
 
-    evaluate_and_update_flashcard(flashcard, flashcard_set, is_correct, is_correct, elapsed_time)
+    evaluate_and_update_flashcard(request, flashcard, flashcard_set, is_correct, is_correct, elapsed_time)
 
     return JsonResponse({'success': True, 'message': 'Evaluation complete'})
 
@@ -529,16 +539,21 @@ def clear_feedback(request):
 def game_end(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     start_time_str = request.session.get('start_time')
+    correct = request.session.get('correct', 0)
+    incorrect = request.session.get('incorrect', 0)
 
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)
         total_time = (datetime.now() - start_time).total_seconds()
     else:
-        total_time = None  # Fallback if start_time isn't available
+        total_time = None
+        score = correct/(correct+incorrect)*100
+
 
     return render(request, 'cards/game_end.html', {
         'flashcard_set': flashcard_set,
         'total_time': total_time,
+        'score':score,
     })
 
 def edit_set(request, set_id):

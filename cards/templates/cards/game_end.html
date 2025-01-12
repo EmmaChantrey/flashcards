@@ -10,13 +10,12 @@
 </div>
 
 <div class="game-box">
-    Congratulations! You have completed the set.
     {% if total_time %}
-        <p>Total Time Taken: {{ total_time|floatformat:2 }} seconds</p>
+        <h1>Time taken: {{ total_time|floatformat:2 }} seconds</h1>
     {% else %}
-        <p>none match game played</p>
+        <h1>{{ score }}% correct!</h1>
     {% endif %}
-    <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Continue</a>
 </div>
 
 {% endblock %}
