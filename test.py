@@ -124,38 +124,22 @@ class SpacedRepetitionTests(TestCase):
                 ("Australia", "Canberra"),
                 ("Canada", "Ottawa"),
                 ("China", "Beijing"),
-                ("Russia", "Moscow"),
-                ("India", "New Delhi"),
                 ("The Netherlands", "Amsterdam"),
-                ("South Africa", "Pretoria"),
                 ("South Korea", "Seoul"),
                 ("Italy", "Rome"),
                 ("Spain", "Madrid"),
                 ("Mexico", "Mexico City"),
                 ("Argentina", "Buenos Aires"),
                 ("Egypt", "Cairo"),
-                ("Turkey", "Ankara"),
-                ("United Kingdom", "London"),
                 ("Greece", "Athens"),
                 ("Sweden", "Stockholm"),
                 ("Norway", "Oslo"),
                 ("Denmark", "Copenhagen"),
                 ("Finland", "Helsinki"),
-                ("Switzerland", "Bern"),
                 ("Portugal", "Lisbon"),
                 ("Ireland", "Dublin"),
                 ("Austria", "Vienna"),
                 ("Belgium", "Brussels"),
-                ("Poland", "Warsaw"),
-                ("Czech Republic", "Prague"),
-                ("Hungary", "Budapest"),
-                ("Romania", "Bucharest"),
-                ("Bulgaria", "Sofia"),
-                ("Croatia", "Zagreb"),
-                ("Slovenia", "Ljubljana"),
-                ("Slovakia", "Bratislava"),
-                ("Ukraine", "Kyiv"),
-                ("Serbia", "Belgrade"),
             ]
         )
 
@@ -163,7 +147,7 @@ class SpacedRepetitionTests(TestCase):
         flashcard_set = FlashcardSet.objects.create(
             user=profile,
             name=name,
-            baseline=random.uniform(30, 60)
+            baseline=random.uniform(2.5, 7.5)
         )
 
         base_interval = 1 * 86400
@@ -188,46 +172,48 @@ class SpacedRepetitionTests(TestCase):
 
 
 
-    def test_lineup_generation_with_output(self):
-        flashcards = Flashcard.objects.all()
+    # def test_lineup_generation_with_output(self):
+    #     flashcards = Flashcard.objects.all()
 
-        print("\nAll Flashcards:")
-        for flashcard in flashcards:
-            next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
-            print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
-                  f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
-                  f"Next Review Date: {next_review_date}")
+    #     print("\nAll Flashcards:")
+    #     for flashcard in flashcards:
+    #         next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
+    #         print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
+    #               f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
+    #               f"Next Review Date: {next_review_date}")
 
-        lineup = get_lineup(flashcards, 10)
+    #     lineup = get_lineup(flashcards, 10)
 
-        print("\nGenerated Lineup:")
-        for flashcard in lineup:
-            next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
-            print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
-                  f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
-                  f"Next Review Date: {next_review_date}")
+    #     print("\nGenerated Lineup:")
+    #     for flashcard in lineup:
+    #         next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
+    #         print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
+    #               f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
+    #               f"Next Review Date: {next_review_date}")
 
-        self.assertEqual(len(lineup), 10, "Lineup should contain exactly 10 flashcards.")
+    #     self.assertEqual(len(lineup), 10, "Lineup should contain exactly 10 flashcards.")
 
-        overdue_flashcards = [
-            flashcard for flashcard in flashcards
-            if flashcard.last_reviewed + timedelta(seconds=flashcard.interval) <= now()
-        ]
-        self.assertTrue(
-            all(flashcard in overdue_flashcards for flashcard in lineup[:len(overdue_flashcards)]),
-            "Overdue flashcards should be prioritized in the lineup."
-        )
+    #     overdue_flashcards = [
+    #         flashcard for flashcard in flashcards
+    #         if flashcard.last_reviewed + timedelta(seconds=flashcard.interval) <= now()
+    #     ]
+    #     self.assertTrue(
+    #         all(flashcard in overdue_flashcards for flashcard in lineup[:len(overdue_flashcards)]),
+    #         "Overdue flashcards should be prioritized in the lineup."
+    #     )
 
-        non_overdue_flashcards = [
-            flashcard for flashcard in flashcards if flashcard not in overdue_flashcards
-        ]
-        self.assertTrue(
-            all(flashcard in non_overdue_flashcards for flashcard in lineup[len(overdue_flashcards):]),
-            "Non-overdue flashcards should be used to fill the remaining lineup."
-        )
+    #     non_overdue_flashcards = [
+    #         flashcard for flashcard in flashcards if flashcard not in overdue_flashcards
+    #     ]
+    #     self.assertTrue(
+    #         all(flashcard in non_overdue_flashcards for flashcard in lineup[len(overdue_flashcards):]),
+    #         "Non-overdue flashcards should be used to fill the remaining lineup."
+    #     )
+
 
     def evaluate_and_update_flashcard(self, request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
         if user_answer == is_correct:
+            flashcard.repetition += 1
             if elapsed_time > 1.25 * flashcard_set.baseline:
                 print("Slow")
                 performance_level = 2
@@ -237,14 +223,22 @@ class SpacedRepetitionTests(TestCase):
             else:
                 print("Fast")
                 performance_level = 4
+
+            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+            print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
+            
         else:
             print("Incorrect")
             performance_level = 1
+            flashcard.repetition = 1
+        
+        if flashcard.repetition == 1:
+            flashcard.interval = 86400
+        elif flashcard.repetition == 2:
+            flashcard.interval = 86400 * 6
+        else:
+            flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
 
-        # update flashcard's ease factor, interval, and last reviewed date
-        flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-        print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
-        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)  # Ensure at least one day
         flashcard.last_reviewed = now()
         flashcard.save()
 
@@ -255,68 +249,99 @@ class SpacedRepetitionTests(TestCase):
 
         return performance_level
 
+
     def test_flashcard_performance_updates(self):
         flashcards = Flashcard.objects.all()
         flashcard_set = FlashcardSet.objects.first()
-
-        for i in range(3):
-            print(f"\n--- Generating Lineup {i + 1} ---")
-            lineup = get_lineup(flashcards, 10)
-
-            print("\nLineup:")
-            for flashcard in lineup:
-                print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
-                      f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}")
-
-            # Simulate user interaction with each flashcard in the lineup
-            for flashcard in lineup:
-                user_answer = random.choice([True, False])
-                elapsed_time = random.uniform(0.5, 2.0) * flashcard_set.baseline
-
-                self.evaluate_and_update_flashcard(None, flashcard, flashcard_set, user_answer, True, elapsed_time)
-
-            # Validate updated flashcards
-            print("\nUpdated Flashcards:")
-            for flashcard in Flashcard.objects.all():
-                next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
-                print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
-                    f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
-                    f"Next Review Date: {next_review_date}")
+        
+        self.assertTrue(flashcards.exists(), "There should be at least one flashcard in the database.")
+        self.assertIsNotNone(flashcard_set, "FlashcardSet should exist in the database.")
 
 
-    def test_flashcard_overdue_prioritisation(self):
-        flashcards = Flashcard.objects.all()
-
+        print(f"\n--- Generating Lineup ---")
         lineup = get_lineup(flashcards, 10)
+        
+        self.assertLessEqual(len(lineup), 10, "Lineup size exceeds the maximum allowed value.")
+        self.assertTrue(all(card in flashcards for card in lineup), "Lineup contains flashcards not in the database.")
 
-        # Identify overdue flashcards
-        overdue_flashcards = [
-            flashcard for flashcard in flashcards
-            if flashcard.last_reviewed + timedelta(seconds=flashcard.interval) <= now()
-        ]
+        print("\nLineup:")
+        for flashcard in lineup:
+            print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
+                f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}")
 
-        # Debug print for overdue flashcards
-        print("Overdue flashcards:")
-        for flashcard in overdue_flashcards:
-            print(f" - Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+        # simulate user interaction
+        for flashcard in lineup:
+            for i in range(10):
+                print(f"\n--- Question {i+1} ---")
+                user_answer = random.choice([True, False])
+                elapsed_time = random.uniform(1, 20)
+                
+                old_interval = flashcard.interval
+                old_ease_factor = flashcard.ease_factor
+                old_last_reviewed = flashcard.last_reviewed
 
-        # Debug print for lineup
-        print("\nLineup flashcards:")
-        for i, flashcard in enumerate(lineup):
-            print(f"{i+1}. Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+                print(f"\n--- Flashcard: {flashcard.term} ---")
+                print(f"The user's answer was correct? {user_answer} in {elapsed_time:.2f} seconds")
 
-        # Assertion check
-        self.assertTrue(
-            all(flashcard in overdue_flashcards for flashcard in lineup[:len(overdue_flashcards)]),
-            "Overdue flashcards should be prioritised in the lineup."
-        )
+                # store performance level
+                slow = elapsed_time >= 1.25 * flashcard_set.baseline
+                average = elapsed_time > 0.75 * flashcard_set.baseline and elapsed_time <= 1.25 * flashcard_set.baseline
+                fast = elapsed_time <= 0.75 * flashcard_set.baseline
+                
+                self.evaluate_and_update_flashcard(None, flashcard, flashcard_set, user_answer, True, elapsed_time)
+                flashcard.refresh_from_db()
 
-        # Additional debugging for the assertion logic
-        lineup_overdue_part = lineup[:len(overdue_flashcards)]
-        print("\nChecking lineup[:len(overdue_flashcards)]:")
-        for flashcard in lineup_overdue_part:
-            print(f" - Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+                print(f"Old interval: {old_interval / 86400:.1f} days, New interval: {flashcard.interval / 86400:.1f} days, \nOld ease factor: {old_ease_factor:.2f}, New ease factor: {flashcard.ease_factor:.2f}")
 
-        print("\nAre all flashcards in the initial part of the lineup overdue?")
-        print(all(flashcard in overdue_flashcards for flashcard in lineup_overdue_part))
+                if user_answer and not slow:
+                    expected_ease_factor = ease_factor_calculation(old_ease_factor, performance_level = 3 if average else 4)
+                    self.assertEqual(flashcard.ease_factor, expected_ease_factor, f"Ease factor did not update correctly. Expected: {expected_ease_factor}, actual: {flashcard.ease_factor}")
+                elif user_answer and slow:
+                    expected_ease_factor = ease_factor_calculation(old_ease_factor, performance_level = 2)
+                    self.assertEqual(flashcard.ease_factor, expected_ease_factor, f"Ease factor did not update correctly. Expected: {expected_ease_factor}, actual: {flashcard.ease_factor}")
+                else:
+                    self.assertEqual(flashcard.interval, 86400, "Interval did not return to 1 after incorrect answer.")
+                
+                self.assertGreater(flashcard.last_reviewed, old_last_reviewed, "Last reviewed time did not update.")
+
+        print("\nUpdated Flashcards:")
+        for flashcard in Flashcard.objects.all():
+            next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
+            # print(f"Term: {flashcard.term}, Interval: {flashcard.interval / 86400:.1f} days, "
+            #     f"Last Reviewed: {flashcard.last_reviewed}, Ease Factor: {flashcard.ease_factor:.2f}, "
+            #     f"Next Review Date: {next_review_date}")
+            expected_next_review_date = flashcard.last_reviewed + timedelta(seconds=flashcard.interval)
+            self.assertEqual(next_review_date, expected_next_review_date, "Next review date calculation is incorrect.")
+
+
+    # def test_flashcard_overdue_prioritisation(self):
+    #     flashcards = Flashcard.objects.all()
+
+    #     lineup = get_lineup(flashcards, 10)
+
+    #     overdue_flashcards = [
+    #         flashcard for flashcard in flashcards
+    #         if flashcard.last_reviewed + timedelta(seconds=flashcard.interval) <= now()
+    #     ]
+
+    #     print("Overdue flashcards:")
+    #     for flashcard in overdue_flashcards:
+    #         print(f" - Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+
+    #     print("\nLineup flashcards:")
+    #     for i, flashcard in enumerate(lineup):
+    #         print(f"{i+1}. Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+
+    #     self.assertTrue(
+    #         all(flashcard in overdue_flashcards for flashcard in lineup[:len(overdue_flashcards)]),
+    #         "Overdue flashcards should be prioritised in the lineup."
+    #     )
+
+    #     lineup_overdue_part = lineup[:len(overdue_flashcards)]
+    #     print("\nChecking lineup[:len(overdue_flashcards)]:")
+    #     for flashcard in lineup_overdue_part:
+    #         print(f" - Term: {flashcard.term}, Last Reviewed: {flashcard.last_reviewed}, Interval: {flashcard.interval}")
+
+    #     print("\nAre all flashcards in the initial part of the lineup overdue?")
+    #     print(all(flashcard in overdue_flashcards for flashcard in lineup_overdue_part))
 

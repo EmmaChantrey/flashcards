@@ -4,6 +4,7 @@
 
 from django.contrib.auth.models import User
 from django.db import models
+from math import ceil
 
 
 class Profile(models.Model):
@@ -32,10 +33,14 @@ class Flashcard(models.Model):
     interval = models.FloatField(default=86400)
     last_reviewed = models.DateTimeField(null=True, blank=True)
     ease_factor = models.FloatField(default=2.5)
-    streak = models.IntegerField(default=0)
+    repetition = models.IntegerField(default=1)
 
     def __str__(self):
         return self.term
+    
+    def save(self, *args, **kwargs):
+        self.interval = ceil(self.interval / 86400) * 86400
+        super().save(*args, **kwargs)
     
 
 class Badge(models.Model):
