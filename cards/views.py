@@ -20,6 +20,8 @@ from django import forms
 from .models import FlashcardSet, Flashcard, Badge
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from django.views.generic import (
     ListView,
@@ -47,6 +49,12 @@ def signup(request):
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already registered.")
+            return redirect('signup')
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            messages.error(request, e.messages[0])
             return redirect('signup')
 
         if password != confirm_password:
