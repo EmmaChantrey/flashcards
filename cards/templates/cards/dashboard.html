@@ -25,7 +25,7 @@
 
 <div class="dashboard">
 
-    <div class="flashcard-sidebar">
+    <div class="flashcard-sidebar large-device">
         <div class="flashcard-nav-header">
             <div class="flashcard-nav-title">
                 <h2>Flashcard Sets</h2>
@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <div class="badge-shop">
+    <div class="badge-shop large-device">
         <div class="header">
             <h2>BrainBucks Badge Shop</h2>
             <div class="brainbucks">{{ brainbucks }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img"></div>
@@ -60,12 +60,6 @@
         <div class="scrollbox">
             <div class="study-grid">
                 {% for badge in badges %}
-                    <!-- <div class="badge-title">
-                        {{ badge.name }}
-                    </div>
-                    <div class="badge-description">
-                        {{ badge.description }}
-                    </div> -->
                     <div class="badge-box">
                         <div class="badge-image">
                             <img src="{% static badge.image %}" alt="{{ badge.name }}">
@@ -84,6 +78,23 @@
             </div>
         </div> 
     </div>
+
+    <div class="small-device">
+        <div class="option-box">
+            <a href="{% url 'flashcard_sidebar' %}" class="study-option">
+                <img src="{% static 'images/flashcards.png' %}" alt="Flashcards">
+            </a>
+            Flashcards
+        </div>
+        <div class="option-box">
+            <a href="{% url 'badge_shop' %}" class="study-option">
+                <img src="{% static 'images/badgeshop.png' %}" alt="Badge Shop">
+            </a>
+            Badge Shop
+        </div>
+    </div>
+
+
 </div>
 
 <script>
