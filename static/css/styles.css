@@ -4,7 +4,7 @@ body {
 
 h1 {
     font-size: 2.5rem;
-    margin-left: 20px;
+    margin-left: 2rem;
     color: #023047;
 }
 
@@ -12,7 +12,7 @@ h1 {
     color: #000000;
     text-align: left;
     display: block;
-    margin: 10px;
+    margin: 1rem;
 }
 
 
@@ -23,7 +23,7 @@ h1 {
     width: 100%;
     background-color: #ffffff;
     color: #000000;
-    padding: 10px 10px;
+    padding: 1rem 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -32,22 +32,91 @@ h1 {
     height: auto;
 }
 
+header {
+    width: 100%;
+}
+
 header nav {
     display: flex;
-    gap: 15px;
-    margin-right: 20px;
+    gap: 1rem;
+    margin-right: 2rem;
 }
 
 header nav a {
     display: inline-block;
-    padding: 10px 20px;
-    margin-top: 10px;
+    padding: 1rem 2rem;
+    margin-top: 1rem;
     color: #000000;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 1rem;
     border-radius: 5px;
     text-align: center;
 }
+
+#menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+    
+
+@media (max-width: 600px) {
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+        position: relative;
+    }
+
+    .header-logo {
+        max-width: 150px;
+    }
+
+    header nav {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 20%;
+        margin-right: 0;
+    }
+
+    header nav a {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        text-align: center;
+        width: 20%;
+    }
+
+    #menu-toggle {
+        display: block;
+        color: #000000;
+    }
+
+    #nav-menu {
+        display: none;
+        position: absolute;
+        align-items: center;
+        z-index: 10;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 70%;
+        background-color: #ffffff;
+        opacity: 0.9;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        top: 100%;
+        right: 0;
+    }
+
+    #nav-menu.show {
+        display: flex;
+    }
+}
+
+
 
 
 .landing-container {
@@ -67,8 +136,8 @@ header nav a {
 
 .loginbtn {
     display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
+    margin: 1rem;
+    padding: 1rem 2rem;
     background-color: #023047;
     opacity: 0.75;
     color: #fff;
@@ -81,8 +150,8 @@ header nav a {
 
 .signupbtn {
     display: inline-block;
-    margin: 10px;
-    padding: 10px 20px;
+    margin: 1rem;
+    padding: 1rem 2rem;
     background-color: #023047;
     color: #fff;
     font-weight: bold;
@@ -95,7 +164,7 @@ header nav a {
 .createsetbtn {
     display: flex;
     justify-content: right;
-    padding: 10px 20px;
+    padding: 1rem 2rem;
     background-color: #023047;
     color: #fff;
     font-weight: bold;
@@ -104,8 +173,8 @@ header nav a {
     text-align: center;
     box-shadow: #000000 0px 0px 5px;
     float: right;
-    margin-right: 10px;
-    margin-top: 5px;
+    margin-right: 1rem;
+    margin-top: 0.5rem;
 }
 
 .createsetbtn:hover {
@@ -117,9 +186,9 @@ header nav a {
 }
 
 .login-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
+    max-width: 40rem;
+    margin: 5rem auto;
+    padding: 2rem;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -127,7 +196,7 @@ header nav a {
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
 input[type="text"],
@@ -135,7 +204,7 @@ input[type="password"],
 input[type="email"],
 textarea {
     width: 100%;
-    padding: 20px;
+    padding: 2rem;
     font-size: 100%;
     box-sizing: border-box;
     border-radius: 5px;
@@ -146,7 +215,7 @@ textarea {
 button {
     display: inline-block;
     font-weight: bold;
-    padding: 10px;
+    padding: 1rem;
     background-color: #023047;
     color: #fff;
     border: none;
@@ -159,12 +228,9 @@ button:hover {
 }
 
 .signup-container {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 20px;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
+    width: 50%;
+    padding: 2rem;
+    align-self: center;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
@@ -172,32 +238,33 @@ button:hover {
 }
 
 .signup-container h2 {
-    margin-bottom: 20px;
+    margin-bottom: 2rem;
 }
 
 .signup-container .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
 }
 
 .signup-container label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.5rem;
 }
 
 .signup-container input[type="text"],
 .signup-container input[type="email"],
 .signup-container input[type="password"] {
     width: 100%;
-    padding: 8px;
+    padding: 0.8rem;
     box-sizing: border-box;
-    margin-bottom: 10px;
+    margin-bottom: 1rem;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
 .signup-container button {
     width: 100%;
-    padding: 10px;
+    padding: 1rem;
+    font-size: 1rem;
     background-color: #023047;
     color: #fff;
     border: none;
@@ -226,14 +293,14 @@ button:hover {
     width: 55%;
     display: flex;
     flex-direction: column;
-    min-width: 450px;
+    min-width: 27rem;
 }
 
 .scrollbox {
     width: 100%;
-    height: 750px;
-    padding: 30px;
-    margin-top: 20px;
+    height: 42rem;
+    padding: 3rem;
+    margin-top: 2rem;
     overflow-y: auto;
     border: 2px solid #00000043;
     border-radius: 8px;
@@ -496,7 +563,7 @@ input[type="radio"]:checked + label.custom-radio {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px;
+    padding: 1rem;
 }
 
 .badge-box {
@@ -525,15 +592,15 @@ input[type="radio"]:checked + label.custom-radio {
 
 .flashcard-nav-buttons {
     display: flex;
-    gap: 10px;
+    gap: 1rem;
     float: right;
     width: 30%;
     justify-content: right;
-    margin: 10px;
+    margin: 1rem;
 }
 
 .flashcard-img {
-    max-width: 45px;
+    max-width: 4rem;
     height: auto;
     display: block;
     float: left;
@@ -717,8 +784,9 @@ input[type="radio"]:checked + label.custom-radio {
 
 .dashboard {
     display: flex;
-    gap: 100px;
-    padding: 20px;
+    gap: 8rem;
+    padding: 2rem;
+    justify-content: center;
 }
 
 .create-form {
@@ -749,16 +817,16 @@ input[type="radio"]:checked + label.custom-radio {
 .study-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px;
+    gap: 2rem;
+    padding: 2rem;
     height: 95%
 }
 
 .study-option img {
-    width: 125px;
+    width: 12rem;
     height: auto;
     display: block;
-    margin-bottom: 15px;
+    margin-bottom: 1rem;
 }
 
 .option-box {
@@ -767,7 +835,7 @@ input[type="radio"]:checked + label.custom-radio {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 2rem;
     border: 2px solid #00000043;
     border-radius: 8px;
     background-color: #ffffff;
