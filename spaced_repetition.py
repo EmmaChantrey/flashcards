@@ -30,10 +30,17 @@ def select_flashcard_set(profile):
 
 def get_overdue_flashcards(flashcards):
     overdue_flashcards = []
+    max_interval = 31536000
 
     for flashcard in flashcards:
         last_reviewed = flashcard.last_reviewed or now()
-        next_review_date = last_reviewed + timedelta(seconds=flashcard.interval)
+        interval = min(flashcard.interval, max_interval)
+        try:
+            next_review_date = last_reviewed + timedelta(seconds=interval)
+        except OverflowError:
+            print(f"OverflowError: Flashcard ID {flashcard.id} has an invalid interval: {flashcard.interval}")
+            continue
+        
         if next_review_date <= now():
             overdue_flashcards.append((flashcard, next_review_date))
 
@@ -42,17 +49,17 @@ def get_overdue_flashcards(flashcards):
     return [flashcard for flashcard, _ in overdue_flashcards]
 
 
-def get_lineup(flashcards):
+def get_lineup(flashcards, number):
     lineup = []
     overdue_flashcards = get_overdue_flashcards(flashcards)
-    lineup.extend(overdue_flashcards[:10])
+    lineup.extend(overdue_flashcards[:number])
     
-    while(len(lineup) < 10):
+    while(len(lineup) < number):
         non_overdue_flashcards = [
             card for card in flashcards if card not in overdue_flashcards
         ]
         
-        additional_cards_needed = 10 - len(lineup)
+        additional_cards_needed = number - len(lineup)
         random_additional_cards = random.sample(
             non_overdue_flashcards, 
             min(additional_cards_needed, len(non_overdue_flashcards))
@@ -118,7 +125,7 @@ def quiz_user(flashcard_set):
 
 
 def ease_factor_calculation(ease_factor, performance_level):
-    return ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02))
+    return max(ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02)), 0)
 
 def main():
     username = input("Enter your username: ")

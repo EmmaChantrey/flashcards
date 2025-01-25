@@ -93,6 +93,8 @@ header nav a {
 }
 
 .createsetbtn {
+    display: flex;
+    justify-content: right;
     padding: 10px 20px;
     background-color: #023047;
     color: #fff;
@@ -244,12 +246,12 @@ button:hover {
     flex-direction: column;
     align-items: center;
     margin-bottom: 25px;
-    padding: 15px;
+    padding: 30px;
     border: 2px solid #00000043;
     border-radius: 8px;
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 90%;
+    width: 100%;
     height: 750px;
     box-sizing: border-box;
 }
@@ -262,6 +264,75 @@ button:hover {
     transform: scale(1.05);
 }
 
+.check-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 15%;
+    font-weight: bold;
+    padding: 10px 40px;
+    background-color: #023047;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    box-sizing: border-box;
+    text-align: center;
+    margin: auto;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.check-button:hover {
+    transform: scale(1.05);
+}
+
+.check-button.hidden {
+    display: none;
+}
+
+button:disabled {
+    background-color: #ccc;
+    color: #666;          
+    cursor: not-allowed;
+    border: 1px solid #aaa;
+}
+
+button.disabled {
+    opacity: 0.6;
+}
+
+
+input[type="radio"] {
+    display: none;
+}
+
+.custom-radio {
+    display: block;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="radio"]:checked + label.custom-radio {
+    background-color: #023047;
+    color: white;
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.custom-radio:hover {
+    border-color: #023047;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+
 .game-footer {
     display: flex;
     justify-content: space-between;
@@ -270,6 +341,103 @@ button:hover {
     width: 50%;
     box-sizing: border-box;
 }
+
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 25px;
+    overflow: hidden;
+    position: relative;
+    height: 20px;
+    margin: 20px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 5%;
+    background-color: #023047;
+    transition: width 0.3s ease;
+}
+
+#progress-percentage {
+    display: none;
+}
+
+
+.feedback-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 1000;
+    background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-bar.hidden {
+    display: none;
+}
+
+.next-button {
+    background-color: #023047;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.next-button:hover {
+    opacity: 0.75;
+}
+
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20%, 1fr));
+    gap: 30px;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.grid-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.grid-item:hover {
+    transform: scale(1.05);
+} 
+
+.grid-item.selected {
+    background-color: #023047;
+    color: white;
+    border-color: #023047;
+}
+
+.grid-item.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
 
 .question-container {
     display: flex;
@@ -284,6 +452,22 @@ button:hover {
     height: 200px;
     box-sizing: border-box;
 }
+
+.blank {
+    display: inline-block;
+    justify-content: center;
+    align-items: center;
+    padding: 2px !important;
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 2px solid black;
+    border-radius: 0px !important;
+    width: auto;
+    max-width: 150px;
+    height: auto;
+    text-align: center;
+}
+
 
 .flashcard {
     display: flex;
@@ -300,6 +484,12 @@ button:hover {
     box-sizing: border-box;
 }
 
+
+.badge-shop {
+    float: right;
+    width: 35%;
+}
+
 .badge-shop .header,
 .flashcard-nav-header {
     width: 100%;
@@ -307,6 +497,24 @@ button:hover {
     align-items: center;
     justify-content: space-between;
     padding: 10px;
+}
+
+.badge-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    gap: 10px;
+}
+
+.brainbucks {
+    font-weight: bold;
+    font-size: medium;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .flashcard-nav-title{
@@ -320,7 +528,8 @@ button:hover {
     gap: 10px;
     float: right;
     width: 30%;
-    justify-content: center;
+    justify-content: right;
+    margin: 10px;
 }
 
 .flashcard-img {
@@ -505,11 +714,6 @@ button:hover {
     opacity: 0.5;
 } */
 
-
-.badge-shop {
-    float: right;
-    width: 30%;
-}
 
 .dashboard {
     display: flex;

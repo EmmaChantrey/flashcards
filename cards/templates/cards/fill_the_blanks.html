@@ -1,0 +1,51 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Fill the Blanks: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Fill the Blanks</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="game-box">
+    <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
+        {% csrf_token %}
+            <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
+            <h2><strong>Definition:</strong> 
+                {{ flashcard.blanked_definition|safe }}
+            </h2>
+
+            <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
+            <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
+        <button type="submit" class="check-button">Check</button>
+    </form>
+</div>
+<div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+</div>
+<div class="progress-info">
+    <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const startTime = Date.now();
+
+        // updates elapsed time in hidden input before form submission
+        const form = document.querySelector('form');
+        form.addEventListener('submit', () => {
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            document.getElementById('elapsed_time').value = elapsedTime;
+        });
+
+
+        const percentage = parseFloat("{{ progress_percentage|default:0 }}");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = percentage + '%';
+    });
+</script>
+{% endblock %}

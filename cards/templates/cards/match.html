@@ -1,0 +1,114 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Match: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Match</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
+<div class="game-box">
+    <div class="grid-container">
+        {% for item in items %}
+            <div class="grid-item" id="{{ item.id }}" tabindex="0">
+                {{ item.value }}
+            </div>
+        {% endfor %}
+    </div>
+    <a href="{% url 'game_end' flashcard_set.id %}" style="display: none;" class="check-button">Next</a>
+</div>
+
+
+
+<script>
+    // Passing 'items' from Django context into JavaScript
+    const items = {{ items|safe }};
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const gridItems = document.querySelectorAll('.grid-item');
+        const nextButtonContainer = document.querySelector('.check-button');
+        let selectedItems = [];
+        let gameStartTime = Date.now(); // Track start time for elapsed time
+
+        gridItems.forEach(item => {
+            item.addEventListener('click', () => handleSelection(item));
+
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    handleSelection(item);
+                }
+            });
+        });
+
+        function handleSelection(item) {
+            // Toggle selection state
+            if (item.classList.contains('selected')) {
+                item.classList.remove('selected');
+                selectedItems = selectedItems.filter(el => el !== item);
+            } else {
+                item.classList.add('selected');
+                selectedItems.push(item);
+            }
+
+            if (selectedItems.length === 1) {
+                startTime = Date.now();
+            }
+
+            // If two items are selected, check for a match
+            if (selectedItems.length === 2) {
+                const [first, second] = selectedItems;
+
+                const firstFlashcard = getFlashcardById(first.id);
+                const secondFlashcard = getFlashcardById(second.id);
+                const isMatch = firstFlashcard.id === secondFlashcard.id; // Check if the items match
+
+                if (isMatch) {
+                    first.classList.add('hidden');
+                    second.classList.add('hidden');
+                    console.log(`Matched: ${first.textContent} and ${second.textContent}`);
+                    
+                } else {
+                    console.log(`No match: ${first.textContent} and ${second.textContent}`);
+                }
+
+                const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+                console.log('Elapsed time:', elapsedTime);
+
+                // Call the evaluate function with the selected items' data
+                evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime);
+
+                // Reset selection state after delay
+                setTimeout(() => {
+                    selectedItems.forEach(el => el.classList.remove('selected'));
+                    selectedItems = [];
+                }, 1000);
+            }
+
+            // Check if all items are matched
+            if ([...gridItems].every(item => item.classList.contains('hidden'))) {
+                nextButtonContainer.style.display = 'block'; // Show the "Next" button
+                const gameEndTime = Math.round((Date.now() - startTime) / 1000);
+            }
+        }
+
+        function getFlashcardById(id) {
+            return items.find(item => item.id == id); // Find flashcard by ID
+        }
+
+        function evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime) {
+            const isCorrect = isMatch ? 'true' : 'false';  // True if matched, False if not
+            const url = `{% url 'evaluate_match' flashcard_set.id %}?first_id=${firstFlashcard.id}&second_id=${secondFlashcard.id}&is_correct=${isCorrect}&time=${elapsedTime}`;
+            fetch(url) 
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Match evaluation result:', data);
+                });
+        }
+    });
+</script>
+
+{% endblock %}

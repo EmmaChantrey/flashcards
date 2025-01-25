@@ -1,0 +1,79 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<div class="about-container">
+    <div class="about-header">
+        <h1>About BrainSpace</h1>
+    </div>
+    <div class="about-content">
+        <p>
+            Welcome to <strong>BrainSpace</strong> - a free, fun flashcard tool for optimised learning. 
+            Whether you're revising for exams, learning a new language, or preparing for the next pub quiz, BrainSpace is here to help you achieve your goals.
+        </p>
+
+        <h2>Our Mission</h2>
+        <p>
+            We believe that learning should be engaging and adaptable to suit individual needs, and we strive to empower students with the tools they need to succeed.
+            BrainSpace has been designed with accessibility in mind, with an entirely keyboard-friendly interface, no time pressure on users, and a colour scheme suitable
+            for those with visual impairments. Additionally, the platform is completely free to use, with no ads or hidden costs.
+        </p>
+
+        <h2>Key Features</h2>
+        <ul>
+            <li><strong>Spaced Repetition:</strong> Learn smarter with scientifically proven methods to retain information longer.</li>
+            <li><strong>Gamification:</strong> Stay motivated with points and share your badge collection with friends!</li>
+            <li><strong>Customisable Flashcards:</strong> Create, edit, and organise flashcard sets tailored to your needs.</li>
+        </ul>
+
+        <h2>Privacy Policy</h2>
+        <p>
+            We collect your email address only to create and manage your account, enable
+            login, and send account-related notifications like password resets. Your email is securely stored and
+            never shared with third parties. If you delete your account, your data will be permanently deleted.
+        </p>
+    </div>
+</div>
+
+<style>
+    .about-container {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        font-family: Arial, sans-serif;
+        color: #333;
+        line-height: 1.6;
+    }
+    .about-header h1 {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    .about-content h2 {
+        font-size: 1.8rem;
+        margin-top: 1.5rem;
+        color: #023047;
+    }
+    .about-content p {
+        margin: 1rem 0;
+    }
+    .about-content ul {
+        margin: 1rem 0;
+        padding-left: 1.5rem;
+    }
+    .about-content ul li {
+        margin-bottom: 0.5rem;
+    }
+    .about-content a {
+        color: #023047;
+        text-decoration: none;
+    }
+    .about-content a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+{% endblock %}

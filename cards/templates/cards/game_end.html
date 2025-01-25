@@ -1,0 +1,21 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Finish: {{ flashcard_set.name }}{% endblock %}
+{% block content %}
+{% load static %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>Finish!</h1>
+    </div>
+</div>
+
+<div class="game-box">
+    {% if total_time %}
+        <h1>Time taken: {{ total_time|floatformat:2 }} seconds</h1>
+    {% else %}
+        <h1>{{ score }}% correct!</h1>
+    {% endif %}
+    <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Continue</a>
+</div>
+
+{% endblock %}
