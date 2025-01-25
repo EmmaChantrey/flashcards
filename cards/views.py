@@ -455,14 +455,17 @@ def fill_the_blanks_check(request, set_id):
     elapsed_time = int(request.POST.get('elapsed_time', 0))
 
     # evaluate the user's answer and update the flashcard
-    is_correct = user_answer.lower() == correct_answer.lower()
+    correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
+    is_correct = correctness <= 1
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     current_index += 1
     request.session['current_index'] = current_index
 
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
+    feedback_message = ("Correct!" if correctness == 0  
+    else f"Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
+    else f"Incorrect. The correct answer is '{correct_answer}'.")
 
     return JsonResponse({
         'is_correct': is_correct,
