@@ -25,14 +25,13 @@
 
 
 <script>
-    // Passing 'items' from Django context into JavaScript
     const items = {{ items|safe }};
     
     document.addEventListener('DOMContentLoaded', () => {
         const gridItems = document.querySelectorAll('.grid-item');
         const nextButtonContainer = document.querySelector('.check-button');
         let selectedItems = [];
-        let gameStartTime = Date.now(); // Track start time for elapsed time
+        let gameStartTime = Date.now();
 
         gridItems.forEach(item => {
             item.addEventListener('click', () => handleSelection(item));
@@ -45,7 +44,6 @@
         });
 
         function handleSelection(item) {
-            // Toggle selection state
             if (item.classList.contains('selected')) {
                 item.classList.remove('selected');
                 selectedItems = selectedItems.filter(el => el !== item);
@@ -58,13 +56,12 @@
                 startTime = Date.now();
             }
 
-            // If two items are selected, check for a match
             if (selectedItems.length === 2) {
                 const [first, second] = selectedItems;
 
                 const firstFlashcard = getFlashcardById(first.id);
                 const secondFlashcard = getFlashcardById(second.id);
-                const isMatch = firstFlashcard.id === secondFlashcard.id; // Check if the items match
+                const isMatch = firstFlashcard.id === secondFlashcard.id;
 
                 if (isMatch) {
                     first.classList.add('hidden');
@@ -78,29 +75,26 @@
                 const elapsedTime = Math.round((Date.now() - startTime) / 1000);
                 console.log('Elapsed time:', elapsedTime);
 
-                // Call the evaluate function with the selected items' data
                 evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime);
 
-                // Reset selection state after delay
                 setTimeout(() => {
                     selectedItems.forEach(el => el.classList.remove('selected'));
                     selectedItems = [];
                 }, 1000);
             }
 
-            // Check if all items are matched
             if ([...gridItems].every(item => item.classList.contains('hidden'))) {
-                nextButtonContainer.style.display = 'block'; // Show the "Next" button
+                nextButtonContainer.style.display = 'block';
                 const gameEndTime = Math.round((Date.now() - startTime) / 1000);
             }
         }
 
         function getFlashcardById(id) {
-            return items.find(item => item.id == id); // Find flashcard by ID
+            return items.find(item => item.id == id);
         }
 
         function evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime) {
-            const isCorrect = isMatch ? 'true' : 'false';  // True if matched, False if not
+            const isCorrect = isMatch ? 'true' : 'false';
             const url = `{% url 'evaluate_match' flashcard_set.id %}?first_id=${firstFlashcard.id}&second_id=${secondFlashcard.id}&is_correct=${isCorrect}&time=${elapsedTime}`;
             fetch(url) 
                 .then(response => response.json())

@@ -33,16 +33,16 @@
             </div>
             <a href="{% url 'create' %}" class="createsetbtn">Create Set</a>
         </div>
-        <div class="scrollbox">
+        <div class="scrollbox" tabindex="0">
             {% for set in flashcard_sets %}
             <div class="flashcard-box">
                 <div class="flashcard-title">{{ set.name }}</div>
                 <div class="flashcard-buttons">
-                    <a href="{% url 'study' set.id %}" class="button">Study</a>
-                    <a href="{% url 'edit' set.id %}" class="button">Edit</a>
+                    <a href="{% url 'study' set.id %}" class="button" tabindex="0">Study</a>
+                    <a href="{% url 'edit' set.id %}" class="button" tabindex="0">Edit</a>
                     <form action="{% url 'delete' set.id %}" method="post" class="delete-set-form" onsubmit="return confirmDelete();">
                         {% csrf_token %}
-                        <button type="submit">Delete</button>
+                        <button type="submit"  tabindex="0">Delete</button>
                     </form>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                         <div class="badge-buttons">
                             <form action="" method="post" class="purchase-badge-form">
                                 {% csrf_token %}
-                                <button type="submit" class="brainbucks">{{ badge.price }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks"></button>
+                                <button type="submit" class="brainbucks" tabindex="0">{{ badge.price }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks"></button>
                             </form>
                         </div>
                     </div>

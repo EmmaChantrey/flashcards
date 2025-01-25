@@ -22,6 +22,14 @@ from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+import nltk
+nltk.download('punkt_tab')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+nltk.download('stopwords')
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from django.views.generic import (
     ListView,
@@ -318,19 +326,67 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     return performance_level
 
 
-def create_blank_definition(definition):
-    words = definition.split()
+def preprocess_text(text):
+    # Tokenize and preprocess the text
+    tokens = word_tokenize(text.lower())
+    stop_words = set(stopwords.words('english'))
+    words = [word for word in tokens if word.isalnum() and word not in stop_words]
+    return " ".join(words), words
 
-    # randomly select a word or small phrase
-    start_index = random.randint(0, len(words) - 1)
-    end_index = min(start_index + random.randint(1, 2), len(words))
-    blanked_phrase = " ".join(words[start_index:end_index])
+def calculate_tfidf_within_set(definitions):
+    # Compute TF-IDF scores for definitions within a set
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(definitions)
+    feature_names = vectorizer.get_feature_names_out()
+    return tfidf_matrix, feature_names, vectorizer
+
+def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
+    # Preprocess the definition
+    preprocessed_definition, words = preprocess_text(definition)
+    word_scores = {}
     
-    # replace the phrase with an HTML input field
-    words[start_index:end_index] = [f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />']
+    # Get TF-IDF scores for words in the current definition
+    if preprocessed_definition:
+        definition_vector = vectorizer.transform([preprocessed_definition])
+        for word in words:
+            if word in feature_names:
+                idx = vectorizer.vocabulary_.get(word)
+                word_scores[word] = definition_vector[0, idx]
+    
+    # Select the word with the highest TF-IDF score
+    if word_scores:
+        return max(word_scores, key=word_scores.get)
+    else:
+        # Fallback: Random word selection if no scores
+        return random.choice(words)
+
+
+def create_blank_definition_within_set(flashcard, flashcard_set):
+    import random
+    
+    # Get all definitions within the set
+    definitions = [card.definition for card in flashcard_set.flashcards.all()]
+    
+    # Preprocess corpus and calculate TF-IDF
+    preprocessed_corpus = [preprocess_text(defn)[0] for defn in definitions]
+    tfidf_matrix, feature_names, vectorizer = calculate_tfidf_within_set(preprocessed_corpus)
+    
+    # Select the word to blank
+    blanked_word = select_word_to_blank(flashcard.definition, tfidf_matrix, feature_names, vectorizer)
+    
+    # Split the definition into words
+    words = flashcard.definition.split()
+    
+    # Ensure that at least one word is blanked
+    if blanked_word not in words:
+        blanked_word = random.choice(words)  # Fallback: randomly select a word to blank
+    
+    # Replace the blanked word with an HTML input field
+    index = words.index(blanked_word)
+    words[index] = f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />'
+    
     blanked_definition = " ".join(words)
-    
-    return blanked_definition, blanked_phrase
+    return blanked_definition, blanked_word
 
 
 def setup_fill_the_blanks(request, set_id):
@@ -342,7 +398,7 @@ def setup_fill_the_blanks(request, set_id):
     # process each flashcard to create blanks in definitions
     blanked_flashcards = []
     for card in new_lineup:
-        blanked_definition, blanked_phrase = create_blank_definition(card.definition)
+        blanked_definition, blanked_phrase = create_blank_definition_within_set(card, flashcard_set)
         blanked_flashcards.append({
             'id': card.id,
             'term': card.term,
@@ -369,7 +425,7 @@ def fill_the_blanks(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=set_id)
     
     # get current flashcard details
     current_flashcard = lineup[current_index]
@@ -405,10 +461,14 @@ def fill_the_blanks_check(request, set_id):
     current_index += 1
     request.session['current_index'] = current_index
 
-    if current_index >= len(lineup):
-        return redirect('game_end', set_id=flashcard_set.id)
+    progress_percentage = (request.session['current_index'] / len(lineup)) * 100
+    feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
 
-    return redirect('fill_the_blanks', set_id=set_id)
+    return JsonResponse({
+        'is_correct': is_correct,
+        'feedback_message': feedback_message,
+        'progress_percentage': progress_percentage,
+    })
 
 
 
