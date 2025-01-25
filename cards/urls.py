@@ -16,6 +16,10 @@ urlpatterns = [
 
     path('dashboard/', views.dashboard, name='dashboard'),
 
+    path('flashcard_sidebar/', views.flashcard_sidebar, name='flashcard_sidebar'),
+    
+    path('badge_shop/', views.badge_shop, name='badge_shop'),
+
     path('logout/', user_logout, name='logout'),
 
     path('create/', views.create, name='create'),

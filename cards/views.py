@@ -102,6 +102,16 @@ def dashboard(request):
     })
 
 
+def flashcard_sidebar(request):
+    flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
+    return render(request, 'cards/flashcard_sidebar.html', {'flashcard_sets': flashcard_sets})
+
+def badge_shop(request):
+    badges = Badge.objects.all()
+    brainbucks = request.user.profile.brainbucks
+    return render(request, 'cards/badge_shop.html', {'badges': badges, 'brainbucks': brainbucks})
+
+
 @login_required
 def user_logout(request):
     logout(request)

@@ -1,0 +1,32 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Flashcard Sets{% endblock %}
+{% block content %}
+{% load static %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h2>Flashcard Sets</h2>
+        <img src="{% static 'images/flashcard.png' %}" alt="flashcard" class="flashcard-img">
+    </div>
+    <a href="{% url 'create' %}" class="createsetbtn">Create Set</a>
+    <a href="{% url 'dashboard' %}" class="loginbtn">Back</a>
+</div>
+<div class="scrollbox">
+    {% for set in flashcard_sets %}
+    <div class="flashcard-box">
+        <div class="flashcard-title">{{ set.name }}</div>
+        <div class="flashcard-buttons">
+            <a href="{% url 'study' set.id %}" class="button">Study</a>
+            <a href="{% url 'edit' set.id %}" class="button">Edit</a>
+            <form action="{% url 'delete' set.id %}" method="post" class="delete-set-form" onsubmit="return confirmDelete();">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <p>You have no flashcard sets yet! Click above to make your first.</p>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}BrainBucks Badge Shop{% endblock %}
+{% block content %}
+{% load static %}
+
+    <div class="header">
+        <h2>BrainBucks Badge Shop</h2>
+        <div class="brainbucks">{{ brainbucks }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img"></div>
+    </div>
+
+        <div class="study-grid">
+            {% for badge in badges %}
+                <div class="badge-box">
+                    <div class="badge-image">
+                        <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                    </div>
+                    <div class="badge-buttons">
+                        <form action="" method="post" class="purchase-badge-form">
+                            {% csrf_token %}
+                            <button type="submit" class="brainbucks">{{ badge.price }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks"></button>
+                        </form>
+                    </div>
+                </div>
+
+            {% empty %}
+            <p>No badges found.</p>
+            {% endfor %}
+</div>
+{% endblock %}
