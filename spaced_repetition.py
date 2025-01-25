@@ -95,11 +95,12 @@ def quiz_user(flashcard_set):
 
         if user_definition.strip().lower() == flashcard.definition.strip().lower():
             print("Correct!")
+            flashcard.repetition += 1
             if time_taken > 1.25 * flashcard_set.baseline:
                 print("Performance level 2: Slow")
                 # decrease ease factor
                 flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 2)
-            elif time_taken > 0.75*flashcard_set.baseline and time_taken <= 1.25*flashcard_set.baseline:
+            elif time_taken > 0.75 * flashcard_set.baseline and time_taken <= 1.25 * flashcard_set.baseline:
                 print("Performance level 3: Average")
                 # keep ease factor the same
                 flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 3)
@@ -110,11 +111,18 @@ def quiz_user(flashcard_set):
         else:
             print(f"Incorrect. The correct definition is: {flashcard.definition}")
             # assuming incorrect, not skipped
-            flashcard.ease_factor =  ease_factor_calculation(flashcard.ease_factor, 1)
+            flashcard.repetition = 1
 
         print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
         flashcard.last_reviewed = now()
-        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+
+        if flashcard.repetition == 1:
+            flashcard.interval = 86400
+        elif flashcard.repetition == 2:
+            flashcard.interval = 86400 * 6
+        else:
+            flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+
         flashcard.save()
 
     if num_questions > 0:
@@ -125,7 +133,7 @@ def quiz_user(flashcard_set):
 
 
 def ease_factor_calculation(ease_factor, performance_level):
-    return max(ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02)), 0)
+    return max(ease_factor + (0.1 - (4 - performance_level) * (0.08 + (4 - performance_level) * 0.02)), 1.3)
 
 def main():
     username = input("Enter your username: ")

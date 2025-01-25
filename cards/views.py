@@ -20,6 +20,8 @@ from django import forms
 from .models import FlashcardSet, Flashcard, Badge
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from django.views.generic import (
     ListView,
@@ -32,6 +34,7 @@ def landing_page(request):
 
 def about(request):
     return render(request, 'cards/about.html')
+
 
 def signup(request):
     if request.method == 'POST':
@@ -46,6 +49,12 @@ def signup(request):
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email is already registered.")
+            return redirect('signup')
+
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            messages.error(request, e.messages[0])
             return redirect('signup')
 
         if password != confirm_password:
@@ -260,6 +269,8 @@ def true_false_check(request, set_id):
 def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
     if user_answer == is_correct:
         request.session['correct'] += 1
+        flashcard.repetition += 1
+
         if elapsed_time > 1.25 * flashcard_set.baseline:
             print("Slow")
             performance_level = 2
@@ -269,15 +280,23 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
         else:
             print("Fast")
             performance_level = 4
+
+        flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+        print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
+    
     else:
         request.session['incorrect'] += 1
         print("Incorrect")
         performance_level = 1
+        flashcard.repetition = 1
+    
+    if flashcard.repetition == 1:
+        flashcard.interval = 86400
+    elif flashcard.repetition == 2:
+        flashcard.interval = 86400 * 6
+    else:
+        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
 
-    # update flashcard's ease factor, interval, and last reviewed date
-    flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-    print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
-    flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)  # Ensure at least one day
     flashcard.last_reviewed = now()
     flashcard.save()
 
