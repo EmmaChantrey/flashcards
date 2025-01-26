@@ -15,6 +15,10 @@
     {% else %}
         <h1>{{ score }}% correct!</h1>
     {% endif %}
+    <h1>{{ brainbuck_reward | floatformat:0 }} 
+        <div class="brainbucks">{{ brainbucks }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img"></div>
+        earned
+    </h1>
     <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Continue</a>
 </div>
 

@@ -664,16 +664,10 @@ input[type="radio"]:checked + label.custom-radio {
     gap: 10px;
 }
 
-.badge-box img {
-    width: 12rem;
-    height: 10rem;
-}
-
 .brainbucks {
     font-weight: bold;
     font-size: medium;
-    display: flex;
-    align-items: center;
+    display: inline;
     gap: 10px;
 }
 

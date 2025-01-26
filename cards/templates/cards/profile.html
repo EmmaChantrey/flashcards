@@ -1,0 +1,24 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Profile{% endblock %}
+{% block content %}
+{% load static %}
+
+<div class="game-box">
+    <div class="header-container">
+        <h1>{{ user.username }}</h1>
+        <button id="edit-profile" class="loginbtn">Settings</button>
+    </div>
+    <div class="badge-container">
+        {% for badge in displayed_badges %}
+            <div class="badge-box">
+                <div class="badge-image">
+                    <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                </div>
+            </div>
+        {% endfor %}
+        <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges">
+    </div>
+</div>
+
+{% endblock %}

@@ -17,7 +17,7 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard, Badge
+from .models import FlashcardSet, Flashcard, Badge, UserBadge
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
@@ -42,6 +42,13 @@ def landing_page(request):
 
 def about(request):
     return render(request, 'cards/about.html')
+
+
+def profile(request):
+    displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
+    return render(request, 'cards/profile.html', 
+                  {'displayed_badges': displayed_badges,}
+        )
 
 
 def signup(request):
@@ -643,11 +650,18 @@ def game_end(request, set_id):
         total_time = None
         score = correct/(correct+incorrect)*100
 
+    brainbuck_reward = int(score / 10) if score > 0 else 0
+    
+    if not request.session.get('reward_given'):
+        request.user.profile.brainbucks += brainbuck_reward
+        request.user.profile.save()
+        request.session['reward_given'] = True
 
     return render(request, 'cards/game_end.html', {
         'flashcard_set': flashcard_set,
         'total_time': total_time,
         'score':score,
+        'brainbuck_reward': brainbuck_reward,
     })
 
 def edit_set(request, set_id):
