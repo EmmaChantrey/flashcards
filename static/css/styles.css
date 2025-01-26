@@ -664,6 +664,16 @@ input[type="radio"]:checked + label.custom-radio {
     gap: 10px;
 }
 
+.badge-box.purchased .badge-image img {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.badge-box .brainbucks[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 .brainbucks {
     font-weight: bold;
     font-size: medium;
@@ -675,6 +685,7 @@ input[type="radio"]:checked + label.custom-radio {
     width: 2rem;
     height: 2rem;
 }
+
 
 .flashcard-nav-title {
     display: flex;

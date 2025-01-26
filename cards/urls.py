@@ -20,6 +20,8 @@ urlpatterns = [
     
     path('badge_shop/', views.badge_shop, name='badge_shop'),
 
+    path('purchase-badge/<int:badge_id>/', views.purchase_badge, name='purchase_badge'),
+
     path('logout/', user_logout, name='logout'),
 
     path('create/', views.create, name='create'),

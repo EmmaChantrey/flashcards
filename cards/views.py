@@ -17,7 +17,7 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard, Badge, UserBadge
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile
 from django.db.models import Case, When
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
@@ -45,7 +45,9 @@ def about(request):
 
 
 def profile(request):
-    displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
+    #displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
+    displayed_badges = UserBadge.objects.filter(user=request.user.profile)
+    print(displayed_badges)
     return render(request, 'cards/profile.html', 
                   {'displayed_badges': displayed_badges,}
         )
@@ -108,12 +110,14 @@ def login_view(request):
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     badges = Badge.objects.all()
+    purchased_badges = UserBadge.objects.filter(user=request.user.profile)
 
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
         'username': request.user.username,
         'brainbucks': request.user.profile.brainbucks,
         'badges': badges,
+        'purchased_badges': purchased_badges,
     })
 
 
@@ -125,6 +129,17 @@ def badge_shop(request):
     badges = Badge.objects.all()
     brainbucks = request.user.profile.brainbucks
     return render(request, 'cards/badge_shop.html', {'badges': badges, 'brainbucks': brainbucks})
+
+def purchase_badge(request, badge_id):
+    badge = get_object_or_404(Badge, id=badge_id)
+    user_profile = request.user.profile
+    
+    UserBadge.objects.create(user=user_profile, badge=badge)
+    user_profile.brainbucks -= badge.price
+    user_profile.save()
+
+    messages.success(request, f"You successfully purchased the {badge.name} badge!")
+    return redirect('dashboard')
 
 
 @login_required
@@ -642,6 +657,7 @@ def game_end(request, set_id):
     correct = request.session.get('correct', 0)
     incorrect = request.session.get('incorrect', 0)
     score = 0
+    request.session['reward_given'] = False
 
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)

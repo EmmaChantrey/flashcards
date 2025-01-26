@@ -59,7 +59,7 @@ class UserBadge(models.Model):
     displayed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username} - {self.badge.name}"
+        return f"{self.user.user.username} - {self.badge.name}"
     
 
 class League(models.Model):

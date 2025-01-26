@@ -55,28 +55,38 @@
     <div class="badge-shop large-device">
         <div class="header">
             <h2>BrainBucks Badge Shop</h2>
-            <div class="brainbucks">{{ brainbucks }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img"></div>
+            <div class="brainbucks">{{ brainbucks }}
+                <img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img">
+            </div>
         </div>
         <div class="scrollbox">
             <div class="study-grid">
                 {% for badge in badges %}
-                    <div class="badge-box">
+                    <div class="badge-box {% if badge in purchased_badges %}purchased{% endif %}">
                         <div class="badge-image">
                             <img src="{% static badge.image %}" alt="{{ badge.name }}">
                         </div>
                         <div class="badge-buttons">
-                            <form action="" method="post" class="purchase-badge-form">
+                            <form action="{% url 'purchase_badge' badge.id %}" method="post" class="purchase-badge-form">
                                 {% csrf_token %}
-                                <button type="submit" class="brainbucks" tabindex="0">{{ badge.price }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks"></button>
+                                <button 
+                                    type="submit" 
+                                    class="brainbucks" 
+                                    tabindex="0"
+                                    {% if badge.price > brainbucks or badge in purchased_badges %}disabled{% endif %}>
+                                    {{ badge.price }}
+                                    <img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks">
+                                </button>
                             </form>
                         </div>
                     </div>
-
                 {% empty %}
-                <p>No badges found.</p>
+                    <p>No badges found.</p>
                 {% endfor %}
             </div>
-        </div> 
+        </div>
+    </div>
+    
     </div>
 
     <div class="small-device">
