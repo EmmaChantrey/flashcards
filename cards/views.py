@@ -46,10 +46,10 @@ def about(request):
 
 def profile(request):
     #displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
-    displayed_badges = UserBadge.objects.filter(user=request.user.profile)
-    print(displayed_badges)
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    badges = Badge.objects.filter(user_badges__in=user_badges)
     return render(request, 'cards/profile.html', 
-                  {'displayed_badges': displayed_badges,}
+                  {'displayed_badges': badges,}
         )
 
 
@@ -110,7 +110,8 @@ def login_view(request):
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     badges = Badge.objects.all()
-    purchased_badges = UserBadge.objects.filter(user=request.user.profile)
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
 
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
