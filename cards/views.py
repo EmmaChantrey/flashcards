@@ -7,7 +7,7 @@ from datetime import datetime
 import random
 from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login, authenticate, logout
 from django.utils.timezone import now
@@ -17,8 +17,8 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile
-from django.db.models import Case, When
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship
+from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -48,9 +48,36 @@ def profile(request):
     #displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
     user_badges = UserBadge.objects.filter(user=request.user.profile)
     badges = Badge.objects.filter(user_badges__in=user_badges)
-    return render(request, 'cards/profile.html', 
-                  {'displayed_badges': badges,}
-        )
+    friends = request.user.profile.get_friends()
+    return render(request, 'cards/profile.html', {
+        'displayed_badges': badges,
+        'friends': friends,
+    })
+
+
+def search_users(request):
+    query = request.GET.get("search", "").strip()  # Get the search input
+    print(f"Search query: '{query}'")  # Debugging output
+
+    if query:
+        users = Profile.objects.filter(Q(user__username__icontains=query))
+    else:
+        users = Profile.objects.none()  # Return an empty queryset if no query
+
+    print(f"Users found: {users}")
+
+    return render(request, "cards/partials/search_results.html", {"users": users})
+
+
+def send_friend_request(request, user_id):
+    sender = request.user.profile
+    receiver = get_object_or_404(Profile, id=user_id)
+
+    if Friendship.objects.filter(sender=sender, receiver=receiver).exists():
+        return HttpResponse("<p>Request Sent</p>", status=400)
+
+    Friendship.objects.create(sender=sender, receiver=receiver)
+    return HttpResponse("<p>Request Sent</p>")
 
 
 def signup(request):

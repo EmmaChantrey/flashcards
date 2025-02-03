@@ -30,6 +30,10 @@ urlpatterns = [
 
     path('profile/', views.profile, name='profile'),
 
+    path('search-users/', views.search_users, name='search_users'),
+
+    path('send-friend-request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
+
     path('study/<int:set_id>/', views.study_set, name='study'),
 
     path('true_false/<int:set_id>/setup/', views.setup_true_false, name='setup_true_false'),

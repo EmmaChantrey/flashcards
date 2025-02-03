@@ -543,6 +543,19 @@ input[type="radio"]:checked + label.custom-radio {
     box-sizing: border-box;
 }
 
+.modal { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; 
+}
+                
+.modal-content { 
+    background: white; padding: 20px; border-radius: 10px; width: 300px; 
+}
+                
+.close { 
+    float: right; cursor: pointer; font-size: 20px; 
+}
+
+
 .badge-container {
     display: flex;
     justify-content: center;
@@ -994,7 +1007,7 @@ input[type="radio"]:checked + label.custom-radio {
     padding: 15px;
     margin-bottom: 10px;
     text-align: center;
-    background-color: #f44336;
+    background-color: #0289d1a3;
     color: white;
     border-radius: 5px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
