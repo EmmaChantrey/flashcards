@@ -4,8 +4,8 @@
 {% block content %}
 {% load static %}
 
-<div class="game-box">
-    <div class="header-container">
+<div class="profile-box">
+    <div class="flashcard-nav-header">
         <h1>{{ user.username }}</h1>
         <button id="edit-profile" class="loginbtn">Settings</button>
     </div>
@@ -17,7 +17,23 @@
                 </div>
             </div>
         {% endfor %}
-        <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges">
+        <div class="badge-image">
+            <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges">
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="scrollbox">
+            <div class="flashcard-nav-header">
+                Friends
+            </div>
+            List friends here
+        </div>
+        <div class="scrollbox">
+            <div class="flashcard-nav-header">
+                Leagues
+            </div>
+            List leagues here
     </div>
 </div>
 

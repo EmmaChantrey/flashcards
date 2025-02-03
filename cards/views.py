@@ -109,6 +109,7 @@ def login_view(request):
 @login_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
+    brainbucks = request.user.profile.brainbucks
     badges = Badge.objects.all()
     user_badges = UserBadge.objects.filter(user=request.user.profile)
     purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
@@ -116,7 +117,7 @@ def dashboard(request):
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
         'username': request.user.username,
-        'brainbucks': request.user.profile.brainbucks,
+        'brainbucks': brainbucks,
         'badges': badges,
         'purchased_badges': purchased_badges,
     })
@@ -127,9 +128,15 @@ def flashcard_sidebar(request):
     return render(request, 'cards/flashcard_sidebar.html', {'flashcard_sets': flashcard_sets})
 
 def badge_shop(request):
-    badges = Badge.objects.all()
     brainbucks = request.user.profile.brainbucks
-    return render(request, 'cards/badge_shop.html', {'badges': badges, 'brainbucks': brainbucks})
+    badges = Badge.objects.all()
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
+    return render(request, 'cards/badge_shop.html', {
+        'badges': badges, 
+        'brainbucks': brainbucks,
+        'purchased_badges': purchased_badges,
+    })
 
 def purchase_badge(request, badge_id):
     badge = get_object_or_404(Badge, id=badge_id)
@@ -336,7 +343,7 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     elif flashcard.repetition == 2:
         flashcard.interval = 86400 * 6
     else:
-        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+        flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
     flashcard.last_reviewed = now()
     flashcard.save()
