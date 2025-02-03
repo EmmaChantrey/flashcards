@@ -552,6 +552,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .friend-box {
+    font-size: 1.5rem;
     display: flex;
     align-items: center;
     padding: 0.5rem;
@@ -559,8 +560,8 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .friend-box img {
-    width: 2rem;
-    height: 2rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 50%;
     margin-left: 0.5rem;
 }
