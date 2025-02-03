@@ -48,10 +48,22 @@ def profile(request):
     #displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
     user_badges = UserBadge.objects.filter(user=request.user.profile)
     badges = Badge.objects.filter(user_badges__in=user_badges)
-    friends = request.user.profile.get_friends()
+    
+    friend_profiles = request.user.profile.get_friends()
+    friends = User.objects.filter(profile__in=friend_profiles)
+
+    # Fetch displayed badges for each friend
+    friends_with_badges = []
+    for friend in friends:
+        friend_badges = Badge.objects.filter(user_badges__user=friend.profile)
+        friends_with_badges.append({
+            'friend': friend,
+            'badges': friend_badges
+        })
+
     return render(request, 'cards/profile.html', {
         'displayed_badges': badges,
-        'friends': friends,
+        'friends_with_badges': friends_with_badges,
     })
 
 
@@ -78,6 +90,28 @@ def send_friend_request(request, user_id):
 
     Friendship.objects.create(sender=sender, receiver=receiver)
     return HttpResponse("<p>Request Sent</p>")
+
+
+def view_friend_requests(request):
+    profile = request.user.profile
+    friend_requests = Friendship.objects.filter(receiver=profile, status='pending')
+
+    return render(request, "cards/partials/friend_requests.html", {"friend_requests": friend_requests})
+
+def accept_friend_request(request, request_id):
+    friend_request = get_object_or_404(Friendship, id=request_id, receiver=request.user.profile)
+    friend_request.accept()
+    profile = request.user.profile
+    profile.friends.add(friend_request.sender)
+    friend_request.sender.friends.add(profile)
+    #return view_friend_requests(request)
+    profile(request)
+
+def reject_friend_request(request, request_id):
+    friend_request = get_object_or_404(Friendship, id=request_id, receiver=request.user.profile)
+    friend_request.reject()
+    #return view_friend_requests(request)
+    profile(request)
 
 
 def signup(request):

@@ -28,11 +28,33 @@
             <div class="scrollbox">
                 <div class="flashcard-nav-header">
                     <h2>Friends</h2>
+                    <button id="viewRequestsBtn" class="loginbtn">Requests</button>
                     <img src ="{% static 'images/add_circle.png' %}" id="openModal" alt="Add Friends" cursor="pointer">
                 </div>
-                {% for friend in friends %}
-                    {{ friend.username }}
+                <div class="friend-list">
+                    {% for friend_data in friends_with_badges %}
+                    <div class="friend-box">
+                        <p>{{ friend_data.friend.username }}</p>
+                        <div class="friend-badges">
+                            {% for badge in friend_data.badges %}
+                                <img src="{% static badge.image %}" alt="{{ badge.name }}" class="badge-icon">
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No friends yet.</p>
                 {% endfor %}
+                </div>
+            </div>
+
+            <!-- <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div> -->
+
+            <div id="friendRequestsModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <h3>Friend Requests</h3>
+                    <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div>
+                </div>
             </div>
 
             <div id="friendModal" class="modal" style="display: none;">
@@ -65,6 +87,14 @@
 
     document.getElementById("closeModal").addEventListener("click", function() {
         document.getElementById("friendModal").style.display = "none";
+    });
+
+    document.getElementById("viewRequestsBtn").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "flex";
+    });
+
+    document.getElementById("closeModal").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "none";
     });
 </script>
 

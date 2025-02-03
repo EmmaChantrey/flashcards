@@ -1,9 +1,12 @@
 {% for user in users %}
     <div class="user-result">
         <p>{{ user.user.username }}</p>
-        <button hx-post="{% url 'send_friend_request' user.id %}" hx-swap="outerHTML" hx-target="this">
-            Add Friend
-        </button>
+        <form method="post" action="{% url 'send_friend_request' user.id %}">
+            {% csrf_token %}
+            <button type="submit" hx-post="{% url 'send_friend_request' user.id %}" hx-target="this" hx-swap="outerHTML">
+                Add Friend
+            </button>
+        </form>
     </div>
 {% empty %}
     <p>No users found.</p>

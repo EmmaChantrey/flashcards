@@ -1,0 +1,27 @@
+{% if friend_requests %}
+    <ul>
+        {% for request in friend_requests %}
+            <li>
+                {{ request.sender.user.username }}
+                
+                <form method="post" action="{% url 'accept_friend_request' request.id %}">
+                    {% csrf_token %}
+                    <button type="submit" hx-post="{% url 'accept_friend_request' request.id %}" 
+                            hx-target="#friendRequests" hx-swap="outerHTML">
+                        ✅ Accept
+                    </button>
+                </form>
+
+                <form method="post" action="{% url 'reject_friend_request' request.id %}">
+                    {% csrf_token %}
+                    <button type="submit" hx-post="{% url 'reject_friend_request' request.id %}" 
+                            hx-target="#friendRequests" hx-swap="outerHTML">
+                        ❌ Decline
+                    </button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No friend requests.</p>
+{% endif %}
