@@ -8,7 +8,7 @@
                     {% csrf_token %}
                     <button type="submit" hx-post="{% url 'accept_friend_request' request.id %}" 
                             hx-target="#friendRequests" hx-swap="outerHTML">
-                        ✅ Accept
+                        Accept
                     </button>
                 </form>
 
@@ -16,7 +16,7 @@
                     {% csrf_token %}
                     <button type="submit" hx-post="{% url 'reject_friend_request' request.id %}" 
                             hx-target="#friendRequests" hx-swap="outerHTML">
-                        ❌ Decline
+                        Decline
                     </button>
                 </form>
             </li>

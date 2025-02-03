@@ -22,6 +22,8 @@ from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
+
 import nltk
 nltk.download('punkt_tab')
 nltk.download('wordnet')
@@ -45,36 +47,68 @@ def about(request):
 
 
 def profile(request):
-    #displayed_badges = UserBadge.objects.filter(user=request.user.profile, displayed = True)
-    user_badges = UserBadge.objects.filter(user=request.user.profile)
-    badges = Badge.objects.filter(user_badges__in=user_badges)
-    
+    displayed_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile, displayed=True).values("badge_id"))
+    owned_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile).values("badge_id"))
+
     friend_profiles = request.user.profile.get_friends()
     friends = User.objects.filter(profile__in=friend_profiles)
 
-    # Fetch displayed badges for each friend
     friends_with_badges = []
     for friend in friends:
-        friend_badges = Badge.objects.filter(user_badges__user=friend.profile)
+        friend_badges = UserBadge.objects.filter(user=friend.profile, displayed = True)
         friends_with_badges.append({
             'friend': friend,
             'badges': friend_badges
         })
 
     return render(request, 'cards/profile.html', {
-        'displayed_badges': badges,
+        'displayed_badges': displayed_badges,
+        'owned_badges': owned_badges,
         'friends_with_badges': friends_with_badges,
     })
 
+def select_badges(request):
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    return render(request, "cards/partials/select_badges.html", {"all_badges": user_badges})
+
+
+def update_displayed_badges(request):
+    if request.method == "POST":
+        selected_badges = request.POST.getlist("selected_badges")
+        print(f"Selected badges: {selected_badges}")
+
+        if len(selected_badges) > 4:
+            return JsonResponse({"error": "You can only select up to 4 badges."}, status=400)
+
+        user_profile = request.user.profile
+
+        # Reset displayed badges
+        UserBadge.objects.filter(user=user_profile).update(displayed=False)
+        UserBadge.objects.filter(user=user_profile, badge_id__in=selected_badges).update(displayed=True)
+
+        # Get updated displayed badges
+        displayed_badges = Badge.objects.filter(
+            id__in=UserBadge.objects.filter(user=user_profile, displayed=True).values("badge_id")
+        )
+
+        # Render the partial template with updated badges
+        updated_html = render(request, "cards/partials/displayed_badges.html", {"displayed_badges": displayed_badges}).content.decode("utf-8")
+
+        return JsonResponse({"updated_html": updated_html})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+
 
 def search_users(request):
-    query = request.GET.get("search", "").strip()  # Get the search input
-    print(f"Search query: '{query}'")  # Debugging output
+    query = request.GET.get("search", "").strip()
+    print(f"Search query: '{query}'")
 
     if query:
         users = Profile.objects.filter(Q(user__username__icontains=query))
     else:
-        users = Profile.objects.none()  # Return an empty queryset if no query
+        users = Profile.objects.none()
 
     print(f"Users found: {users}")
 
