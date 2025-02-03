@@ -21,9 +21,7 @@
             {% endfor %}
             
         </div>
-        <div class="badge-image">
-            <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges" id="editBadges" cursor="pointer" tabindex="0">
-        </div>
+        <button id="editBadges" class="signupbtn">Customise your profile badges</button>
         
     
         <div class="dashboard">
@@ -54,7 +52,7 @@
 
             <div id="friendRequestsModal" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <span id="closeModal" class="close">&times;</span>
+                    <span id="closeRequestModal" class="close" tabindex="0">✖</span>
                     <h3>Friend Requests</h3>
                     <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div>
                 </div>
@@ -62,7 +60,7 @@
 
             <div id="friendModal" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <span id="closeModal" class="close">&times;</span>
+                    <span id="closeFriendModal" class="close" tabindex="0">✖</span>
                     <h3>Add Friends</h3>
                     <input type="text" id="searchInput" name="search"
                     hx-get="{% url 'search_users' %}" 
@@ -75,17 +73,19 @@
 
             <div id="badgeModal" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <span id="closeBadgeModal" class="close">&times;</span>
+                    <span id="closeBadgeModal" class="close" tabindex="0">✖</span>
                     <h3>Select up to 4 badges to display</h3>
             
                     <form id="badgeForm">
                         {% csrf_token %}
-                        <div id="badgeOptions">
+                        <div id="badgeOptions" class="study-grid">
                             {% for badge in owned_badges %}
                             <label>
                                 <input type="checkbox" name="selected_badges" value="{{ badge.id }}">
                                 <img src="{% static badge.image %}" alt="{{ badge.name }}">
                             </label>
+                            {% empty %}
+                            <p>You have no badges yet. Head to the Badge Shop to purchase your first!</p>
                             {% endfor %}
                         </div>
             
@@ -103,52 +103,60 @@
         </div>
 </div>
 
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Fix open badge modal event listener
-        document.getElementById("editBadges").addEventListener("click", () => {
-            document.getElementById("badgeModal").style.display = "flex";
-        });
-    
-        // Fix close badge modal
-        document.getElementById("closeBadgeModal").addEventListener("click", () => {
-            document.getElementById("badgeModal").style.display = "none";
-        });
-    
-        // Handle badge selection form submission
-        document.getElementById("badgeForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-    
-            const formData = new FormData(this);  // Use `this` instead of `badgeForm`
-            fetch("{% url 'update_displayed_badges' %}", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    // Ensure badgeContainer exists before updating
-                    const badgeContainer = document.getElementById("badgeContainer");
-                    if (badgeContainer) {
-                        badgeContainer.innerHTML = data.updated_html;
-                    }
-                    document.getElementById("badgeModal").style.display = "none";
-                }
-            })
-            .catch(error => console.error("Error:", error));
-        });
-    
-        // Fix closing friend requests modal
-        document.getElementById("closeRequestsModal").addEventListener("click", function() {
-            document.getElementById("friendRequestsModal").style.display = "none";
-        });
+    document.getElementById("editBadges").addEventListener("click", () => {
+        document.getElementById("badgeModal").style.display = "flex";
     });
-    </script>
+
+    document.getElementById("closeBadgeModal").addEventListener("click", () => {
+        document.getElementById("badgeModal").style.display = "none";
+    });
+
+    document.getElementById("badgeForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        fetch("{% url 'update_displayed_badges' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                // Update only the badge container without affecting other elements like the edit button
+                const badgeContainer = document.getElementById("badgeContainer");
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = data.updated_html;
+                }
+                document.getElementById("badgeModal").style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("openModal").addEventListener("click", function() {
+        document.getElementById("friendModal").style.display = "flex";
+    });
+
+    document.getElementById("closeFriendModal").addEventListener("click", function() {
+        document.getElementById("friendModal").style.display = "none";
+    });
+    document.getElementById("viewRequestsBtn").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "flex";
+    });
+    document.getElementById("closeRequestModal").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "none";
+    });
+});
+</script>
     
 
 {% endblock %}

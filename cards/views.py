@@ -55,7 +55,7 @@ def profile(request):
 
     friends_with_badges = []
     for friend in friends:
-        friend_badges = UserBadge.objects.filter(user=friend.profile, displayed = True)
+        friend_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=friend.profile, displayed=True).values("badge_id"))
         friends_with_badges.append({
             'friend': friend,
             'badges': friend_badges
@@ -82,16 +82,13 @@ def update_displayed_badges(request):
 
         user_profile = request.user.profile
 
-        # Reset displayed badges
         UserBadge.objects.filter(user=user_profile).update(displayed=False)
         UserBadge.objects.filter(user=user_profile, badge_id__in=selected_badges).update(displayed=True)
 
-        # Get updated displayed badges
         displayed_badges = Badge.objects.filter(
             id__in=UserBadge.objects.filter(user=user_profile, displayed=True).values("badge_id")
         )
 
-        # Render the partial template with updated badges
         updated_html = render(request, "cards/partials/displayed_badges.html", {"displayed_badges": displayed_badges}).content.decode("utf-8")
 
         return JsonResponse({"updated_html": updated_html})
