@@ -3,38 +3,40 @@
 {% block title %}Profile{% endblock %}
 {% block content %}
 {% load static %}
-
-<div class="profile-box">
-    <div class="flashcard-nav-header">
-        <h1>{{ user.username }}</h1>
-        <button id="edit-profile" class="loginbtn">Settings</button>
-    </div>
-    <div class="badge-container">
-        {% for badge in displayed_badges %}
-            <div class="badge-box">
-                <div class="badge-image">
-                    <img src="{% static badge.image %}" alt="{{ badge.name }}">
+<div class="dashboard">
+    <div class="profile-box">
+        <div class="flashcard-nav-header">
+            <h1>{{ user.username }}</h1>
+            <button id="edit-profile" class="loginbtn">Settings</button>
+        </div>
+        <div class="badge-container">
+            {% for badge in displayed_badges %}
+                <div class="badge-box">
+                    <div class="badge-image">
+                        <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                    </div>
                 </div>
+            {% endfor %}
+            <div class="badge-image">
+                <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges">
             </div>
-        {% endfor %}
-        <div class="badge-image">
-            <img src="{% static 'images/edit_badge.png' %}" alt="Edit badges">
         </div>
-    </div>
-
-    <div class="dashboard">
-        <div class="scrollbox">
-            <div class="flashcard-nav-header">
-                Friends
+    
+        <div class="dashboard">
+            <div class="scrollbox">
+                <div class="flashcard-nav-header">
+                    <h2>Friends</h2>
+                </div>
+                List friends here
             </div>
-            List friends here
+            <div class="scrollbox">
+                <div class="flashcard-nav-header">
+                    <h2>Leagues</h2>
+                </div>
+                List leagues here
         </div>
-        <div class="scrollbox">
-            <div class="flashcard-nav-header">
-                Leagues
-            </div>
-            List leagues here
     </div>
 </div>
+
 
 {% endblock %}
