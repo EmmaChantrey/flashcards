@@ -362,7 +362,7 @@ def true_false(request, set_id):
     term = flashcard.term
 
     # randomise the definition
-    if random.choice([True, False]):
+    if random.choice([True, False]) or len(flashcards) == 1:
         definition = flashcard.definition
         is_correct = True
     else:
