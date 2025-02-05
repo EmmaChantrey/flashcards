@@ -1,9 +1,8 @@
 {% if friend_requests %}
-    <ul>
+    
         {% for request in friend_requests %}
-            <li>
+            <div class="user-result">
                 {{ request.sender.user.username }}
-                
                 <form method="post" action="{% url 'accept_friend_request' request.id %}">
                     {% csrf_token %}
                     <button type="submit" hx-post="{% url 'accept_friend_request' request.id %}" 
@@ -19,9 +18,8 @@
                         Decline
                     </button>
                 </form>
-            </li>
+            </div>
         {% endfor %}
-    </ul>
 {% else %}
     <p>No friend requests.</p>
 {% endif %}

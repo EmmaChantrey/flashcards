@@ -35,9 +35,9 @@
         </div>
         <div class="scrollbox" tabindex="0">
             {% for set in flashcard_sets %}
-            <div class="flashcard-box">
+            <div class="flashcard-box" tabindex="-1">
                 <div class="flashcard-title">{{ set.name }}</div>
-                <div class="flashcard-buttons">
+                <div class="flashcard-buttons" tabindex="-1">
                     <a href="{% url 'study' set.id %}" class="button" tabindex="0">Study</a>
                     <a href="{% url 'edit' set.id %}" class="button" tabindex="0">Edit</a>
                     <form action="{% url 'delete' set.id %}" method="post" class="delete-set-form" onsubmit="return confirmDelete();">

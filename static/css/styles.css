@@ -542,6 +542,14 @@ input[type="radio"]:checked + label.custom-radio {
     height: 85%;
     box-sizing: border-box;
 }
+.user-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    width: 100%;
+    border-bottom: 1px solid #00000043;
+}
 
 .friend-list {
     display: flex;
@@ -828,7 +836,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .flashcard-buttons .button {
-    all: unset;
+    /* all: unset; */
     display: inline-block;
     width: 100%;
     font-weight: bold;
@@ -862,7 +870,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .delete-set-form button {
-    all: unset;
+    /* all: unset; */
     width: 70px;
     text-align: center;
     font-weight: bold;

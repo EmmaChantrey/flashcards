@@ -298,10 +298,8 @@ class SpacedRepetitionTests(TestCase):
 
                 print(f"Old interval: {old_interval / 86400:.1f} days, New interval: {flashcard.interval / 86400:.1f} days, \nOld ease factor: {old_ease_factor:.2f}, New ease factor: {flashcard.ease_factor:.2f}")
 
-                # Collect intervals
-                intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)  # Convert seconds to days
+                intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)  # convert seconds to days
 
-                # Assertions
                 print(f"flashcard term: {flashcard.term}, user_answer: {user_answer}, slow: {slow}, average: {average}, fast: {fast}")
                 if user_answer and not slow:
                     expected_ease_factor = ease_factor_calculation(old_ease_factor, performance_level=3 if average else 4)

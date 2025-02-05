@@ -63,6 +63,7 @@
                     <span id="closeFriendModal" class="close" tabindex="0">✖</span>
                     <h3>Add Friends</h3>
                     <input type="text" id="searchInput" name="search"
+                    placeholder="Search for users..."
                     hx-get="{% url 'search_users' %}" 
                     hx-trigger="keyup changed delay:300ms"
                     hx-target="#searchResults"
@@ -130,8 +131,8 @@
         .then(data => {
             if (data.error) {
                 alert(data.error);
-            } else {
-                // Update only the badge container without affecting other elements like the edit button
+            } 
+            else {
                 const badgeContainer = document.getElementById("badgeContainer");
                 if (badgeContainer) {
                     badgeContainer.innerHTML = data.updated_html;
