@@ -90,6 +90,7 @@
     
                     // update feedback and progress
                     feedbackMessage.textContent = data.feedback_message;
+                    checkButton.classList.add('hidden');
                     feedbackBar.classList.remove('hidden');
                     nextButton.classList.remove('hidden');
                     progressBar.style.width = `${data.progress_percentage}%`;
