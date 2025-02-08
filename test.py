@@ -212,6 +212,7 @@ class SpacedRepetitionTests(TestCase):
 
 
     def evaluate_and_update_flashcard(self, request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
+        print(f"user_answer: {user_answer}, is_correct: {is_correct}, elapsed_time: {elapsed_time}")
         if user_answer == is_correct:
             flashcard.repetition += 1
             if elapsed_time > 1.25 * flashcard_set.baseline:
@@ -237,7 +238,7 @@ class SpacedRepetitionTests(TestCase):
         elif flashcard.repetition == 2:
             flashcard.interval = 86400 * 6
         else:
-            flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+            flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
         flashcard.last_reviewed = now()
         flashcard.save()
@@ -273,9 +274,11 @@ class SpacedRepetitionTests(TestCase):
         intervals_by_flashcard = {flashcard.term: [] for flashcard in Flashcard.objects.all()}
 
         for flashcard in lineup:
+            intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)
             for i in range(100):
                 print(f"\n--- Question {i + 1} ---")
                 user_answer = random.choices([True, False], weights=[i * 10, 1000 - (i * 10)], k=1)[0]
+                #user_answer = random.choices([True, False], weights=[0.5, 0.5])[0]
                 elapsed_time = random.uniform(1, 20)
 
                 old_interval = flashcard.interval
@@ -295,10 +298,9 @@ class SpacedRepetitionTests(TestCase):
 
                 print(f"Old interval: {old_interval / 86400:.1f} days, New interval: {flashcard.interval / 86400:.1f} days, \nOld ease factor: {old_ease_factor:.2f}, New ease factor: {flashcard.ease_factor:.2f}")
 
-                # Collect intervals
-                intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)  # Convert seconds to days
+                intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)  # convert seconds to days
 
-                # Assertions
+                print(f"flashcard term: {flashcard.term}, user_answer: {user_answer}, slow: {slow}, average: {average}, fast: {fast}")
                 if user_answer and not slow:
                     expected_ease_factor = ease_factor_calculation(old_ease_factor, performance_level=3 if average else 4)
                     self.assertEqual(flashcard.ease_factor, expected_ease_factor,

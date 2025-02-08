@@ -7,7 +7,7 @@ from datetime import datetime
 import random
 from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth import login, authenticate, logout
 from django.utils.timezone import now
@@ -17,11 +17,21 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard, Badge
-from django.db.models import Case, When
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship
+from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.template.loader import render_to_string
+
+import nltk
+nltk.download('punkt_tab')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+nltk.download('stopwords')
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from django.views.generic import (
     ListView,
@@ -34,6 +44,106 @@ def landing_page(request):
 
 def about(request):
     return render(request, 'cards/about.html')
+
+
+def profile(request):
+    displayed_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile, displayed=True).values("badge_id"))
+    owned_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile).values("badge_id"))
+
+    friend_profiles = request.user.profile.get_friends()
+    friends = User.objects.filter(profile__in=friend_profiles)
+
+    friends_with_badges = []
+    for friend in friends:
+        friend_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=friend.profile, displayed=True).values("badge_id"))
+        friends_with_badges.append({
+            'friend': friend,
+            'badges': friend_badges
+        })
+
+    return render(request, 'cards/profile.html', {
+        'displayed_badges': displayed_badges,
+        'owned_badges': owned_badges,
+        'friends_with_badges': friends_with_badges,
+    })
+
+def select_badges(request):
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    return render(request, "cards/partials/select_badges.html", {"all_badges": user_badges})
+
+
+def update_displayed_badges(request):
+    if request.method == "POST":
+        selected_badges = request.POST.getlist("selected_badges")
+        print(f"Selected badges: {selected_badges}")
+
+        if len(selected_badges) > 4:
+            return JsonResponse({"error": "You can only select up to 4 badges."}, status=400)
+
+        user_profile = request.user.profile
+
+        UserBadge.objects.filter(user=user_profile).update(displayed=False)
+        UserBadge.objects.filter(user=user_profile, badge_id__in=selected_badges).update(displayed=True)
+
+        displayed_badges = Badge.objects.filter(
+            id__in=UserBadge.objects.filter(user=user_profile, displayed=True).values("badge_id")
+        )
+
+        updated_html = render(request, "cards/partials/displayed_badges.html", {"displayed_badges": displayed_badges}).content.decode("utf-8")
+
+        return JsonResponse({"updated_html": updated_html})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+
+
+def search_users(request):
+    query = request.GET.get("search", "").strip()
+
+    if query:
+        users = Profile.objects.filter(Q(user__username__icontains=query))
+        friends = request.user.profile.get_friends()
+    else:
+        users = Profile.objects.none()
+
+
+    return render(request, "cards/partials/search_results.html", {
+        "users": users,
+        "friends": friends,
+        })
+
+
+def send_friend_request(request, user_id):
+    sender = request.user.profile
+    receiver = get_object_or_404(Profile, id=user_id)
+
+    if Friendship.objects.filter(sender=sender, receiver=receiver).exists():
+        return HttpResponse("<p>Request Sent</p>", status=400)
+
+    Friendship.objects.create(sender=sender, receiver=receiver)
+    return HttpResponse("<p>Request Sent</p>")
+
+
+def view_friend_requests(request):
+    profile = request.user.profile
+    friend_requests = Friendship.objects.filter(receiver=profile, status='pending')
+    return render(request, "cards/partials/friend_requests.html", {"friend_requests": friend_requests})
+
+
+def accept_friend_request(request, request_id):
+    friend_request = get_object_or_404(Friendship, id=request_id, receiver=request.user.profile)
+    friend_request.accept()
+    profile = request.user.profile
+    profile.friends.add(friend_request.sender)
+    friend_request.sender.friends.add(profile)
+    return view_friend_requests(request)
+
+
+def reject_friend_request(request, request_id):
+    friend_request = get_object_or_404(Friendship, id=request_id, receiver=request.user.profile)
+    friend_request.reject()
+    return view_friend_requests(request)
 
 
 def signup(request):
@@ -87,18 +197,20 @@ def login_view(request):
     return render(request, 'cards/login.html')
 
 
-
-
 @login_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
+    brainbucks = request.user.profile.brainbucks
     badges = Badge.objects.all()
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
 
     return render(request, 'cards/dashboard.html', {
         'flashcard_sets': flashcard_sets,
         'username': request.user.username,
-        'brainbucks': request.user.profile.brainbucks,
+        'brainbucks': brainbucks,
         'badges': badges,
+        'purchased_badges': purchased_badges,
     })
 
 
@@ -106,10 +218,29 @@ def flashcard_sidebar(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     return render(request, 'cards/flashcard_sidebar.html', {'flashcard_sets': flashcard_sets})
 
+
 def badge_shop(request):
-    badges = Badge.objects.all()
     brainbucks = request.user.profile.brainbucks
-    return render(request, 'cards/badge_shop.html', {'badges': badges, 'brainbucks': brainbucks})
+    badges = Badge.objects.all()
+    user_badges = UserBadge.objects.filter(user=request.user.profile)
+    purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
+    return render(request, 'cards/badge_shop.html', {
+        'badges': badges, 
+        'brainbucks': brainbucks,
+        'purchased_badges': purchased_badges,
+    })
+
+
+def purchase_badge(request, badge_id):
+    badge = get_object_or_404(Badge, id=badge_id)
+    user_profile = request.user.profile
+    
+    UserBadge.objects.create(user=user_profile, badge=badge)
+    user_profile.brainbucks -= badge.price
+    user_profile.save()
+
+    messages.success(request, f"You successfully purchased the {badge.name} badge!")
+    return redirect('dashboard')
 
 
 @login_required
@@ -232,7 +363,7 @@ def true_false(request, set_id):
     term = flashcard.term
 
     # randomise the definition
-    if random.choice([True, False]):
+    if random.choice([True, False]) or len(flashcards) == 1:
         definition = flashcard.definition
         is_correct = True
     else:
@@ -305,7 +436,7 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     elif flashcard.repetition == 2:
         flashcard.interval = 86400 * 6
     else:
-        flashcard.interval = max(flashcard.interval * flashcard.ease_factor, 86400)
+        flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
     flashcard.last_reviewed = now()
     flashcard.save()
@@ -318,19 +449,67 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     return performance_level
 
 
-def create_blank_definition(definition):
-    words = definition.split()
+def preprocess_text(text):
+    # Tokenize and preprocess the text
+    tokens = word_tokenize(text.lower())
+    stop_words = set(stopwords.words('english'))
+    words = [word for word in tokens if word.isalnum() and word not in stop_words]
+    return " ".join(words), words
 
-    # randomly select a word or small phrase
-    start_index = random.randint(0, len(words) - 1)
-    end_index = min(start_index + random.randint(1, 2), len(words))
-    blanked_phrase = " ".join(words[start_index:end_index])
+def calculate_tfidf_within_set(definitions):
+    # Compute TF-IDF scores for definitions within a set
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(definitions)
+    feature_names = vectorizer.get_feature_names_out()
+    return tfidf_matrix, feature_names, vectorizer
+
+def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
+    # Preprocess the definition
+    preprocessed_definition, words = preprocess_text(definition)
+    word_scores = {}
     
-    # replace the phrase with an HTML input field
-    words[start_index:end_index] = [f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />']
+    # Get TF-IDF scores for words in the current definition
+    if preprocessed_definition:
+        definition_vector = vectorizer.transform([preprocessed_definition])
+        for word in words:
+            if word in feature_names:
+                idx = vectorizer.vocabulary_.get(word)
+                word_scores[word] = definition_vector[0, idx]
+    
+    # Select the word with the highest TF-IDF score
+    if word_scores:
+        return max(word_scores, key=word_scores.get)
+    else:
+        # Fallback: Random word selection if no scores
+        return random.choice(words)
+
+
+def create_blank_definition_within_set(flashcard, flashcard_set):
+    import random
+    
+    # Get all definitions within the set
+    definitions = [card.definition for card in flashcard_set.flashcards.all()]
+    
+    # Preprocess corpus and calculate TF-IDF
+    preprocessed_corpus = [preprocess_text(defn)[0] for defn in definitions]
+    tfidf_matrix, feature_names, vectorizer = calculate_tfidf_within_set(preprocessed_corpus)
+    
+    # Select the word to blank
+    blanked_word = select_word_to_blank(flashcard.definition, tfidf_matrix, feature_names, vectorizer)
+    
+    # Split the definition into words
+    words = flashcard.definition.split()
+    
+    # Ensure that at least one word is blanked
+    if blanked_word not in words:
+        blanked_word = random.choice(words)  # Fallback: randomly select a word to blank
+    
+    # Replace the blanked word with an HTML input field
+    index = words.index(blanked_word)
+    words[index] = f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />'
+    
     blanked_definition = " ".join(words)
-    
-    return blanked_definition, blanked_phrase
+    return blanked_definition, blanked_word
 
 
 def setup_fill_the_blanks(request, set_id):
@@ -342,7 +521,7 @@ def setup_fill_the_blanks(request, set_id):
     # process each flashcard to create blanks in definitions
     blanked_flashcards = []
     for card in new_lineup:
-        blanked_definition, blanked_phrase = create_blank_definition(card.definition)
+        blanked_definition, blanked_phrase = create_blank_definition_within_set(card, flashcard_set)
         blanked_flashcards.append({
             'id': card.id,
             'term': card.term,
@@ -369,7 +548,7 @@ def fill_the_blanks(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=set_id)
     
     # get current flashcard details
     current_flashcard = lineup[current_index]
@@ -399,16 +578,23 @@ def fill_the_blanks_check(request, set_id):
     elapsed_time = int(request.POST.get('elapsed_time', 0))
 
     # evaluate the user's answer and update the flashcard
-    is_correct = user_answer.lower() == correct_answer.lower()
+    correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
+    is_correct = correctness <= 1
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     current_index += 1
     request.session['current_index'] = current_index
 
-    if current_index >= len(lineup):
-        return redirect('game_end', set_id=flashcard_set.id)
+    progress_percentage = (request.session['current_index'] / len(lineup)) * 100
+    feedback_message = ("Correct!" if correctness == 0  
+    else f"Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
+    else f"Incorrect. The correct answer is '{correct_answer}'.")
 
-    return redirect('fill_the_blanks', set_id=set_id)
+    return JsonResponse({
+        'is_correct': is_correct,
+        'feedback_message': feedback_message,
+        'progress_percentage': progress_percentage,
+    })
 
 
 
@@ -572,6 +758,7 @@ def game_end(request, set_id):
     correct = request.session.get('correct', 0)
     incorrect = request.session.get('incorrect', 0)
     score = 0
+    request.session['reward_given'] = False
 
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)
@@ -580,11 +767,18 @@ def game_end(request, set_id):
         total_time = None
         score = correct/(correct+incorrect)*100
 
+    brainbuck_reward = int(score / 10) if score > 0 else 0
+    
+    if not request.session.get('reward_given'):
+        request.user.profile.brainbucks += brainbuck_reward
+        request.user.profile.save()
+        request.session['reward_given'] = True
 
     return render(request, 'cards/game_end.html', {
         'flashcard_set': flashcard_set,
         'total_time': total_time,
         'score':score,
+        'brainbuck_reward': brainbuck_reward,
     })
 
 def edit_set(request, set_id):

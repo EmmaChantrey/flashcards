@@ -20,11 +20,29 @@ urlpatterns = [
     
     path('badge_shop/', views.badge_shop, name='badge_shop'),
 
+    path('purchase-badge/<int:badge_id>/', views.purchase_badge, name='purchase_badge'),
+
     path('logout/', user_logout, name='logout'),
 
     path('create/', views.create, name='create'),
 
     path('about/', views.about, name='about'),
+
+    path('profile/', views.profile, name='profile'),
+
+    path("select-badges/", views.select_badges, name="select_badges"),
+
+    path("update-badges/", views.update_displayed_badges, name="update_displayed_badges"),
+
+    path('search-users/', views.search_users, name='search_users'),
+
+    path('send-friend-request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
+
+    path("friend-requests/", views.view_friend_requests, name="view_friend_requests"),
+
+    path("accept-friend-request/<int:request_id>/", views.accept_friend_request, name="accept_friend_request"),
+
+    path("reject-friend-request/<int:request_id>/", views.reject_friend_request, name="reject_friend_request"),
 
     path('study/<int:set_id>/', views.study_set, name='study'),
 

@@ -1,0 +1,8 @@
+{% load static %}
+{% for badge in displayed_badges %}
+<div class="badge-box">
+    <div class="badge-image">
+        <img src="{% static badge.image %}" alt="{{ badge.name }}">
+    </div>
+</div>
+{% endfor %}

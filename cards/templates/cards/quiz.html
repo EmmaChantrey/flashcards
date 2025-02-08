@@ -18,7 +18,7 @@
         <div class="definition-options">
             <p><strong>Choose the correct definition:</strong></p>
             {% for option in flashcard.options %}
-                <div class="option">
+                <div class="option" tabindex="0">
                     <input type="radio" id="option{{ forloop.counter }}" name="selected_answer" value="{{ option }}" required>
                     <label for="option{{ forloop.counter }}" class="custom-radio">{{ option }}</label>
                 </div>
@@ -61,6 +61,19 @@
             const progressPercentage = document.getElementById('progress-percentage');
             const checkButton = document.getElementById('check-button');
             const startTime = Date.now();
+            const options = document.querySelectorAll('.option');
+
+            options.forEach((option) => {
+                option.addEventListener('click', () => {
+                    option.querySelector('input').checked = true;
+                });
+
+                option.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        option.querySelector('input').checked = true;
+                    }
+                });
+            });
     
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -95,6 +108,7 @@
     
                     // update feedback and progress
                     feedbackMessage.textContent = data.feedback_message;
+                    checkButton.classList.add('hidden');
                     feedbackBar.classList.remove('hidden');
                     nextButton.classList.remove('hidden');
                     progressBar.style.width = `${data.progress_percentage}%`;

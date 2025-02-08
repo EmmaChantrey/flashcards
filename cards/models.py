@@ -11,9 +11,52 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     points = models.IntegerField(default=0)
     brainbucks = models.IntegerField(default=0)
+    friends = models.ManyToManyField('self', through='Friendship', symmetrical=False, related_name='friend_list')
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+    
+
+    def add_friend(self, profile):
+        Friendship.objects.create(sender=self, receiver=profile)
+
+    def remove_friend(self, profile):
+        Friendship.objects.filter(
+            models.Q(sender=self, receiver=profile) | models.Q(sender=profile, receiver=self)
+        ).delete()
+
+    def get_friends(self):
+        return Profile.objects.filter(
+            models.Q(friendship_requests_sent__receiver=self, friendship_requests_sent__status='accepted') |
+            models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
+        )
+
+
+class Friendship(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    ]
+
+    sender = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='friendship_requests_sent')
+    receiver = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='friendship_requests_received')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.user.username} → {self.receiver.user.username} ({self.status})"
+
+    class Meta:
+        unique_together = ('sender', 'receiver')
+
+    def accept(self):
+        self.status = 'accepted'
+        self.save()
+
+    def reject(self):
+        self.status = 'rejected'
+        self.save()
 
 
 class FlashcardSet(models.Model):
@@ -59,7 +102,7 @@ class UserBadge(models.Model):
     displayed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username} - {self.badge.name}"
+        return f"{self.user.user.username} - {self.badge.name}"
     
 
 class League(models.Model):

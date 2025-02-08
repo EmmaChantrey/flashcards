@@ -1,0 +1,163 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Profile{% endblock %}
+{% block content %}
+{% load static %}
+<script src="https://unpkg.com/htmx.org@1.9.4"></script>
+
+<div class="dashboard">
+    <div class="profile-box">
+        <div class="flashcard-nav-header">
+            <h1>{{ user.username }}</h1>
+            <button id="edit-profile" class="loginbtn">Settings</button>
+        </div>
+        <div class="badge-container" id="badgeContainer">
+            {% for badge in displayed_badges %}
+                <div class="badge-box">
+                    <div class="badge-image">
+                        <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                    </div>
+                </div>
+            {% endfor %}
+            
+        </div>
+        <button id="editBadges" class="signupbtn">Customise your profile badges</button>
+        
+    
+        <div class="dashboard">
+            <div class="scrollbox">
+                <div class="flashcard-nav-header">
+                    <h2>Friends</h2>
+                    <button id="viewRequestsBtn" class="loginbtn">Requests</button>
+                    <img src ="{% static 'images/add_circle.png' %}" id="openModal" alt="Add Friends" cursor="pointer" tabindex="0">
+                </div>
+                <div class="friend-list">
+                    {% for friend_data in friends_with_badges %}
+                    <div class="friend-box">
+                        <p>{{ friend_data.friend.username }}</p>
+                        <div class="friend-badges">
+                            {% for badge in friend_data.badges %}
+                                <img src="{% static badge.image %}" alt="{{ badge.name }}" class="badge-icon">
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No friends yet.</p>
+                {% endfor %}
+                </div>
+            </div>
+            
+
+            <!-- <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div> -->
+
+            <div id="friendRequestsModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeRequestModal" class="close" tabindex="0">✖</span>
+                    <h3>Friend Requests</h3>
+                    <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div>
+                </div>
+            </div>
+
+            <div id="friendModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeFriendModal" class="close" tabindex="0">✖</span>
+                    <h3>Add Friends</h3>
+                    <input type="text" id="searchInput" name="search"
+                    placeholder="Search for users..."
+                    hx-get="{% url 'search_users' %}" 
+                    hx-trigger="keyup changed delay:300ms"
+                    hx-target="#searchResults"
+                    hx-params="*">
+                    <div id="searchResults"></div>
+                </div>
+            </div>
+
+            <div id="badgeModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeBadgeModal" class="close" tabindex="0">✖</span>
+                    <h3>Select up to 4 badges to display</h3>
+            
+                    <form id="badgeForm">
+                        {% csrf_token %}
+                        <div id="badgeOptions" class="study-grid">
+                            {% for badge in owned_badges %}
+                            <label>
+                                <input type="checkbox" name="selected_badges" value="{{ badge.id }}">
+                                <img src="{% static badge.image %}" alt="{{ badge.name }}">
+                            </label>
+                            {% empty %}
+                            <p>You have no badges yet. Head to the Badge Shop to purchase your first!</p>
+                            {% endfor %}
+                        </div>
+            
+                        <button type="submit" class="loginbtn">Save Badges</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="scrollbox">
+                <div class="flashcard-nav-header">
+                    <h2>Leagues</h2>
+                </div>
+                List leagues here
+            </div>
+        </div>
+</div>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("editBadges").addEventListener("click", () => {
+        document.getElementById("badgeModal").style.display = "flex";
+    });
+
+    document.getElementById("closeBadgeModal").addEventListener("click", () => {
+        document.getElementById("badgeModal").style.display = "none";
+    });
+
+    document.getElementById("badgeForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+        fetch("{% url 'update_displayed_badges' %}", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } 
+            else {
+                const badgeContainer = document.getElementById("badgeContainer");
+                if (badgeContainer) {
+                    badgeContainer.innerHTML = data.updated_html;
+                }
+                document.getElementById("badgeModal").style.display = "none";
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("openModal").addEventListener("click", function() {
+        document.getElementById("friendModal").style.display = "flex";
+    });
+
+    document.getElementById("closeFriendModal").addEventListener("click", function() {
+        document.getElementById("friendModal").style.display = "none";
+    });
+    document.getElementById("viewRequestsBtn").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "flex";
+    });
+    document.getElementById("closeRequestModal").addEventListener("click", function() {
+        document.getElementById("friendRequestsModal").style.display = "none";
+    });
+});
+</script>
+    
+
+{% endblock %}
