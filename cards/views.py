@@ -100,16 +100,18 @@ def update_displayed_badges(request):
 
 def search_users(request):
     query = request.GET.get("search", "").strip()
-    print(f"Search query: '{query}'")
 
     if query:
         users = Profile.objects.filter(Q(user__username__icontains=query))
+        friends = request.user.profile.get_friends()
     else:
         users = Profile.objects.none()
 
-    print(f"Users found: {users}")
 
-    return render(request, "cards/partials/search_results.html", {"users": users})
+    return render(request, "cards/partials/search_results.html", {
+        "users": users,
+        "friends": friends,
+        })
 
 
 def send_friend_request(request, user_id):
