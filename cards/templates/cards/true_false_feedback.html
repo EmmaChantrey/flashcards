@@ -1,14 +1,33 @@
 {% extends 'cards/header.html' %}
 
-{% block title %}Feedback - True or False{% endblock %}
+{% block title %}True or False: {{ flashcard_set.name }}{% endblock %}
 {% block content %}
+{% load static %}
+<div class="flashcard-nav-header">
+    <div class="flashcard-nav-title">
+        <h1>True or False?</h1>
+    </div>
+    <div class="flashcard-nav-buttons">
+        <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+    </div>
+</div>
+
 <div class="feedback-box">
     <h2>Feedback</h2>
     <p>{{ feedback_message }}</p>
+    
+    {% if flashcard %}
+    <div class="flashcard">
+        <p><strong>Term:</strong> {{ flashcard.term }}</p>
+    </div>
+    <div class="flashcard">
+        <p><strong>Definition:</strong> {{ flashcard.definition }}</p>
+    </div>
+    {% endif %}
 </div>
 
 <div class="next-question-container">
-    <a href="{% url 'true_false_next' flashcard_set.id %}" class="next-btn">Next Question</a>
+    <a href="{% url 'true_false_next' flashcard_set.id %}" class="next-button">Next</a>
 </div>
 
 <style>
@@ -25,19 +44,6 @@
     .next-question-container {
         text-align: center;
         margin-top: 20px;
-    }
-
-    .next-btn {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 1.2rem;
-    }
-
-    .next-btn:hover {
-        background-color: #45a049;
     }
 </style>
 

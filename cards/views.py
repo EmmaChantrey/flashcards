@@ -398,9 +398,20 @@ def true_false_check(request, set_id):
     is_correct = request.session.get('is_correct', False)
     
     # Store feedback message
-    feedback_message = "✅ Correct!" if user_answer == is_correct else "❌ Incorrect!"
+    if user_answer == is_correct:
+        if is_correct:
+            feedback_message = "✅ Correct! These cards were a match."
+        else:
+            feedback_message = "✅ Correct! These cards were not a match."
+    else:
+        if is_correct:
+            feedback_message = "❌ Incorrect. These cards were a match."
+        else:
+            feedback_message = "❌ Incorrect. These cards were not a match."
+            
     request.session['feedback_message'] = feedback_message
-    request.session['show_feedback'] = True  # Indicate feedback should be shown before continuing
+    request.session['show_feedback'] = True
+    request.session['current_flashcard'] = flashcard.id  # Store the flashcard for later use
 
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
@@ -412,11 +423,14 @@ def true_false_feedback(request, set_id):
 
     feedback_message = request.session.get('feedback_message', "No feedback available.")
     show_feedback = request.session.get('show_feedback', False)
+    current_flashcard_id = request.session.get('current_flashcard', None)
+    flashcard = Flashcard.objects.get(id=current_flashcard_id) if current_flashcard_id else None
 
     return render(request, 'cards/true_false_feedback.html', {
         'flashcard_set': flashcard_set,
         'feedback_message': feedback_message,
         'show_feedback': show_feedback,
+        'flashcard': flashcard,
     })
 
 
@@ -618,9 +632,9 @@ def fill_the_blanks_check(request, set_id):
     request.session['current_index'] = current_index
 
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = ("Correct!" if correctness == 0  
-    else f"Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
-    else f"Incorrect. The correct answer is '{correct_answer}'.")
+    feedback_message = ("✅ Correct!" if correctness == 0  
+    else f"✅ Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
+    else f"❌ Incorrect. The correct answer is '{correct_answer}'.")
 
     return JsonResponse({
         'is_correct': is_correct,
@@ -715,7 +729,7 @@ def quiz_check(request, set_id):
 
     request.session['current_index'] += 1
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
+    feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
         'is_correct': is_correct,

@@ -625,6 +625,21 @@ input[type="radio"]:checked + label.custom-radio {
     display: none;
 }
 
+.feedback-box {
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    width: 50%;
+}
+
+.next-question-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
 .next-button {
     background-color: #023047;
     color: white;
@@ -634,6 +649,7 @@ input[type="radio"]:checked + label.custom-radio {
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s;
+    text-decoration: none;
 }
 
 .next-button:hover {
