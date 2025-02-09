@@ -5,8 +5,11 @@
 <div class="flashcard-nav-header">
     <div class="flashcard-nav-title">
         <h1>Match</h1>
+        
     </div>
     <div class="flashcard-nav-buttons">
+        <h4>Time to beat: {{ flashcard_set.quickest_time|floatformat:2 }} seconds </h4>
+        <h4>Time: <span id="live-timer">0.00</span> seconds</h4>
         <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
     </div>
 </div>
@@ -26,7 +29,18 @@
 
 <script>
     const items = {{ items|safe }};
-    
+    document.addEventListener('DOMContentLoaded', () => {
+        const timerDisplay = document.getElementById('live-timer');
+        let gameStartTime = Date.now();
+
+        function updateTimer() {
+            const elapsedTime = (Date.now() - gameStartTime) / 1000;
+            timerDisplay.textContent = elapsedTime.toFixed(2);
+        }
+
+        setInterval(updateTimer, 100); // Update timer every 100ms
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         const gridItems = document.querySelectorAll('.grid-item');
         const nextButtonContainer = document.querySelector('.check-button');

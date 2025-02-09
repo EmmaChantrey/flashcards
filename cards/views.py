@@ -763,6 +763,13 @@ def game_end(request, set_id):
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)
         total_time = (datetime.now() - start_time).total_seconds()
+
+        if flashcard_set.quickest_time is None or total_time < flashcard_set.quickest_time:
+            flashcard_set.quickest_time = total_time
+            flashcard_set.save()
+
+        score = 50
+
     else:
         total_time = None
         score = correct/(correct+incorrect)*100
@@ -779,6 +786,7 @@ def game_end(request, set_id):
         'total_time': total_time,
         'score':score,
         'brainbuck_reward': brainbuck_reward,
+        'quickest_time': flashcard_set.quickest_time,
     })
 
 def edit_set(request, set_id):

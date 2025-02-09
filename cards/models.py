@@ -64,6 +64,7 @@ class FlashcardSet(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     baseline = models.FloatField(default=0)
+    quickest_time = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name

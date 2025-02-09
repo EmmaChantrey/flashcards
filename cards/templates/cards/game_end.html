@@ -12,6 +12,7 @@
 <div class="game-box">
     {% if total_time %}
         <h1>Time taken: {{ total_time|floatformat:2 }} seconds</h1>
+        <h1>Record for this set: {{ flashcard_set.quickest_time|floatformat:2 }} seconds</h1>
     {% else %}
         <h1>{{ score }}% correct!</h1>
     {% endif %}
