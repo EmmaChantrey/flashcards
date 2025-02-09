@@ -38,6 +38,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        fillBlank = document.getElementById('fill-blank');
+        if (fillBlank) {
+            fillBlank.focus();
+        }
+
         let startTime = Date.now();
     
         const feedbackBar = document.getElementById('feedback-bar');
@@ -93,6 +98,9 @@
                     checkButton.classList.add('hidden');
                     feedbackBar.classList.remove('hidden');
                     nextButton.classList.remove('hidden');
+
+                    document.getElementById('next-button').focus();
+
                     progressBar.style.width = `${data.progress_percentage}%`;
                     progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
     

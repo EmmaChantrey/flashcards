@@ -27,7 +27,7 @@
 </div>
 
 <div class="next-question-container">
-    <a href="{% url 'true_false_next' flashcard_set.id %}" class="next-button">Next</a>
+    <a href="{% url 'true_false_next' flashcard_set.id %}" id="next-button" class="next-button">Next</a>
 </div>
 
 <style>
@@ -46,5 +46,20 @@
         margin-top: 20px;
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('next-button').focus();
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            var focusedElement = document.activeElement;
+            document.getElementById('next-button').click();
+        }
+    });
+});
+
+</script>
 
 {% endblock %}

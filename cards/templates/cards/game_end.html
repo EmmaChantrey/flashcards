@@ -14,13 +14,27 @@
         <h1>Time taken: {{ total_time|floatformat:2 }} seconds</h1>
         <h1>Record for this set: {{ flashcard_set.quickest_time|floatformat:2 }} seconds</h1>
     {% else %}
-        <h1>{{ score }}% correct!</h1>
+        <h1>{{ score|floatformat:0 }}% correct!</h1>
     {% endif %}
     <h1>{{ brainbuck_reward | floatformat:0 }} 
         <div class="brainbucks">{{ brainbucks }}<img src="{% static 'images/brainbuck.png' %}" alt="BrainBucks" class="brainbuck-img"></div>
         earned
     </h1>
-    <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Continue</a>
+    <a href = "{% url 'study' flashcard_set.id %}" id= "next-button" class="loginbtn">Continue</a>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('next-button').focus();
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                var focusedElement = document.activeElement;
+                document.getElementById('next-button').click();
+            }
+        });
+    });
+</script>
 
 {% endblock %}

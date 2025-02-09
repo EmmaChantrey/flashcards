@@ -422,6 +422,7 @@ button:hover {
 
 .game-button {
     transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    background-color: transparent;
 }
 
 .game-button:hover {

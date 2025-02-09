@@ -531,29 +531,22 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
 
 
 def create_blank_definition_within_set(flashcard, flashcard_set):
-    import random
-    
-    # Get all definitions within the set
     definitions = [card.definition for card in flashcard_set.flashcards.all()]
     
-    # Preprocess corpus and calculate TF-IDF
+    # calculate TF-IDF
     preprocessed_corpus = [preprocess_text(defn)[0] for defn in definitions]
     tfidf_matrix, feature_names, vectorizer = calculate_tfidf_within_set(preprocessed_corpus)
     
-    # Select the word to blank
     blanked_word = select_word_to_blank(flashcard.definition, tfidf_matrix, feature_names, vectorizer)
     
-    # Split the definition into words
+    # split the definition
     words = flashcard.definition.split()
-    
-    # Ensure that at least one word is blanked
     if blanked_word not in words:
-        blanked_word = random.choice(words)  # Fallback: randomly select a word to blank
+        blanked_word = random.choice(words)
     
-    # Replace the blanked word with an HTML input field
+    # replace the blanked word with an HTML input field
     index = words.index(blanked_word)
-    words[index] = f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />'
-    
+    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" placeholder="Fill the blank" required />'
     blanked_definition = " ".join(words)
     return blanked_definition, blanked_word
 
