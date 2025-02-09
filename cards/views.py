@@ -351,7 +351,7 @@ def true_false(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=set_id)
     
     # calculate progress percentage
     total_questions = len(lineup)
@@ -391,18 +391,50 @@ def true_false_check(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
-    # get the user's answer and time taken
+    # Get the user's answer and time taken
     user_answer = request.GET.get('answer', 'false') == 'true'
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
+    
+    # Store feedback message
+    feedback_message = "✅ Correct!" if user_answer == is_correct else "❌ Incorrect!"
+    request.session['feedback_message'] = feedback_message
+    request.session['show_feedback'] = True  # Indicate feedback should be shown before continuing
+
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
-    current_index += 1
-    request.session['current_index'] = current_index
+    return redirect('true_false_feedback', set_id=set_id)
 
-    if current_index >= len(lineup):
-        return redirect('game_end', set_id=flashcard_set.id)
+
+def true_false_feedback(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    feedback_message = request.session.get('feedback_message', "No feedback available.")
+    show_feedback = request.session.get('show_feedback', False)
+
+    return render(request, 'cards/true_false_feedback.html', {
+        'flashcard_set': flashcard_set,
+        'feedback_message': feedback_message,
+        'show_feedback': show_feedback,
+    })
+
+
+def true_false_next(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup_ids = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup_ids):
+        return redirect('game_end', set_id=set_id)
+
+    # Move to the next question
+    request.session['current_index'] = current_index + 1
+
+    # Clear feedback before proceeding
+    request.session.pop('feedback_message', None)
+    request.session.pop('show_feedback', None)
 
     return redirect('true_false', set_id=set_id)
 
