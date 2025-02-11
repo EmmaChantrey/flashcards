@@ -351,7 +351,7 @@ def true_false(request, set_id):
     current_index = request.session.get('current_index', 0)
 
     if current_index >= len(lineup):
-        return redirect('landing')
+        return redirect('game_end', set_id=set_id)
     
     # calculate progress percentage
     total_questions = len(lineup)
@@ -391,18 +391,64 @@ def true_false_check(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
-    # get the user's answer and time taken
+    # Get the user's answer and time taken
     user_answer = request.GET.get('answer', 'false') == 'true'
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
+    
+    # Store feedback message
+    if user_answer == is_correct:
+        if is_correct:
+            feedback_message = "✅ Correct! These cards were a match."
+        else:
+            feedback_message = "✅ Correct! These cards were not a match."
+    else:
+        if is_correct:
+            feedback_message = "❌ Incorrect. These cards were a match."
+        else:
+            feedback_message = "❌ Incorrect. These cards were not a match."
+            
+    request.session['feedback_message'] = feedback_message
+    request.session['show_feedback'] = True
+    request.session['current_flashcard'] = flashcard.id  # Store the flashcard for later use
+
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
-    current_index += 1
-    request.session['current_index'] = current_index
+    return redirect('true_false_feedback', set_id=set_id)
 
-    if current_index >= len(lineup):
-        return redirect('game_end', set_id=flashcard_set.id)
+
+def true_false_feedback(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    feedback_message = request.session.get('feedback_message', "No feedback available.")
+    show_feedback = request.session.get('show_feedback', False)
+    current_flashcard_id = request.session.get('current_flashcard', None)
+    flashcard = Flashcard.objects.get(id=current_flashcard_id) if current_flashcard_id else None
+
+    return render(request, 'cards/true_false_feedback.html', {
+        'flashcard_set': flashcard_set,
+        'feedback_message': feedback_message,
+        'show_feedback': show_feedback,
+        'flashcard': flashcard,
+    })
+
+
+def true_false_next(request, set_id):
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+
+    lineup_ids = request.session.get('lineup', [])
+    current_index = request.session.get('current_index', 0)
+
+    if current_index >= len(lineup_ids):
+        return redirect('game_end', set_id=set_id)
+
+    # Move to the next question
+    request.session['current_index'] = current_index + 1
+
+    # Clear feedback before proceeding
+    request.session.pop('feedback_message', None)
+    request.session.pop('show_feedback', None)
 
     return redirect('true_false', set_id=set_id)
 
@@ -485,29 +531,22 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
 
 
 def create_blank_definition_within_set(flashcard, flashcard_set):
-    import random
-    
-    # Get all definitions within the set
     definitions = [card.definition for card in flashcard_set.flashcards.all()]
     
-    # Preprocess corpus and calculate TF-IDF
+    # calculate TF-IDF
     preprocessed_corpus = [preprocess_text(defn)[0] for defn in definitions]
     tfidf_matrix, feature_names, vectorizer = calculate_tfidf_within_set(preprocessed_corpus)
     
-    # Select the word to blank
     blanked_word = select_word_to_blank(flashcard.definition, tfidf_matrix, feature_names, vectorizer)
     
-    # Split the definition into words
+    # split the definition
     words = flashcard.definition.split()
-    
-    # Ensure that at least one word is blanked
     if blanked_word not in words:
-        blanked_word = random.choice(words)  # Fallback: randomly select a word to blank
+        blanked_word = random.choice(words)
     
-    # Replace the blanked word with an HTML input field
+    # replace the blanked word with an HTML input field
     index = words.index(blanked_word)
-    words[index] = f'<input type="text" class="blank" name="answer" placeholder="Fill the blank" required />'
-    
+    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" placeholder="Fill the blank" required />'
     blanked_definition = " ".join(words)
     return blanked_definition, blanked_word
 
@@ -586,9 +625,9 @@ def fill_the_blanks_check(request, set_id):
     request.session['current_index'] = current_index
 
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = ("Correct!" if correctness == 0  
-    else f"Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
-    else f"Incorrect. The correct answer is '{correct_answer}'.")
+    feedback_message = ("✅ Correct!" if correctness == 0  
+    else f"✅ Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
+    else f"❌ Incorrect. The correct answer is '{correct_answer}'.")
 
     return JsonResponse({
         'is_correct': is_correct,
@@ -683,7 +722,7 @@ def quiz_check(request, set_id):
 
     request.session['current_index'] += 1
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = "Correct!" if is_correct else f"Incorrect. The correct answer is '{correct_answer}'."
+    feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
         'is_correct': is_correct,
@@ -763,6 +802,13 @@ def game_end(request, set_id):
     if start_time_str:
         start_time = datetime.fromisoformat(start_time_str)
         total_time = (datetime.now() - start_time).total_seconds()
+
+        if flashcard_set.quickest_time is None or total_time < flashcard_set.quickest_time:
+            flashcard_set.quickest_time = total_time
+            flashcard_set.save()
+
+        score = 50
+
     else:
         total_time = None
         score = correct/(correct+incorrect)*100
@@ -779,6 +825,7 @@ def game_end(request, set_id):
         'total_time': total_time,
         'score':score,
         'brainbuck_reward': brainbuck_reward,
+        'quickest_time': flashcard_set.quickest_time,
     })
 
 def edit_set(request, set_id):

@@ -52,6 +52,10 @@ urlpatterns = [
 
     path('true_false/<int:set_id>/check/', views.true_false_check, name='true_false_check'),
 
+    path('true_false/<int:set_id>/feedback/', views.true_false_feedback, name='true_false_feedback'),
+
+    path('true_false/<int:set_id>/next/', views.true_false_next, name='true_false_next'),
+
     path('fill_the_blanks/<int:set_id>/setup/', views.setup_fill_the_blanks, name='setup_fill_the_blanks'),
 
     path('fill_the_blanks/<int:set_id>/', views.fill_the_blanks, name='fill_the_blanks'),

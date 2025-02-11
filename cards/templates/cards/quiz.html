@@ -18,7 +18,7 @@
         <div class="definition-options">
             <p><strong>Choose the correct definition:</strong></p>
             {% for option in flashcard.options %}
-                <div class="option" tabindex="0">
+                <div class="option" tabindex="1">
                     <input type="radio" id="option{{ forloop.counter }}" name="selected_answer" value="{{ option }}" required>
                     <label for="option{{ forloop.counter }}" class="custom-radio">{{ option }}</label>
                 </div>
@@ -66,11 +66,17 @@
             options.forEach((option) => {
                 option.addEventListener('click', () => {
                     option.querySelector('input').checked = true;
+                    checkButton.focus();
                 });
 
                 option.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
+                        // Prevent the default action to avoid form submission
+                        event.preventDefault();
+                        
+                        // Ensure the option is checked and focus the check button
                         option.querySelector('input').checked = true;
+                        checkButton.focus();
                     }
                 });
             });
@@ -111,6 +117,9 @@
                     checkButton.classList.add('hidden');
                     feedbackBar.classList.remove('hidden');
                     nextButton.classList.remove('hidden');
+
+                    nextButton.focus();
+
                     progressBar.style.width = `${data.progress_percentage}%`;
                     progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
     

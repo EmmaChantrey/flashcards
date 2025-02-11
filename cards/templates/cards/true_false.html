@@ -3,12 +3,13 @@
 {% block title %}True or False: {{ flashcard_set.name }}{% endblock %}
 {% block content %}
 {% load static %}
+
 <div class="flashcard-nav-header">
     <div class="flashcard-nav-title">
         <h1>True or False?</h1>
     </div>
     <div class="flashcard-nav-buttons">
-        <a href = "{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
+        <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
     </div>
 </div>
 
@@ -22,14 +23,16 @@
         </div>
     </div>
     <div class="game-footer">
-        <a href="#" onclick="submitAnswer(true)">
+        <!-- Using buttons for better accessibility and 'Enter' key support -->
+        <button onclick="submitAnswer(true)" class="game-button" tabindex="1" aria-label="Answer True">
             <img src="{% static 'images/true.png' %}" alt="True" class="game-button">
-        </a>
-        <a href="#" onclick="submitAnswer(false)">
+        </button>
+        <button onclick="submitAnswer(false)" class="game-button" tabindex="2" aria-label="Answer False">
             <img src="{% static 'images/false.png' %}" alt="False" class="game-button">
-        </a>
+        </button>
     </div>
 </div>
+
 <div class="progress-container">
     <div class="progress-bar" id="progress-bar"></div>
 </div>
@@ -57,7 +60,6 @@
         progressBar.style.width = percentage + '%';
         progressPercentage.textContent = percentage.toFixed(0) + '%';
     }
-
 </script>
 
 {% endblock %}

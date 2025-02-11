@@ -96,7 +96,6 @@ header nav a {
     margin: 1rem;
     padding: 1rem 2rem;
     background-color: #023047;
-    opacity: 0.75;
     color: #fff;
     font-weight: bold;
     text-decoration: none;
@@ -290,7 +289,7 @@ button:hover {
         grid-template-columns: 1fr;
         text-align: center;
         height: 90vh;
-        margin: 2rem;
+        margin: 1rem;
     }
 
     .page-option {
@@ -308,10 +307,14 @@ button:hover {
         transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
     }
 
+    .page-link a {
+        width: 100%;
+        height: 100%;
+    }
+
     .page-link img {
         align-self: center;
-        max-width: 100%;
-        max-height: 100%;
+        max-width: 25rem;
         margin-bottom: 1rem;
     }
     
@@ -422,6 +425,7 @@ button:hover {
 
 .game-button {
     transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+    background-color: transparent;
 }
 
 .game-button:hover {
@@ -539,9 +543,11 @@ input[type="radio"]:checked + label.custom-radio {
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 75%;
+    min-width: 50rem;
     height: 85%;
     box-sizing: border-box;
 }
+
 .user-result {
     display: flex;
     justify-content: space-between;
@@ -607,6 +613,7 @@ input[type="radio"]:checked + label.custom-radio {
     gap: 2rem;
     flex-wrap: wrap;
     width: 100%;
+    min-width: 40rem;
     margin-top: 2rem;
 }
 
@@ -625,6 +632,21 @@ input[type="radio"]:checked + label.custom-radio {
     display: none;
 }
 
+.feedback-box {
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 20px auto;
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    width: 50%;
+}
+
+.next-question-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
 .next-button {
     background-color: #023047;
     color: white;
@@ -634,6 +656,7 @@ input[type="radio"]:checked + label.custom-radio {
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s;
+    text-decoration: none;
 }
 
 .next-button:hover {
@@ -836,7 +859,6 @@ input[type="radio"]:checked + label.custom-radio {
     font-weight: bold;
     padding: 10px;
     background-color: #023047;
-    opacity: 0.75;
     color: #fff;
     border: none;
     cursor: pointer;
@@ -871,7 +893,6 @@ input[type="radio"]:checked + label.custom-radio {
     width: 100%;
     padding: 10px;
     background-color: #023047;
-    opacity: 0.75;
     color: #fff;
     border-radius: 5px;
     cursor: pointer;
