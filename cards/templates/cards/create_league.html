@@ -1,0 +1,35 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Create League{% endblock %}
+
+{% block content %}
+{% load static %}
+<form method="post" id="league-form">
+    {% csrf_token %}
+    
+    <div class="league-header">
+        <h1>Create a League</h1>
+        <div class="form-group">
+            <label for="league_name">League Name:</label>
+            <input type="text" id="league_name" name="league_name" required>
+        </div>
+    </div>
+    
+    <div class="league-friends-container scrollbox">
+        <h2>Select Friends to Invite</h2>
+        {% for friend in friends %}
+        <div class="friend-item">
+            <input type="checkbox" name="friends" value="{{ friend.id }}"> 
+            <label>{{ friend.user.username }}</label>
+        </div>
+        {% empty %}
+        <p>You have no friends to invite.</p>
+        {% endfor %}
+    </div>
+    
+    <div class="league-buttons">
+        <button type="submit" class="create-btn">Create League</button>
+        <a href="{% url 'dashboard' %}" class="cancel-btn">Cancel</a>
+    </div>
+</form>
+{% endblock %}

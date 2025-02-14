@@ -30,6 +30,14 @@ class Profile(models.Model):
             models.Q(friendship_requests_sent__receiver=self, friendship_requests_sent__status='accepted') |
             models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
         )
+    
+    def get_requests(self):
+        return Profile.objects.filter(friendship_requests_sent__receiver=self, friendship_requests_sent__status='pending')
+    
+    def get_sent_requests(self):
+        return Profile.objects.filter(id__in=Friendship.objects.filter(sender=self, status='pending').values_list('receiver_id', flat=True))
+
+
 
 
 class Friendship(models.Model):

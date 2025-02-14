@@ -17,7 +17,7 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
-from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
 from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
@@ -67,6 +67,7 @@ def profile(request):
         'friends_with_badges': friends_with_badges,
     })
 
+
 def select_badges(request):
     user_badges = UserBadge.objects.filter(user=request.user.profile)
     return render(request, "cards/partials/select_badges.html", {"all_badges": user_badges})
@@ -100,10 +101,15 @@ def update_displayed_badges(request):
 
 def search_users(request):
     query = request.GET.get("search", "").strip()
+    profile = request.user.profile
 
     if query:
-        users = Profile.objects.filter(Q(user__username__icontains=query))
-        friends = request.user.profile.get_friends()
+        users = Profile.objects.filter(Q(user__username__icontains=query)).exclude(user=request.user)
+        friends = profile.get_friends()
+        requests = profile.get_requests()
+        print(requests)
+        requested = profile.get_sent_requests()
+        print(requested)
     else:
         users = Profile.objects.none()
 
@@ -111,6 +117,8 @@ def search_users(request):
     return render(request, "cards/partials/search_results.html", {
         "users": users,
         "friends": friends,
+        "requests": requests,
+        "requested": requested,
         })
 
 
@@ -310,6 +318,25 @@ def create(request):
         }
     )
 
+def create_league(request):
+    profile = request.user.profile
+    friends = profile.get_friends()
+
+    if request.method == "POST":
+        league_name = request.POST.get("league_name")
+        selected_friends = request.POST.getlist("friends")
+
+        league = League.objects.create(name=league_name, owner=profile)
+        LeagueUser.objects.create(league=league, user=profile)
+
+        for friend_id in selected_friends:
+            friend_profile = Profile.objects.get(id=friend_id)
+            LeagueUser.objects.create(league=league, user=friend_profile)
+
+        return redirect("dashboard")
+
+    return render(request, "cards/create_league.html", {"friends": friends})
+
 
 def study_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
@@ -391,13 +418,12 @@ def true_false_check(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
-    # Get the user's answer and time taken
+    # get the user's answer and time taken
     user_answer = request.GET.get('answer', 'false') == 'true'
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
     
-    # Store feedback message
     if user_answer == is_correct:
         if is_correct:
             feedback_message = "✅ Correct! These cards were a match."
