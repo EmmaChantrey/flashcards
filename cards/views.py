@@ -61,7 +61,7 @@ def profile(request):
             'badges': friend_badges
         })
 
-    leagues = League.objects.filter(owner=request.user.profile)
+    leagues = request.user.profile.get_leagues()
 
     return render(request, 'cards/profile.html', {
         'displayed_badges': displayed_badges,
@@ -337,6 +337,11 @@ def create_league(request):
         return redirect("profile")
 
     return render(request, "cards/create_league.html", {"friends": friends})
+
+
+def league(request, league_id):
+    league = get_object_or_404(League, id=league_id)
+    return render(request, 'cards/league.html', {'league': league})
 
 
 def study_set(request, set_id):

@@ -98,13 +98,12 @@
             <div class="scrollbox">
                 <div class="flashcard-nav-header">
                     <h2>Leagues</h2>
+                    <a href ="{% url 'create_league' %}" class="signupbtn">Create a League</a>
                 </div>
-                <a href ="{% url 'create_league' %}" class="signupbtn">Create a League</a>
-                <div class="league-list">
+                <div class="friend-list">
                     {% for league in leagues %}
-                    <div class="league-box">
-                        <p>{{ league.name }}</p>
-                        <a href="" class="loginbtn">View League</a>
+                    <div class="friend-box">
+                        <a href="{% url 'league' league.id %}" class="loginbtn">{{ league.name }}</a>
                     </div>
                     {% empty %}
                     <p>No leagues found.</p>

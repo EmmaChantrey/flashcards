@@ -36,6 +36,9 @@ class Profile(models.Model):
     
     def get_sent_requests(self):
         return Profile.objects.filter(id__in=Friendship.objects.filter(sender=self, status='pending').values_list('receiver_id', flat=True))
+    
+    def get_leagues(self):
+        return League.objects.filter(models.Q(owner=self) | models.Q(league_users__user=self)).distinct()
 
 
 

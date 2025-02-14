@@ -28,6 +28,8 @@ urlpatterns = [
 
     path('create_league/', views.create_league, name='create_league'),
 
+    path('league/<int:league_id>/', views.league, name='league'),
+
     path('about/', views.about, name='about'),
 
     path('profile/', views.profile, name='profile'),
