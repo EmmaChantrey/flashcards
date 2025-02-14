@@ -61,10 +61,13 @@ def profile(request):
             'badges': friend_badges
         })
 
+    leagues = League.objects.filter(owner=request.user.profile)
+
     return render(request, 'cards/profile.html', {
         'displayed_badges': displayed_badges,
         'owned_badges': owned_badges,
         'friends_with_badges': friends_with_badges,
+        'leagues': leagues,
     })
 
 
@@ -107,9 +110,7 @@ def search_users(request):
         users = Profile.objects.filter(Q(user__username__icontains=query)).exclude(user=request.user)
         friends = profile.get_friends()
         requests = profile.get_requests()
-        print(requests)
         requested = profile.get_sent_requests()
-        print(requested)
     else:
         users = Profile.objects.none()
 
@@ -333,7 +334,7 @@ def create_league(request):
             friend_profile = Profile.objects.get(id=friend_id)
             LeagueUser.objects.create(league=league, user=friend_profile)
 
-        return redirect("dashboard")
+        return redirect("profile")
 
     return render(request, "cards/create_league.html", {"friends": friends})
 
