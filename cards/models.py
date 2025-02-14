@@ -30,6 +30,17 @@ class Profile(models.Model):
             models.Q(friendship_requests_sent__receiver=self, friendship_requests_sent__status='accepted') |
             models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
         )
+    
+    def get_requests(self):
+        return Profile.objects.filter(friendship_requests_sent__receiver=self, friendship_requests_sent__status='pending')
+    
+    def get_sent_requests(self):
+        return Profile.objects.filter(id__in=Friendship.objects.filter(sender=self, status='pending').values_list('receiver_id', flat=True))
+    
+    def get_leagues(self):
+        return League.objects.filter(models.Q(owner=self) | models.Q(league_users__user=self)).distinct()
+
+
 
 
 class Friendship(models.Model):
