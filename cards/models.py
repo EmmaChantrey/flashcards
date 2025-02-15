@@ -126,19 +126,31 @@ class League(models.Model):
     def __str__(self):
         return self.name
     
+    def reset_scores(self):
+        for league_user in self.league_users.all():
+            if now() - league_user.last_reset >= timedelta(weeks=1):
+                league_user.score = 0
+                league_user.last_reset = now()
+                league_user.save()
+
+    def reward_top_users(self):
+        top_users = self.league_users.order_by('-score')[:3]
+
+        rewards = [50, 30, 20]
+
+        for i, league_user in enumerate(top_users):
+            league_user.user.brainbucks += rewards[i]
+            league_user.user.save()
+
+        self.reset_scores()
+    
 
 class LeagueUser(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='league_users')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='league_users')
     score = models.IntegerField(default=0)
-    last_reset = models.DateTimeField(default=now)
 
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
-    def reset_score(self):
-        if now() - self.last_reset >= timedelta(weeks=1):
-            self.score = 0
-            self.last_reset = now()
-            self.save()
 

@@ -341,8 +341,6 @@ def create_league(request):
 
 def league(request, league_id):
     league = get_object_or_404(League, id=league_id)
-    for user in league.league_users.all():
-        user.reset_score()
 
     return render(request, 'cards/league.html', {'league': league})
 
@@ -851,13 +849,8 @@ def game_end(request, set_id):
     brainbuck_reward = int(score / 10) if score > 0 else 0
     
     if not request.session.get('reward_given'):
-        leagues = LeagueUser.objects.filter(user=request.user.profile)
-        for league_user in leagues:
-            league_user.reset_score()
-            league_user.score += score
-            league_user.save()
-
         request.user.profile.brainbucks += brainbuck_reward
+        request.user.league_user.score += score
         request.user.profile.save()
         request.session['reward_given'] = True
 
