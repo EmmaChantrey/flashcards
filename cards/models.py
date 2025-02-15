@@ -5,7 +5,7 @@
 from datetime import timedelta
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.timezone import now
+from django.utils import timezone
 from math import ceil
 
 
@@ -122,27 +122,31 @@ class UserBadge(models.Model):
 class League(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owned_leagues')
+    last_rewarded = models.DateTimeField(default=timezone.now())
 
     def __str__(self):
         return self.name
     
     def reset_scores(self):
+        print("resetting scores for league:", self.name)
         for league_user in self.league_users.all():
-            if now() - league_user.last_reset >= timedelta(weeks=1):
+            if timezone.now() - self.last_rewarded >= timedelta(weeks=1):
                 league_user.score = 0
-                league_user.last_reset = now()
+                league_user.last_reset = timezone.now()
                 league_user.save()
 
     def reward_top_users(self):
-        top_users = self.league_users.order_by('-score')[:3]
+        if timezone.now() - self.last_rewarded >= timedelta(weeks=1):
+            top_users = self.league_users.order_by('-score')[:3]
 
-        rewards = [50, 30, 20]
+            rewards = [50, 30, 20]
 
-        for i, league_user in enumerate(top_users):
-            league_user.user.brainbucks += rewards[i]
-            league_user.user.save()
+            for i, league_user in enumerate(top_users):
+                league_user.user.brainbucks += rewards[i]
+                print(f"rewarding {league_user.user} with {rewards[i]} brainbucks")
+                league_user.user.save()
 
-        self.reset_scores()
+            self.reset_scores()
     
 
 class LeagueUser(models.Model):
@@ -153,4 +157,7 @@ class LeagueUser(models.Model):
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
-
+    def update_score(self, score):
+        self.league.reward_top_users()
+        self.score += score
+        self.save()

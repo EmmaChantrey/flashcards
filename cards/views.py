@@ -825,7 +825,9 @@ def clear_feedback(request):
 
 
 def game_end(request, set_id):
-    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
+    user_profile = request.user.profile
+    league_users = LeagueUser.objects.filter(user=user_profile)
+    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=user_profile)
     start_time_str = request.session.get('start_time')
     correct = request.session.get('correct', 0)
     incorrect = request.session.get('incorrect', 0)
@@ -849,9 +851,10 @@ def game_end(request, set_id):
     brainbuck_reward = int(score / 10) if score > 0 else 0
     
     if not request.session.get('reward_given'):
-        request.user.profile.brainbucks += brainbuck_reward
-        request.user.league_user.score += score
-        request.user.profile.save()
+        user_profile.brainbucks += brainbuck_reward
+        for league_user in league_users:
+            league_user.update_score(score)
+        user_profile.save()
         request.session['reward_given'] = True
 
     return render(request, 'cards/game_end.html', {
