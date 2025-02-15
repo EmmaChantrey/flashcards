@@ -23,13 +23,13 @@
             <label>{{ friend.user.username }}</label>
         </div>
         {% empty %}
-        <p>You have no friends to invite.</p>
+        <p><a href="{% url 'profile' %}" class="loginbtn">Add some friends first!</a></p>
         {% endfor %}
     </div>
     
     <div class="league-buttons">
         <button type="submit" class="create-btn">Create League</button>
-        <a href="{% url 'dashboard' %}" class="cancel-btn">Cancel</a>
+        <a href="{% url 'profile' %}" class="cancel-btn">Cancel</a>
     </div>
 </form>
 {% endblock %}

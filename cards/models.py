@@ -2,8 +2,10 @@
 # The model defines database tables, behaviours, and supports queries from the database
 # This data is sent back to the view.
 
+from datetime import timedelta
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.timezone import now
 from math import ceil
 
 
@@ -129,8 +131,14 @@ class LeagueUser(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='league_users')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='league_users')
     score = models.IntegerField(default=0)
+    last_reset = models.DateTimeField(default=now)
 
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
+    def reset_score(self):
+        if now() - self.last_reset >= timedelta(weeks=1):
+            self.score = 0
+            self.last_reset = now()
+            self.save()
 

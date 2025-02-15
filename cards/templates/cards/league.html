@@ -3,14 +3,16 @@
 {% block title %}{{ league.name }} - League{% endblock %}
 
 {% block content %}
-<div class="league-container">
+<div class="flashcard-nav-header">
     <h1 class="league-title">{{ league.name }}</h1>
     <p class="league-owner">Owned by: {{ league.owner.user.username }}</p>
-
-    <h2>Members</h2>
+    <a href="{% url 'profile' %}" class="loginbtn">Back</a>
+</div>
+<div class="dashboard">
     <table class="league-table">
         <thead>
             <tr>
+                <th>Rank</th>
                 <th>Username</th>
                 <th>Score</th>
             </tr>
@@ -18,6 +20,7 @@
         <tbody>
             {% for member in league.league_users.all %}
             <tr>
+                <td>#{{ forloop.counter }}</td>
                 <td>{{ member.user.user.username }}</td>
                 <td>{{ member.score }}</td>
             </tr>
@@ -28,7 +31,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <a href="{% url 'dashboard' %}" class="back-button">Back to Dashboard</a>
 </div>
+    
 {% endblock %}
