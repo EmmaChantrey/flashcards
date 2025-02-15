@@ -3,6 +3,7 @@
 {% block title %}{{ league.name }} - League{% endblock %}
 
 {% block content %}
+{% load static %}
 <div class="flashcard-nav-header">
     <h1 class="league-title">{{ league.name }}</h1>
     <p class="league-owner">Owned by: {{ league.owner.user.username }}</p>
@@ -21,7 +22,13 @@
             {% for member in league.league_users.all|dictsortreversed:"score" %}
             <tr>
                 <td>#{{ forloop.counter }}</td>
-                <td>{{ member.user.user.username }}</td>
+                <td>{{ member.user.user.username }}
+                    {% for badge in member.user.user_badges.all %}
+                        {% if badge.displayed %}
+                            <img src="{% static badge.badge.image %}" alt="{{ badge.badge.name }}" width="30">  {# Display badge image #}
+                        {% endif %}
+                    {% endfor %}
+                </td>
                 <td>{{ member.score }}</td>
             </tr>
             {% empty %}

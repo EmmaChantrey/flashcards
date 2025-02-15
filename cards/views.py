@@ -341,7 +341,6 @@ def create_league(request):
 
 def league(request, league_id):
     league = get_object_or_404(League, id=league_id)
-
     return render(request, 'cards/league.html', {'league': league})
 
 

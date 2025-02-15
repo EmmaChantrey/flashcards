@@ -33,6 +33,9 @@ class Profile(models.Model):
             models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
         )
     
+    def get_badges(self): 
+        return UserBadge.objects.filter(user=self, displayed=True)
+
     def get_requests(self):
         return Profile.objects.filter(friendship_requests_sent__receiver=self, friendship_requests_sent__status='pending')
     
@@ -126,6 +129,9 @@ class League(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def get_members(self):
+        return self.league_users.all()
     
     def reset_scores(self):
         print("resetting scores for league:", self.name)
