@@ -18,7 +18,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for member in league.league_users.all %}
+            {% for member in league.league_users.all|dictsortreversed:"score" %}
             <tr>
                 <td>#{{ forloop.counter }}</td>
                 <td>{{ member.user.user.username }}</td>
