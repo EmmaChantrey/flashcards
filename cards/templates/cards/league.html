@@ -7,6 +7,7 @@
 <div class="flashcard-nav-header">
     <h1 class="league-title">{{ league.name }}</h1>
     <p class="league-owner">Owned by: {{ league.owner.user.username }}</p>
+    <p>Resets in {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</p>
     <a href="{% url 'profile' %}" class="loginbtn">Back</a>
 </div>
 <div class="dashboard">

@@ -3,7 +3,7 @@
 
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
@@ -341,7 +341,17 @@ def create_league(request):
 
 def league(request, league_id):
     league = get_object_or_404(League, id=league_id)
-    return render(request, 'cards/league.html', {'league': league})
+    reset_time = league.last_rewarded + timedelta(weeks=1) - now()
+    days = reset_time.days
+    hours, remainder = divmod(reset_time.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+
+    return render(request, 'cards/league.html', {
+        'league': league,
+        'days': days,
+        'hours': hours,
+        'minutes': minutes,
+        })
 
 
 def study_set(request, set_id):
