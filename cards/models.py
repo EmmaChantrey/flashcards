@@ -3,6 +3,7 @@
 # This data is sent back to the view.
 
 from datetime import timedelta
+import json
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -126,6 +127,7 @@ class League(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owned_leagues')
     last_rewarded = models.DateTimeField(default=timezone.now())
+    previous_top_users = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -133,26 +135,35 @@ class League(models.Model):
     def get_members(self):
         return self.league_users.all()
     
+    def last_rewarded_week(self):
+        self.last_rewarded = timezone.now() - timedelta(weeks=1)
+        self.save()
+    
     def reset_scores(self):
         print("resetting scores for league:", self.name)
         for league_user in self.league_users.all():
-            if timezone.now() - self.last_rewarded >= timedelta(weeks=1):
+                print("resetting score for user:", league_user.user.user.username)
                 league_user.score = 0
-                league_user.last_reset = timezone.now()
                 league_user.save()
+        self.last_rewarded = timezone.now()
+        self.save()
 
     def reward_top_users(self):
         if timezone.now() - self.last_rewarded >= timedelta(weeks=1):
             top_users = self.league_users.order_by('-score')[:3]
 
+            self.previous_top_users = json.dumps([
+                {"username": user.user.user.username, "score": user.score} for user in top_users
+            ])
+
             rewards = [50, 30, 20]
 
             for i, league_user in enumerate(top_users):
                 league_user.user.brainbucks += rewards[i]
-                print(f"rewarding {league_user.user} with {rewards[i]} brainbucks")
                 league_user.user.save()
 
             self.reset_scores()
+        self.save()
     
 
 class LeagueUser(models.Model):

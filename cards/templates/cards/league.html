@@ -10,7 +10,34 @@
     <p>Resets in {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</p>
     <a href="{% url 'profile' %}" class="loginbtn">Back</a>
 </div>
+
 <div class="dashboard">
+    {% if previous_top_users %}
+    <h2>Previous Top Users</h2>
+    <table class="league-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in previous_top_users %}
+            <tr>
+                <td>#{{ forloop.counter }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <div class="dashboard">
+        
+    </div>
+    <h2>Current Leaderboard</h2>
     <table class="league-table">
         <thead>
             <tr>
@@ -26,7 +53,7 @@
                 <td>{{ member.user.user.username }}
                     {% for badge in member.user.user_badges.all %}
                         {% if badge.displayed %}
-                            <img src="{% static badge.badge.image %}" alt="{{ badge.badge.name }}" width="30">  {# Display badge image #}
+                            <img src="{% static badge.badge.image %}" alt="{{ badge.badge.name }}" width="30">
                         {% endif %}
                     {% endfor %}
                 </td>
@@ -34,11 +61,11 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="2">No members yet.</td>
+                <td colspan="3">No members yet.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-    
+
 {% endblock %}

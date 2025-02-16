@@ -1,6 +1,7 @@
 
 # The view will assemble requested data and style it before generating a HTTP response
 
+import json
 import sys
 import time
 from datetime import datetime, timedelta
@@ -341,16 +342,18 @@ def create_league(request):
 
 def league(request, league_id):
     league = get_object_or_404(League, id=league_id)
-    reset_time = league.last_rewarded + timedelta(weeks=1) - now()
+    reset_time = max(league.last_rewarded + timedelta(weeks=1) - now(), timedelta(0))
     days = reset_time.days
     hours, remainder = divmod(reset_time.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
 
+    previous_top_users = json.loads(league.previous_top_users) if league.previous_top_users else []
     return render(request, 'cards/league.html', {
         'league': league,
         'days': days,
         'hours': hours,
         'minutes': minutes,
+        'previous_top_users': previous_top_users,
         })
 
 
