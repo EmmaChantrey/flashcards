@@ -142,27 +142,27 @@ class League(models.Model):
     def reset_scores(self):
         print("resetting scores for league:", self.name)
         for league_user in self.league_users.all():
-                print("resetting score for user:", league_user.user.user.username)
-                league_user.score = 0
-                league_user.save()
+            print("resetting score for user:", league_user.user, "with score:", league_user.score)
+            league_user.score = 0
+            league_user.save()
+            print("reset score for user:", league_user.user, "to:", league_user.score)
         self.last_rewarded = timezone.now()
         self.save()
 
-    def reward_top_users(self):
-        if timezone.now() - self.last_rewarded >= timedelta(weeks=1):
-            top_users = self.league_users.order_by('-score')[:3]
+    def reward_top_users(self): 
+        top_users = self.league_users.order_by('-score')[:3]
 
-            self.previous_top_users = json.dumps([
-                {"username": user.user.user.username, "score": user.score} for user in top_users
-            ])
+        self.previous_top_users = json.dumps([
+            {"username": user.user.user.username, "score": user.score} for user in top_users
+        ])
 
-            rewards = [50, 30, 20]
+        rewards = [50, 30, 20]
 
-            for i, league_user in enumerate(top_users):
-                league_user.user.brainbucks += rewards[i]
-                league_user.user.save()
+        for i, league_user in enumerate(top_users):
+            league_user.user.brainbucks += rewards[i]
+            league_user.user.save()
 
-            self.reset_scores()
+        self.reset_scores()
         self.save()
     
 
@@ -175,6 +175,11 @@ class LeagueUser(models.Model):
         return f"{self.user.username} in {self.league.name}"
     
     def update_score(self, score):
-        self.league.reward_top_users()
+        print(f"Updating score for {self.user} in {self.league.name}. Current score: {self.score}")
+        if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
+            self.league.reward_top_users()
+            print("new user score:", self.score)
         self.score += score
         self.save()
+        print(f"Updated score for {self.user} in {self.league.name}. New score: {self.score}")
+

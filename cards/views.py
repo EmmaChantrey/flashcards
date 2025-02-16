@@ -865,6 +865,7 @@ def game_end(request, set_id):
     if not request.session.get('reward_given'):
         user_profile.brainbucks += brainbuck_reward
         for league_user in league_users:
+            print("resetting score for league user", league_user.user)
             league_user.update_score(score)
         user_profile.save()
         request.session['reward_given'] = True

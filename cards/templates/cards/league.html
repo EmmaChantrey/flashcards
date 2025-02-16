@@ -7,13 +7,12 @@
 <div class="flashcard-nav-header">
     <h1 class="league-title">{{ league.name }}</h1>
     <p class="league-owner">Owned by: {{ league.owner.user.username }}</p>
-    <p>Resets in {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</p>
     <a href="{% url 'profile' %}" class="loginbtn">Back</a>
 </div>
 
 <div class="dashboard">
     {% if previous_top_users %}
-    <h2>Previous Top Users</h2>
+    <h2>Last week's standings</h2>
     <table class="league-table">
         <thead>
             <tr>
@@ -25,7 +24,14 @@
         <tbody>
             {% for user in previous_top_users %}
             <tr>
-                <td>#{{ forloop.counter }}</td>
+                <td>{% if forloop.counter == 1 %} 
+                    <img src="{% static 'images/gold.png' %}" alt="Gold" width="30">
+                    {% elif forloop.counter == 2 %}
+                    <img src="{% static 'images/silver.png' %}" alt="Silver" width="30">
+                    {% elif forloop.counter == 3 %}
+                    <img src="{% static 'images/bronze.png' %}" alt="Bronze" width="30">
+                    {% endif %} #{{ forloop.counter }}
+                </td>
                 <td>{{ user.username }}</td>
                 <td>{{ user.score }}</td>
             </tr>
@@ -34,9 +40,11 @@
     </table>
     {% endif %}
 
-    <div class="dashboard">
-        
+    <div class="flashcard-box">
+        <h3>Resets in: {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</h3>
     </div>
+</div>
+<div class="dashboard">
     <h2>Current Leaderboard</h2>
     <table class="league-table">
         <thead>
@@ -49,7 +57,14 @@
         <tbody>
             {% for member in league.league_users.all|dictsortreversed:"score" %}
             <tr>
-                <td>#{{ forloop.counter }}</td>
+                <td>{% if forloop.counter == 1 %} 
+                    <img src="{% static 'images/gold.png' %}" alt="Gold" width="30">
+                    {% elif forloop.counter == 2 %}
+                    <img src="{% static 'images/silver.png' %}" alt="Silver" width="30">
+                    {% elif forloop.counter == 3 %}
+                    <img src="{% static 'images/bronze.png' %}" alt="Bronze" width="30">
+                    {% endif %} #{{ forloop.counter }}
+                </td>
                 <td>{{ member.user.user.username }}
                     {% for badge in member.user.user_badges.all %}
                         {% if badge.displayed %}
