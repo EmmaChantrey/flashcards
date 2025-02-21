@@ -23,7 +23,6 @@
         </div>
     </div>
     <div class="game-footer">
-        <!-- Using buttons for better accessibility and 'Enter' key support -->
         <button onclick="submitAnswer(true)" class="game-button" tabindex="1" aria-label="Answer True">
             <img src="{% static 'images/true.png' %}" alt="True" class="game-button">
         </button>
@@ -31,6 +30,9 @@
             <img src="{% static 'images/false.png' %}" alt="False" class="game-button">
         </button>
     </div>
+    <button onclick="skipFlashcard()" class="loginbtn" tabindex="3" aria-label="Skip">
+        Skip
+    </button>
 </div>
 
 <div class="progress-container">
@@ -49,6 +51,11 @@
         window.submitAnswer = function(answer) {
             const elapsedTime = Math.round((Date.now() - startTime) / 1000);
             const url = `{% url 'true_false_check' flashcard_set.id %}?answer=${answer}&time=${elapsedTime}`;
+            window.location.href = url;
+        };
+
+        window.skipFlashcard = function() {
+            const url = `{% url 'true_false_check' flashcard_set.id %}?skip=true`;
             window.location.href = url;
         };
     });

@@ -55,9 +55,13 @@ def get_lineup(flashcards, number):
     lineup.extend(overdue_flashcards[:number])
     
     while(len(lineup) < number):
-        flashcards.sort(key=lambda card: card.ease_factor)
+        non_overdue_flashcards = [
+            card for card in flashcards if card not in overdue_flashcards
+        ]
+        
+        non_overdue_flashcards.sort(key=lambda card: card.ease_factor)
         additional_cards_needed = number - len(lineup)
-        lineup.extend(flashcards[:additional_cards_needed])
+        lineup.extend(non_overdue_flashcards[:additional_cards_needed])
 
     return lineup
 

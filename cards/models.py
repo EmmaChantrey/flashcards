@@ -174,12 +174,12 @@ class LeagueUser(models.Model):
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
-    def update_score(self, score):
+    def update_score(self, game_score):
         print(f"Updating score for {self.user} in {self.league.name}. Current score: {self.score}")
         if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
             self.league.reward_top_users()
             print("new user score:", self.score)
-        self.score += score
+        self.score += game_score
         self.save()
         print(f"Updated score for {self.user} in {self.league.name}. New score: {self.score}")
 

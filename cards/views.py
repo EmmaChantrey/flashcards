@@ -379,6 +379,7 @@ def setup_true_false(request, set_id):
     request.session['start_time'] = None
     request.session['correct'] = 0
     request.session['incorrect'] = 0
+    request.session['skipped'] = 0
     
     return redirect('true_false', set_id=set_id)
 
@@ -437,6 +438,18 @@ def true_false_check(request, set_id):
 
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
+    if request.GET.get('skip') == 'true':
+        feedback_message = "⚠️ You skipped this card."
+        request.session['feedback_message'] = feedback_message
+        request.session['show_feedback'] = True
+        request.session['current_flashcard'] = flashcard.id
+        request.session['skipped'] = request.session.get('skipped', 0) + 1
+
+        evaluate_and_update_flashcard(request, flashcard, flashcard_set, skipped=True)
+
+        return redirect('true_false_feedback', set_id=set_id)
+    
+
     # get the user's answer and time taken
     user_answer = request.GET.get('answer', 'false') == 'true'
     elapsed_time = int(request.GET.get('time', 0))
@@ -456,7 +469,7 @@ def true_false_check(request, set_id):
             
     request.session['feedback_message'] = feedback_message
     request.session['show_feedback'] = True
-    request.session['current_flashcard'] = flashcard.id  # Store the flashcard for later use
+    request.session['current_flashcard'] = flashcard.id  # store the flashcard for later use
 
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
 
@@ -488,39 +501,39 @@ def true_false_next(request, set_id):
     if current_index >= len(lineup_ids):
         return redirect('game_end', set_id=set_id)
 
-    # Move to the next question
+    # move to the next question
     request.session['current_index'] = current_index + 1
 
-    # Clear feedback before proceeding
+    #cClear feedback before proceeding
     request.session.pop('feedback_message', None)
     request.session.pop('show_feedback', None)
 
     return redirect('true_false', set_id=set_id)
 
 
-def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
-    if user_answer == is_correct:
-        request.session['correct'] += 1
-        flashcard.repetition += 1
-
-        if elapsed_time > 1.25 * flashcard_set.baseline:
-            print("Slow")
-            performance_level = 2
-        elif elapsed_time > 0.75 * flashcard_set.baseline:
-            print("Average")
-            performance_level = 3
-        else:
-            print("Fast")
-            performance_level = 4
-
-        flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-        print(f"New ease factor for the flashcard '{flashcard.term}' is: {flashcard.ease_factor:.2f}")
-    
-    else:
-        request.session['incorrect'] += 1
-        print("Incorrect")
-        performance_level = 1
+def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer=None, is_correct=None, elapsed_time=0, skipped=False):
+    if skipped:
+        performance_level = 0
+        print("Skipped the flashcard.")
         flashcard.repetition = 1
+    else:
+        if user_answer == is_correct:
+            request.session['correct'] += 1
+            flashcard.repetition += 1
+
+            if elapsed_time > 1.25 * flashcard_set.baseline:
+                performance_level = 2
+            elif elapsed_time > 0.75 * flashcard_set.baseline:
+                performance_level = 3
+            else:
+                performance_level = 4
+
+            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+        
+        else:
+            request.session['incorrect'] += 1
+            performance_level = 1
+            flashcard.repetition = 1
     
     if flashcard.repetition == 1:
         flashcard.interval = 86400
@@ -536,30 +549,30 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     new_baseline = (flashcard_set.baseline + elapsed_time) / 2
     flashcard_set.baseline = new_baseline
     flashcard_set.save()
-
+    print(f"ease factor: {flashcard.ease_factor:.2f}, interval: {flashcard.interval}, baseline: {flashcard_set.baseline:.2f}")
     return performance_level
 
 
 def preprocess_text(text):
-    # Tokenize and preprocess the text
+    # preprocess the text
     tokens = word_tokenize(text.lower())
     stop_words = set(stopwords.words('english'))
     words = [word for word in tokens if word.isalnum() and word not in stop_words]
     return " ".join(words), words
 
+# compute TF-IDF scores for definitions within a set
 def calculate_tfidf_within_set(definitions):
-    # Compute TF-IDF scores for definitions within a set
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(definitions)
     feature_names = vectorizer.get_feature_names_out()
     return tfidf_matrix, feature_names, vectorizer
 
 def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
-    # Preprocess the definition
+    # preprocess the definition
     preprocessed_definition, words = preprocess_text(definition)
     word_scores = {}
     
-    # Get TF-IDF scores for words in the current definition
+    # get TF-IDF scores for words in the current definition
     if preprocessed_definition:
         definition_vector = vectorizer.transform([preprocessed_definition])
         for word in words:
@@ -567,11 +580,10 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
                 idx = vectorizer.vocabulary_.get(word)
                 word_scores[word] = definition_vector[0, idx]
     
-    # Select the word with the highest TF-IDF score
+    # select the word with the highest TF-IDF score
     if word_scores:
         return max(word_scores, key=word_scores.get)
     else:
-        # Fallback: Random word selection if no scores
         return random.choice(words)
 
 
@@ -843,6 +855,7 @@ def game_end(request, set_id):
     start_time_str = request.session.get('start_time')
     correct = request.session.get('correct', 0)
     incorrect = request.session.get('incorrect', 0)
+    skipped = request.session.get('skipped', 0)
     score = 0
     request.session['reward_given'] = False
 
@@ -858,14 +871,13 @@ def game_end(request, set_id):
 
     else:
         total_time = None
-        score = correct/(correct+incorrect)*100
+        score = correct/(correct+incorrect+skipped)*100
 
     brainbuck_reward = int(score / 10) if score > 0 else 0
     
     if not request.session.get('reward_given'):
         user_profile.brainbucks += brainbuck_reward
         for league_user in league_users:
-            print("resetting score for league user", league_user.user)
             league_user.update_score(score)
         user_profile.save()
         request.session['reward_given'] = True
