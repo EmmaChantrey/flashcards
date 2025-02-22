@@ -3,32 +3,84 @@
 {% block title %}{{ league.name }} - League{% endblock %}
 
 {% block content %}
-<div class="league-container">
+{% load static %}
+<div class="flashcard-nav-header">
     <h1 class="league-title">{{ league.name }}</h1>
     <p class="league-owner">Owned by: {{ league.owner.user.username }}</p>
+    <a href="{% url 'profile' %}" class="loginbtn">Back</a>
+</div>
 
-    <h2>Members</h2>
+<div class="dashboard">
+    {% if previous_top_users %}
+    <h2>Last week's standings</h2>
     <table class="league-table">
         <thead>
             <tr>
+                <th>Rank</th>
                 <th>Username</th>
                 <th>Score</th>
             </tr>
         </thead>
         <tbody>
-            {% for member in league.league_users.all %}
+            {% for user in previous_top_users %}
             <tr>
-                <td>{{ member.user.user.username }}</td>
-                <td>{{ member.score }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="2">No members yet.</td>
+                <td>{% if forloop.counter == 1 %} 
+                    <img src="{% static 'images/gold.png' %}" alt="Gold" width="30">
+                    {% elif forloop.counter == 2 %}
+                    <img src="{% static 'images/silver.png' %}" alt="Silver" width="30">
+                    {% elif forloop.counter == 3 %}
+                    <img src="{% static 'images/bronze.png' %}" alt="Bronze" width="30">
+                    {% endif %} #{{ forloop.counter }}
+                </td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.score }}</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    {% endif %}
 
-    <a href="{% url 'dashboard' %}" class="back-button">Back to Dashboard</a>
+    <div class="flashcard-box">
+        <h3>Resets in: {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</h3>
+    </div>
 </div>
+<div class="dashboard">
+    <h2>Current Leaderboard</h2>
+    <table class="league-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in league.league_users.all|dictsortreversed:"score" %}
+            <tr>
+                <td>{% if forloop.counter == 1 %} 
+                    <img src="{% static 'images/gold.png' %}" alt="Gold" width="30">
+                    {% elif forloop.counter == 2 %}
+                    <img src="{% static 'images/silver.png' %}" alt="Silver" width="30">
+                    {% elif forloop.counter == 3 %}
+                    <img src="{% static 'images/bronze.png' %}" alt="Bronze" width="30">
+                    {% endif %} #{{ forloop.counter }}
+                </td>
+                <td>{{ member.user.user.username }}
+                    {% for badge in member.user.user_badges.all %}
+                        {% if badge.displayed %}
+                            <img src="{% static badge.badge.image %}" alt="{{ badge.badge.name }}" width="30">
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{ member.score }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No members yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}

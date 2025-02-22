@@ -2,8 +2,11 @@
 # The model defines database tables, behaviours, and supports queries from the database
 # This data is sent back to the view.
 
+from datetime import timedelta
+import json
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 from math import ceil
 
 
@@ -31,6 +34,9 @@ class Profile(models.Model):
             models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
         )
     
+    def get_badges(self): 
+        return UserBadge.objects.filter(user=self, displayed=True)
+
     def get_requests(self):
         return Profile.objects.filter(friendship_requests_sent__receiver=self, friendship_requests_sent__status='pending')
     
@@ -120,9 +126,44 @@ class UserBadge(models.Model):
 class League(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owned_leagues')
+    last_rewarded = models.DateTimeField(default=timezone.now())
+    previous_top_users = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+    def get_members(self):
+        return self.league_users.all()
+    
+    def last_rewarded_week(self):
+        self.last_rewarded = timezone.now() - timedelta(weeks=1)
+        self.save()
+    
+    def reset_scores(self):
+        print("resetting scores for league:", self.name)
+        for league_user in self.league_users.all():
+            print("resetting score for user:", league_user.user, "with score:", league_user.score)
+            league_user.score = 0
+            league_user.save()
+            print("reset score for user:", league_user.user, "to:", league_user.score)
+        self.last_rewarded = timezone.now()
+        self.save()
+
+    def reward_top_users(self): 
+        top_users = self.league_users.order_by('-score')[:3]
+
+        self.previous_top_users = json.dumps([
+            {"username": user.user.user.username, "score": user.score} for user in top_users
+        ])
+
+        rewards = [50, 30, 20]
+
+        for i, league_user in enumerate(top_users):
+            league_user.user.brainbucks += rewards[i]
+            league_user.user.save()
+
+        self.reset_scores()
+        self.save()
     
 
 class LeagueUser(models.Model):
@@ -133,4 +174,12 @@ class LeagueUser(models.Model):
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
+    def update_score(self, game_score):
+        print(f"Updating score for {self.user} in {self.league.name}. Current score: {self.score}")
+        if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
+            self.league.reward_top_users()
+            print("new user score:", self.score)
+        self.score += game_score
+        self.save()
+        print(f"Updated score for {self.user} in {self.league.name}. New score: {self.score}")
 

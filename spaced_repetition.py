@@ -59,12 +59,9 @@ def get_lineup(flashcards, number):
             card for card in flashcards if card not in overdue_flashcards
         ]
         
+        non_overdue_flashcards.sort(key=lambda card: card.ease_factor)
         additional_cards_needed = number - len(lineup)
-        random_additional_cards = random.sample(
-            non_overdue_flashcards, 
-            min(additional_cards_needed, len(non_overdue_flashcards))
-        )
-        lineup.extend(random_additional_cards)
+        lineup.extend(non_overdue_flashcards[:additional_cards_needed])
 
     return lineup
 
