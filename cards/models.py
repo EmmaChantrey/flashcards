@@ -32,7 +32,7 @@ class Profile(models.Model):
         return Profile.objects.filter(
             models.Q(friendship_requests_sent__receiver=self, friendship_requests_sent__status='accepted') |
             models.Q(friendship_requests_received__sender=self, friendship_requests_received__status='accepted')
-        )
+        ).distinct()
     
     def get_badges(self): 
         return UserBadge.objects.filter(user=self, displayed=True)

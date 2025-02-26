@@ -144,9 +144,6 @@ def view_friend_requests(request):
 def accept_friend_request(request, request_id):
     friend_request = get_object_or_404(Friendship, id=request_id, receiver=request.user.profile)
     friend_request.accept()
-    profile = request.user.profile
-    profile.friends.add(friend_request.sender)
-    friend_request.sender.friends.add(profile)
     return view_friend_requests(request)
 
 
@@ -504,7 +501,7 @@ def true_false_next(request, set_id):
     # move to the next question
     request.session['current_index'] = current_index + 1
 
-    #cClear feedback before proceeding
+    # clear feedback before proceeding
     request.session.pop('feedback_message', None)
     request.session.pop('show_feedback', None)
 
@@ -514,7 +511,6 @@ def true_false_next(request, set_id):
 def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer=None, is_correct=None, elapsed_time=0, skipped=False):
     if skipped:
         performance_level = 0
-        print("Skipped the flashcard.")
         flashcard.repetition = 1
     else:
         if user_answer == is_correct:
@@ -668,29 +664,37 @@ def fill_the_blanks_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    # get the user's answer, correct answer, and time taken
-    user_answer = request.POST.get('answer', '').strip()
-    correct_answer = flashcard_data['correct_answer']
-    elapsed_time = int(request.POST.get('elapsed_time', 0))
+    # check if user skipped the question
+    skipped = request.POST.get('skipped', 'false') == 'true'
 
-    # evaluate the user's answer and update the flashcard
-    correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
-    is_correct = correctness <= 1
-    evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
+    if skipped:
+        is_correct = False
+        feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
+    else:
+        user_answer = request.POST.get('answer', '').strip()
+        correct_answer = flashcard_data['correct_answer']
+        elapsed_time = int(request.POST.get('elapsed_time', 0))
+
+        # evaluate the user's answer and update the flashcard
+        correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
+        is_correct = correctness <= 1
+        feedback_message = ("✅ Correct!" if correctness == 0  
+        else f"✅ Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
+        else f"❌ Incorrect. The correct answer is '{correct_answer}'.")
+
+        evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     current_index += 1
     request.session['current_index'] = current_index
 
-    progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = ("✅ Correct!" if correctness == 0  
-    else f"✅ Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
-    else f"❌ Incorrect. The correct answer is '{correct_answer}'.")
+    progress_percentage = (current_index / len(lineup)) * 100
 
     return JsonResponse({
         'is_correct': is_correct,
         'feedback_message': feedback_message,
         'progress_percentage': progress_percentage,
     })
+
 
 
 

@@ -7,15 +7,19 @@
 <form method="post" id="league-form">
     {% csrf_token %}
     
-    <div class="league-header">
-        <h1>Create a League</h1>
-        <div class="form-group">
-            <label for="league_name">League Name:</label>
+    <div class="flashcard-nav-header">
+        <div class="flashcard-nav-title form-group">
+            <label for="league_name"><h1>League Name:</h1></label>
             <input type="text" id="league_name" name="league_name" required>
         </div>
-    </div>
-    
-    <div class="league-friends-container scrollbox">
+        <div class="flashcard-nav-buttons">
+            <button type="submit" class="loginbtn">Create League</button>
+            <a href="{% url 'profile' %}" class="loginbtn" onclick="return confirmBack()">Back</a>
+   
+        </div>
+    </div>  
+
+    <div class="scrollbox">
         <h2>Select Friends to Invite</h2>
         {% for friend in friends %}
         <div class="friend-item">
@@ -27,9 +31,13 @@
         {% endfor %}
     </div>
     
-    <div class="league-buttons">
-        <button type="submit" class="create-btn">Create League</button>
-        <a href="{% url 'profile' %}" class="cancel-btn">Cancel</a>
-    </div>
+    
 </form>
+
+<script>
+    function confirmBack() {
+        return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
+    }
+</script>
 {% endblock %}
+
