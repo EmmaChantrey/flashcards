@@ -31,7 +31,7 @@
                     <button id="viewRequestsBtn" class="loginbtn">Requests</button>
                     <img src ="{% static 'images/add_circle.png' %}" id="openModal" alt="Add Friends" cursor="pointer" tabindex="0">
                 </div>
-                <div class="friend-list">
+                <div class="friend-list" style="overflow-y: auto; overflow-x: hidden;">
                     {% for friend_data in friends_with_badges %}
                     <div class="friend-box">
                         <p>{{ friend_data.friend.username }}</p>
