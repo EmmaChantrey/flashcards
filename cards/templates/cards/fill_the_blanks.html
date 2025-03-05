@@ -2,6 +2,7 @@
 
 {% block title %}Fill the Blanks: {{ flashcard_set.name }}{% endblock %}
 {% block content %}
+{% load static %}
 <div class="flashcard-nav-header">
     <div class="flashcard-nav-title">
         <h1>Fill the Blanks</h1>
@@ -12,17 +13,17 @@
 </div>
 
 <div class="game-box">
-    <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}">
-        {% csrf_token %}
-            <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
-            <h2><strong>Definition:</strong> 
-                {{ flashcard.blanked_definition|safe }}
-            </h2>
+        <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}" class="fill-blank">
+            {% csrf_token %}
+                <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
+                <h2><strong>Definition:</strong> 
+                    {{ flashcard.blanked_definition|safe }}
+                </h2>
 
-            <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
-            <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
-        <button type="submit" id="check-button" class="check-button">Check</button>
-    </form>
+                <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
+                <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
+            <button type="submit" id="check-button" class="check-button">Check</button>
+        </form>
     <div id="feedback-bar" class="feedback-bar hidden">
         <p id="feedback-message"></p>
         <button id="next-button" class="next-button hidden">Next</button>
