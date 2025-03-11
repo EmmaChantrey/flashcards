@@ -458,10 +458,16 @@ button:hover {
 
     .game-footer {
         justify-content: center !important;
+        width: 100% !important;
     }
 
     .study-option img {
         width: 100% !important;
+    }
+
+    .badge-box img {
+        width: 100%;
+        height: 100%;
     }
 }
 
