@@ -22,8 +22,10 @@
 
         <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
         <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
-        <button type="submit" id="check-button" class="check-button">Check</button>
-        <button type="button" id="skip-button" class="skip-button">Skip</button>
+        <div class="feedback-bar">
+            <button type="submit" id="check-button" class="check-button">Check</button>
+            <button type="button" id="skip-button" class="check-button">Skip</button>
+        </div>
     </form>
     <div id="feedback-bar" class="feedback-bar hidden">
         <p id="feedback-message"></p>
@@ -40,6 +42,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         let startTime = Date.now();
+        document.getElementById('fill-blank').focus();
 
         // Function to attach event listeners
         function attachListeners() {

@@ -456,6 +456,15 @@ button:hover {
         height: 10rem;
     } */
 
+    .question-container{
+        flex-direction: column;
+    }
+    
+    .game-button img {
+        width: 80% !important;
+        height: auto;
+    }
+
     .game-footer {
         justify-content: center !important;
         width: 100% !important;

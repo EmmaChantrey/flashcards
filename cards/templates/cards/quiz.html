@@ -26,8 +26,10 @@
         </div>
 
         <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
-        <button id="check-button" type="submit" class="check-button">Check</button>
-        <button id="skip-button" type="button" class="skip-button">Skip</button> <!-- Add Skip button -->
+        <div class="feedback-bar">
+            <button id="check-button" type="submit" class="check-button" tabindex="1">Check</button>
+            <button id="skip-button" type="button" class="check-button" tabindex="2">Skip</button>
+        </div>    
     </form>
 
     <div id="feedback-bar" class="feedback-bar hidden">

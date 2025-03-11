@@ -599,7 +599,7 @@ def create_blank_definition_within_set(flashcard, flashcard_set):
     
     # replace the blanked word with an HTML input field
     index = words.index(blanked_word)
-    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" placeholder="Fill the blank" required />'
+    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" tabindex="1" placeholder="Fill the blank" required />'
     blanked_definition = " ".join(words)
     return blanked_definition, blanked_word
 
