@@ -140,31 +140,30 @@ class League(models.Model):
         self.save()
     
     def reset_scores(self):
-        print("resetting scores for league:", self.name)
+        print(f"Resetting scores for league: {self.name}")
         for league_user in self.league_users.all():
-            print("resetting score for user:", league_user.user, "with score:", league_user.score)
+            print(f"Resetting score for user: {league_user.user}. Current score: {league_user.score}")
             league_user.score = 0
             league_user.save()
-            print("reset score for user:", league_user.user, "to:", league_user.score)
-        self.last_rewarded = timezone.now()
-        self.save()
+            print(f"Reset score for user: {league_user.user}. New score: {league_user.score}")
 
-    def reward_top_users(self): 
+    def reward_top_users(self):
         top_users = self.league_users.order_by('-score')[:3]
 
         self.previous_top_users = json.dumps([
             {"username": user.user.user.username, "score": user.score} for user in top_users
         ])
+        self.save()
 
         rewards = [50, 30, 20]
-
         for i, league_user in enumerate(top_users):
             league_user.user.brainbucks += rewards[i]
             league_user.user.save()
 
         self.reset_scores()
+        self.last_rewarded = timezone.now()
         self.save()
-    
+
 
 class LeagueUser(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='league_users')
@@ -176,10 +175,15 @@ class LeagueUser(models.Model):
     
     def update_score(self, game_score):
         print(f"Updating score for {self.user} in {self.league.name}. Current score: {self.score}")
+
         if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
+            print(f"Resetting scores for league: {self.league.name}")
             self.league.reward_top_users()
-            print("new user score:", self.score)
+
+            self.score = 0
+            self.save()
+            print(f"Reset score for {self.user} in {self.league.name}. New score: {self.score}")
+
         self.score += game_score
         self.save()
         print(f"Updated score for {self.user} in {self.league.name}. New score: {self.score}")
-
