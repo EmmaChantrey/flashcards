@@ -664,7 +664,11 @@ def fill_the_blanks_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    # check if user skipped the question
+    # Log the current index and flashcard data
+    print(f"Current Index: {current_index}")
+    print(f"Flashcard Data: {flashcard_data}")
+
+    # Check if user skipped the question
     skipped = request.POST.get('skipped', 'false') == 'true'
 
     if skipped:
@@ -675,7 +679,11 @@ def fill_the_blanks_check(request, set_id):
         correct_answer = flashcard_data['correct_answer']
         elapsed_time = int(request.POST.get('elapsed_time', 0))
 
-        # evaluate the user's answer and update the flashcard
+        # Log the user's answer and correct answer
+        print(f"User Answer: {user_answer}")
+        print(f"Correct Answer: {correct_answer}")
+
+        # Evaluate the user's answer
         correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
         is_correct = correctness <= 1
         feedback_message = ("✅ Correct!" if correctness == 0  
@@ -684,8 +692,12 @@ def fill_the_blanks_check(request, set_id):
 
         evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
+    # Update the current index
     current_index += 1
     request.session['current_index'] = current_index
+
+    # Log the updated current index
+    print(f"Updated Current Index: {current_index}")
 
     progress_percentage = (current_index / len(lineup)) * 100
 
@@ -694,7 +706,6 @@ def fill_the_blanks_check(request, set_id):
         'feedback_message': feedback_message,
         'progress_percentage': progress_percentage,
     })
-
 
 
 
