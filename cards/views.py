@@ -775,6 +775,7 @@ def quiz(request, set_id):
 
 
 def quiz_check(request, set_id):
+    
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     lineup = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
@@ -794,6 +795,7 @@ def quiz_check(request, set_id):
         is_correct = False
         feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
     else:
+        
         user_answer = request.POST.get('selected_answer', '').strip()
         correct_answer = flashcard_data['correct_answer']
         elapsed_time = int(request.POST.get('elapsed_time', 0))
