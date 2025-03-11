@@ -629,6 +629,7 @@ def setup_fill_the_blanks(request, set_id):
     # keep track of correct and incorrect answers
     request.session['correct'] = 0
     request.session['incorrect'] = 0
+    request.session['skipped'] = 0
     
     return redirect('fill_the_blanks', set_id=set_id)
 
@@ -673,6 +674,7 @@ def fill_the_blanks_check(request, set_id):
 
     if skipped:
         is_correct = False
+        request.session['skipped'] = request.session.get('skipped', 0) + 1
         feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
     else:
         user_answer = request.POST.get('answer', '').strip()
@@ -886,6 +888,7 @@ def game_end(request, set_id):
 
     else:
         total_time = None
+        print("correct:", correct, "incorrect:", incorrect, "skipped:", skipped)
         score = correct/(correct+incorrect+skipped)*100
 
     brainbuck_reward = int(score / 10) if score > 0 else 0
