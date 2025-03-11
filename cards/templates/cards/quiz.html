@@ -12,7 +12,7 @@
 </div>
 
 <div class="game-box">
-    <form method="POST" action="{% url 'quiz_check' flashcard_set.id %}">
+    <form method="POST" action="{% url 'quiz_check' flashcard_set.id %}" id="quiz-form">
         {% csrf_token %}
         <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
         <div class="definition-options">
@@ -27,6 +27,7 @@
 
         <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
         <button id="check-button" type="submit" class="check-button">Check</button>
+        <button id="skip-button" type="button" class="skip-button">Skip</button>
     </form>
 
     <div id="feedback-bar" class="feedback-bar hidden">
@@ -45,122 +46,121 @@
     document.addEventListener('DOMContentLoaded', () => {
         let startTime = Date.now();
     
+        const form = document.getElementById('quiz-form');
+        const skipButton = document.getElementById('skip-button');
+        const checkButton = document.getElementById('check-button');
         const feedbackBar = document.getElementById('feedback-bar');
         const feedbackMessage = document.getElementById('feedback-message');
         const nextButton = document.getElementById('next-button');
         const progressBar = document.getElementById('progress-bar');
         const progressPercentage = document.getElementById('progress-percentage');
-        const gameBox = document.querySelector('.game-box');
+    
+        skipButton.addEventListener('click', () => {
+            submitForm(true);
+        });
+    
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitForm(false);
+        });
+    
+        async function submitForm(skipped) {
+            checkButton.disabled = true;
+            skipButton.disabled = true;
+            checkButton.classList.add('disabled');
+            skipButton.classList.add('disabled');
+    
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            const formData = new FormData(form);
+    
+            // add skipped flag
+            if (skipped) {
+                formData.append('skipped', 'true');
+            }
+    
+            formData.append('elapsed_time', elapsedTime);
+    
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Failed to fetch');
+                }
+    
+                const data = await response.json();
+                console.log(data);
+    
+                // update game feedback
+                feedbackMessage.textContent = data.feedback_message;
+                checkButton.classList.add('hidden');
+                skipButton.classList.add('hidden');
+                feedbackBar.classList.remove('hidden');
+                nextButton.classList.remove('hidden');
+    
+                nextButton.focus();
+    
+                progressBar.style.width = `${data.progress_percentage}%`;
+                progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
+    
+                form.classList.add('hidden');
+            } catch (error) {
+                console.error('Error during form submission:', error);
+                checkButton.disabled = false;
+                skipButton.disabled = false;
+                checkButton.classList.remove('disabled');
+                skipButton.classList.remove('disabled');
+            }
+        }
+    
+        nextButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch(window.location.href);
+    
+                if (!response.ok) {
+                    throw new Error('Failed to fetch the next question');
+                }
+    
+                const parser = new DOMParser();
+                const responseText = await response.text();
+                const doc = parser.parseFromString(responseText, 'text/html');
+    
+                const newGameBox = doc.querySelector('.game-box');
+    
+                if (!newGameBox) {
+                    throw new Error('No game box found in the server response');
+                }
+    
+                // replace game content with new question
+                const gameBox = document.querySelector('.game-box');
+                gameBox.innerHTML = newGameBox.innerHTML;
+    
+                feedbackBar.classList.add('hidden');
+                nextButton.classList.add('hidden');
+    
+                attachListeners();
+            } catch (error) {
+                console.error('Error loading the next question:', error);
+            }
+        });
     
         function attachListeners() {
-            const form = document.querySelector('form');
-            const feedbackBar = document.getElementById('feedback-bar');
-            const feedbackMessage = document.getElementById('feedback-message');
-            const nextButton = document.getElementById('next-button');
-            const progressBar = document.getElementById('progress-bar');
-            const progressPercentage = document.getElementById('progress-percentage');
-            const checkButton = document.getElementById('check-button');
-            const startTime = Date.now();
-            const options = document.querySelectorAll('.option');
-
-            options.forEach((option) => {
-                option.addEventListener('click', () => {
-                    option.querySelector('input').checked = true;
-                    checkButton.focus();
+            const newForm = document.getElementById('quiz-form');
+            const newSkipButton = document.getElementById('skip-button');
+            const newCheckButton = document.getElementById('check-button');
+    
+            if (newForm && newSkipButton && newCheckButton) {
+                newForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    submitForm(false);
                 });
-
-                option.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        // Prevent the default action to avoid form submission
-                        event.preventDefault();
-                        
-                        // Ensure the option is checked and focus the check button
-                        option.querySelector('input').checked = true;
-                        checkButton.focus();
-                    }
-                });
-            });
-    
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-    
-                // disable the check button to prevent multiple submissions
-                checkButton.disabled = true;
-                checkButton.classList.add('disabled');
-    
-                const elapsedTime = Math.round((Date.now() - startTime) / 1000);
-                const formData = new FormData(form);
-                formData.append('elapsed_time', elapsedTime);
-    
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        },
-                    });
-    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch');
-                    }
-    
-                    const data = await response.json();
-    
-                    if (data.redirect) {
-                        window.location.href = data.url;
-                        return;
-                    }
-    
-                    // update feedback and progress
-                    feedbackMessage.textContent = data.feedback_message;
-                    checkButton.classList.add('hidden');
-                    feedbackBar.classList.remove('hidden');
-                    nextButton.classList.remove('hidden');
-
-                    nextButton.focus();
-
-                    progressBar.style.width = `${data.progress_percentage}%`;
-                    progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
-    
-                    form.classList.add('hidden');
-                } catch (error) {
-                    console.error('Error during form submission:', error);
-                    checkButton.disabled = false;
-                    checkButton.classList.remove('disabled');
-                }
-            });
-    
-            nextButton.addEventListener('click', async () => {
-                try {
-                    const response = await fetch(window.location.href);
-    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch the next question');
-                    }
-    
-                    const parser = new DOMParser();
-                    const responseText = await response.text();
-                    const doc = parser.parseFromString(responseText, 'text/html');
- 
-                    const newGameBox = doc.querySelector('.game-box');
-    
-                    if (!newGameBox) {
-                        throw new Error('No game box found in the server response');
-                    }
-    
-                    // replace the game box content with the new question
-                    const gameBox = document.querySelector('.game-box');
-                    gameBox.innerHTML = newGameBox.innerHTML;
-    
-                    feedbackBar.classList.add('hidden');
-                    nextButton.classList.add('hidden');
-    
-                    attachListeners();
-                } catch (error) {
-                    console.error('Error loading the next question:', error);
-                }
-            });
+                newSkipButton.addEventListener('click', () => submitForm(true));
+            }
         }
     
         attachListeners();

@@ -787,16 +787,24 @@ def quiz_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    user_answer = request.POST.get('selected_answer', '').strip()
-    correct_answer = flashcard_data['correct_answer']
-    elapsed_time = int(request.POST.get('elapsed_time', 0))
-    is_correct = user_answer == correct_answer
+    # Check if the question was skipped
+    skipped = request.POST.get('skipped', 'false') == 'true'
+
+    if skipped:
+        is_correct = False
+        feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
+    else:
+        user_answer = request.POST.get('selected_answer', '').strip()
+        correct_answer = flashcard_data['correct_answer']
+        elapsed_time = int(request.POST.get('elapsed_time', 0))
+        is_correct = user_answer == correct_answer
+
+        feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     request.session['current_index'] += 1
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
         'is_correct': is_correct,
