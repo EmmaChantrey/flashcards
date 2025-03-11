@@ -8,7 +8,9 @@
         
     </div>
     <div class="flashcard-nav-buttons">
-        <h4>Time to beat: {{ flashcard_set.quickest_time|floatformat:2 }} seconds </h4>
+        {% if quickest_time %}
+            <h4>Time to beat: {{ quickest_time|floatformat:2 }} seconds </h4>
+        {% endif %}
         <h4>Time: <span id="live-timer">0.00</span> seconds</h4>
         <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
     </div>

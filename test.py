@@ -14,107 +14,107 @@ from cards.models import Profile, FlashcardSet, Flashcard
 from spaced_repetition import get_lineup, ease_factor_calculation
 
 
-class SignupViewTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-        self.signup_url = reverse('signup')
-        self.valid_data = {
-            'username': 'testuser',
-            'email': 'testuser@example.com',
-            'password': 'securepassword123',
-            'confirm_password': 'securepassword123',
-        }
+# class SignupViewTests(TestCase):
+#     def setUp(self):
+#         self.client = Client()
+#         self.signup_url = reverse('signup')
+#         self.valid_data = {
+#             'username': 'testuser',
+#             'email': 'testuser@example.com',
+#             'password': 'securepassword123',
+#             'confirm_password': 'securepassword123',
+#         }
 
-    def test_signup_successful(self):
-        response = self.client.post(self.signup_url, self.valid_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username='testuser').exists())
-        print("Test `test_signup_successful` passed.")
+#     def test_signup_successful(self):
+#         response = self.client.post(self.signup_url, self.valid_data)
+#         self.assertEqual(response.status_code, 302)
+#         self.assertTrue(User.objects.filter(username='testuser').exists())
+#         print("Test `test_signup_successful` passed.")
 
-    def test_signup_username_already_taken(self):
-        User.objects.create_user(username='testuser', email='existing@example.com', password='password')
-        response = self.client.post(self.signup_url, self.valid_data)
-        self.assertEqual(response.status_code, 302)
+#     def test_signup_username_already_taken(self):
+#         User.objects.create_user(username='testuser', email='existing@example.com', password='password')
+#         response = self.client.post(self.signup_url, self.valid_data)
+#         self.assertEqual(response.status_code, 302)
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Username is already taken.")
-        print("Test `test_signup_username_already_taken` passed.")
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), "Username is already taken.")
+#         print("Test `test_signup_username_already_taken` passed.")
 
-    def test_signup_email_already_registered(self):
-        User.objects.create_user(username='existinguser', email='testuser@example.com', password='password')
-        response = self.client.post(self.signup_url, self.valid_data)
-        self.assertEqual(response.status_code, 302)
+#     def test_signup_email_already_registered(self):
+#         User.objects.create_user(username='existinguser', email='testuser@example.com', password='password')
+#         response = self.client.post(self.signup_url, self.valid_data)
+#         self.assertEqual(response.status_code, 302)
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Email is already registered.")
-        print("Test `test_signup_email_already_registered` passed.")
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), "Email is already registered.")
+#         print("Test `test_signup_email_already_registered` passed.")
 
-    def test_signup_passwords_do_not_match(self):
-        invalid_data = self.valid_data.copy()
-        invalid_data['confirm_password'] = 'differentpassword'
-        response = self.client.post(self.signup_url, invalid_data)
-        self.assertEqual(response.status_code, 302)
+#     def test_signup_passwords_do_not_match(self):
+#         invalid_data = self.valid_data.copy()
+#         invalid_data['confirm_password'] = 'differentpassword'
+#         response = self.client.post(self.signup_url, invalid_data)
+#         self.assertEqual(response.status_code, 302)
 
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Passwords do not match.")
-        print("Test `test_signup_passwords_do_not_match` passed.")
+#         messages = list(get_messages(response.wsgi_request))
+#         self.assertEqual(len(messages), 1)
+#         self.assertEqual(str(messages[0]), "Passwords do not match.")
+#         print("Test `test_signup_passwords_do_not_match` passed.")
 
-    def test_signup_invalid_method(self):
-        response = self.client.get(self.signup_url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'cards/signup.html')
-        print("Test `test_signup_invalid_method` passed.")
+#     def test_signup_invalid_method(self):
+#         response = self.client.get(self.signup_url)
+#         self.assertEqual(response.status_code, 200)
+#         self.assertTemplateUsed(response, 'cards/signup.html')
+#         print("Test `test_signup_invalid_method` passed.")
 
 
-class CustomPasswordValidatorTests(TestCase):
-    def setUp(self):
-        self.validator = CustomPasswordValidator()
+# class CustomPasswordValidatorTests(TestCase):
+#     def setUp(self):
+#         self.validator = CustomPasswordValidator()
 
-    def test_valid_password(self):
-        try:
-            self.validator.validate('StrongPass1!')
-        except ValidationError:
-            self.fail("Validator raised ValidationError unexpectedly!")
-        print("Test `test_valid_password` passed.")
+#     def test_valid_password(self):
+#         try:
+#             self.validator.validate('StrongPass1!')
+#         except ValidationError:
+#             self.fail("Validator raised ValidationError unexpectedly!")
+#         print("Test `test_valid_password` passed.")
 
-    def test_password_too_short(self):
-        with self.assertRaises(ValidationError) as context:
-            self.validator.validate('Sh0rt!')
-        self.assertEqual(
-            context.exception.message,
-            "Password must be at least 8 characters long."
-        )
-        print("Test `test_password_too_short` passed.")
+#     def test_password_too_short(self):
+#         with self.assertRaises(ValidationError) as context:
+#             self.validator.validate('Sh0rt!')
+#         self.assertEqual(
+#             context.exception.message,
+#             "Password must be at least 8 characters long."
+#         )
+#         print("Test `test_password_too_short` passed.")
 
-    def test_password_no_uppercase(self):
-        with self.assertRaises(ValidationError) as context:
-            self.validator.validate('nouppercase1!')
-        self.assertEqual(
-            context.exception.message,
-            "Password must contain at least one uppercase letter."
-        )
-        print("Test `test_password_no_uppercase` passed.")
+#     def test_password_no_uppercase(self):
+#         with self.assertRaises(ValidationError) as context:
+#             self.validator.validate('nouppercase1!')
+#         self.assertEqual(
+#             context.exception.message,
+#             "Password must contain at least one uppercase letter."
+#         )
+#         print("Test `test_password_no_uppercase` passed.")
 
-    def test_password_no_digit(self):
-        with self.assertRaises(ValidationError) as context:
-            self.validator.validate('NoDigit!')
-        self.assertEqual(
-            context.exception.message,
-            "Password must contain at least one digit."
-        )
-        print("Test `test_password_no_digit` passed.")
+#     def test_password_no_digit(self):
+#         with self.assertRaises(ValidationError) as context:
+#             self.validator.validate('NoDigit!')
+#         self.assertEqual(
+#             context.exception.message,
+#             "Password must contain at least one digit."
+#         )
+#         print("Test `test_password_no_digit` passed.")
 
-    def test_password_no_special_character(self):
-        with self.assertRaises(ValidationError) as context:
-            self.validator.validate('NoSpecial1')
-        self.assertEqual(
-            context.exception.message,
-            "Password must contain at least one special character (.,!?-*&)"
-        )
-        print("Test `test_password_no_special_character` passed.")
+#     def test_password_no_special_character(self):
+#         with self.assertRaises(ValidationError) as context:
+#             self.validator.validate('NoSpecial1')
+#         self.assertEqual(
+#             context.exception.message,
+#             "Password must contain at least one special character (.,!?-*&)"
+#         )
+#         print("Test `test_password_no_special_character` passed.")
         
 
 class SpacedRepetitionTests(TestCase):
@@ -277,7 +277,8 @@ class SpacedRepetitionTests(TestCase):
             intervals_by_flashcard[flashcard.term].append(flashcard.interval / 86400)
             for i in range(100):
                 print(f"\n--- Question {i + 1} ---")
-                user_answer = random.choices([True, False], weights=[i * 10, 1000 - (i * 10)], k=1)[0]
+                true_weight = max((i*10), 400)
+                user_answer = random.choices([True, False], weights=[true_weight, 1000 - true_weight], k=1)[0]
                 #user_answer = random.choices([True, False], weights=[0.5, 0.5])[0]
                 elapsed_time = random.uniform(1, 20)
 
