@@ -794,6 +794,7 @@ def quiz_check(request, set_id):
     if skipped:
         is_correct = False
         feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
+        elapsed_time = 0
     else:
         
         user_answer = request.POST.get('selected_answer', '').strip()
