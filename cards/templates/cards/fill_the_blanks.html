@@ -13,17 +13,20 @@
 </div>
 
 <div class="game-box">
-        <form method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}" class="fill-blank">
-            {% csrf_token %}
-                <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
-                <h2><strong>Definition:</strong> 
-                    {{ flashcard.blanked_definition|safe }}
-                </h2>
+    <form id="fill-blank-form" method="POST" action="{% url 'fill_the_blanks_check' flashcard_set.id %}" class="fill-blank">
+        {% csrf_token %}
+        <h2><strong>Term:</strong> {{ flashcard.term }}</h2>
+        <h2><strong>Definition:</strong> 
+            {{ flashcard.blanked_definition|safe }}
+        </h2>
 
-                <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
-                <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
+        <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
+        <input type="hidden" name="correct_answer" value="{{ flashcard.correct_answer }}">
+        <div class="feedback-bar">
             <button type="submit" id="check-button" class="check-button">Check</button>
-        </form>
+            <button type="button" id="skip-button" class="check-button">Skip</button>
+        </div>
+    </form>
     <div id="feedback-bar" class="feedback-bar hidden">
         <p id="feedback-message"></p>
         <button id="next-button" class="next-button hidden">Next</button>
@@ -36,120 +39,141 @@
     <span id="progress-percentage">{{ progress_percentage|floatformat:0 }}%</span>
 </div>
 
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        fillBlank = document.getElementById('fill-blank');
-        if (fillBlank) {
-            fillBlank.focus();
-        }
-
         let startTime = Date.now();
-    
-        const feedbackBar = document.getElementById('feedback-bar');
-        const feedbackMessage = document.getElementById('feedback-message');
-        const nextButton = document.getElementById('next-button');
-        const progressBar = document.getElementById('progress-bar');
-        const progressPercentage = document.getElementById('progress-percentage');
-        const gameBox = document.querySelector('.game-box');
-    
+        document.getElementById('fill-blank').focus();
+
+        // Function to attach event listeners
         function attachListeners() {
-            const form = document.querySelector('form');
+            const form = document.getElementById('fill-blank-form');
+            const skipButton = document.getElementById('skip-button');
+            const checkButton = document.getElementById('check-button');
             const feedbackBar = document.getElementById('feedback-bar');
             const feedbackMessage = document.getElementById('feedback-message');
             const nextButton = document.getElementById('next-button');
             const progressBar = document.getElementById('progress-bar');
             const progressPercentage = document.getElementById('progress-percentage');
-            const checkButton = document.getElementById('check-button');
-            const startTime = Date.now();
-    
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-    
-                // disable the check button to prevent multiple submissions
-                checkButton.disabled = true;
-                checkButton.classList.add('disabled');
-    
-                const elapsedTime = Math.round((Date.now() - startTime) / 1000);
-                const formData = new FormData(form);
-                formData.append('elapsed_time', elapsedTime);
-    
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                        },
-                    });
-    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch');
-                    }
-    
-                    const data = await response.json();
-    
-                    if (data.redirect) {
-                        window.location.href = data.url;
-                        return;
-                    }
-    
-                    // update feedback and progress
-                    feedbackMessage.textContent = data.feedback_message;
-                    checkButton.classList.add('hidden');
-                    feedbackBar.classList.remove('hidden');
-                    nextButton.classList.remove('hidden');
 
-                    document.getElementById('next-button').focus();
+            if (form && skipButton && checkButton) {
+                // Handle the Skip button click
+                skipButton.addEventListener('click', () => {
+                    submitForm(true); // Submit the form with skipped=true
+                });
 
-                    progressBar.style.width = `${data.progress_percentage}%`;
-                    progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
-    
-                    form.classList.add('hidden');
-                } catch (error) {
-                    console.error('Error during form submission:', error);
-                    checkButton.disabled = false;
-                    checkButton.classList.remove('disabled');
-                }
-            });
-    
-            nextButton.addEventListener('click', async () => {
-                try {
-                    const response = await fetch(window.location.href);
-    
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch the next question');
+                // Handle the form submission
+                form.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    submitForm(false); // Submit the form without skipping
+                });
+            }
+
+            // Handle the Next button click
+            if (nextButton) {
+                nextButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(window.location.href);
+
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch the next question');
+                        }
+
+                        const parser = new DOMParser();
+                        const responseText = await response.text();
+                        const doc = parser.parseFromString(responseText, 'text/html');
+
+                        const newGameBox = doc.querySelector('.game-box');
+
+                        if (!newGameBox) {
+                            throw new Error('No game box found in the server response');
+                        }
+
+                        // Replace the game box content with the new question
+                        const gameBox = document.querySelector('.game-box');
+                        gameBox.innerHTML = newGameBox.innerHTML;
+
+                        feedbackBar.classList.add('hidden');
+                        nextButton.classList.add('hidden');
+                        document.getElementById('fill-blank').focus();
+
+                        // Reattach event listeners for the new content
+                        attachListeners();
+                    } catch (error) {
+                        console.error('Error loading the next question:', error);
                     }
-    
-                    const parser = new DOMParser();
-                    const responseText = await response.text();
-                    const doc = parser.parseFromString(responseText, 'text/html');
- 
-                    const newGameBox = doc.querySelector('.game-box');
-    
-                    if (!newGameBox) {
-                        throw new Error('No game box found in the server response');
-                    }
-    
-                    // replace the game box content with the new question
-                    const gameBox = document.querySelector('.game-box');
-                    gameBox.innerHTML = newGameBox.innerHTML;
-    
-                    feedbackBar.classList.add('hidden');
-                    nextButton.classList.add('hidden');
-                    fillBlank.focus();
-    
-                    attachListeners();
-                } catch (error) {
-                    console.error('Error loading the next question:', error);
-                }
-            });
+                });
+            }
         }
-    
+
+        // Function to handle form submission
+        async function submitForm(skipped) {
+            const form = document.getElementById('fill-blank-form');
+            const checkButton = document.getElementById('check-button');
+            const skipButton = document.getElementById('skip-button');
+
+            // Disable buttons to prevent multiple submissions
+            checkButton.disabled = true;
+            skipButton.disabled = true;
+            checkButton.classList.add('disabled');
+            skipButton.classList.add('disabled');
+
+            const elapsedTime = Math.round((Date.now() - startTime) / 1000);
+            const formData = new FormData(form);
+
+            if (skipped) {
+                formData.append('skipped', 'true'); // Add skipped flag
+            }
+
+            formData.append('elapsed_time', elapsedTime);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch');
+                }
+
+                const data = await response.json();
+                console.log(data); // Log the response data
+
+                const feedbackMessage = document.getElementById('feedback-message');
+                const feedbackBar = document.getElementById('feedback-bar');
+                const nextButton = document.getElementById('next-button');
+                const progressBar = document.getElementById('progress-bar');
+                const progressPercentage = document.getElementById('progress-percentage');
+
+                // Update feedback and progress
+                feedbackMessage.textContent = data.feedback_message;
+                checkButton.classList.add('hidden');
+                skipButton.classList.add('hidden');
+                feedbackBar.classList.remove('hidden');
+                nextButton.classList.remove('hidden');
+
+                document.getElementById('next-button').focus();
+
+                progressBar.style.width = `${data.progress_percentage}%`;
+                progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
+
+                form.classList.add('hidden');
+            } catch (error) {
+                console.error('Error during form submission:', error);
+                checkButton.disabled = false;
+                skipButton.disabled = false;
+                checkButton.classList.remove('disabled');
+                skipButton.classList.remove('disabled');
+            }
+        }
+
+        // Initial attachment of event listeners
         attachListeners();
-    });
+});
 </script>
-    
 
 <script id="feedback-data" type="application/json">
     {{ feedback_data|json_script:"feedback-data" }}

@@ -599,7 +599,7 @@ def create_blank_definition_within_set(flashcard, flashcard_set):
     
     # replace the blanked word with an HTML input field
     index = words.index(blanked_word)
-    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" placeholder="Fill the blank" required />'
+    words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" tabindex="1" placeholder="Fill the blank" required />'
     blanked_definition = " ".join(words)
     return blanked_definition, blanked_word
 
@@ -629,6 +629,7 @@ def setup_fill_the_blanks(request, set_id):
     # keep track of correct and incorrect answers
     request.session['correct'] = 0
     request.session['incorrect'] = 0
+    request.session['skipped'] = 0
     
     return redirect('fill_the_blanks', set_id=set_id)
 
@@ -664,18 +665,27 @@ def fill_the_blanks_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    # check if user skipped the question
+    # Log the current index and flashcard data
+    print(f"Current Index: {current_index}")
+    print(f"Flashcard Data: {flashcard_data}")
+
+    # Check if user skipped the question
     skipped = request.POST.get('skipped', 'false') == 'true'
 
     if skipped:
         is_correct = False
+        request.session['skipped'] = request.session.get('skipped', 0) + 1
         feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
     else:
         user_answer = request.POST.get('answer', '').strip()
         correct_answer = flashcard_data['correct_answer']
         elapsed_time = int(request.POST.get('elapsed_time', 0))
 
-        # evaluate the user's answer and update the flashcard
+        # Log the user's answer and correct answer
+        print(f"User Answer: {user_answer}")
+        print(f"Correct Answer: {correct_answer}")
+
+        # Evaluate the user's answer
         correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
         is_correct = correctness <= 1
         feedback_message = ("✅ Correct!" if correctness == 0  
@@ -684,8 +694,12 @@ def fill_the_blanks_check(request, set_id):
 
         evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
+    # Update the current index
     current_index += 1
     request.session['current_index'] = current_index
+
+    # Log the updated current index
+    print(f"Updated Current Index: {current_index}")
 
     progress_percentage = (current_index / len(lineup)) * 100
 
@@ -694,7 +708,6 @@ def fill_the_blanks_check(request, set_id):
         'feedback_message': feedback_message,
         'progress_percentage': progress_percentage,
     })
-
 
 
 
@@ -762,6 +775,7 @@ def quiz(request, set_id):
 
 
 def quiz_check(request, set_id):
+    
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     lineup = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
@@ -774,16 +788,26 @@ def quiz_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    user_answer = request.POST.get('selected_answer', '').strip()
-    correct_answer = flashcard_data['correct_answer']
-    elapsed_time = int(request.POST.get('elapsed_time', 0))
-    is_correct = user_answer == correct_answer
+    # Check if the question was skipped
+    skipped = request.POST.get('skipped', 'false') == 'true'
+
+    if skipped:
+        is_correct = False
+        feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
+        elapsed_time = 0
+    else:
+        
+        user_answer = request.POST.get('selected_answer', '').strip()
+        correct_answer = flashcard_data['correct_answer']
+        elapsed_time = int(request.POST.get('elapsed_time', 0))
+        is_correct = user_answer == correct_answer
+
+        feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
     request.session['current_index'] += 1
     progress_percentage = (request.session['current_index'] / len(lineup)) * 100
-    feedback_message = "✅ Correct!" if is_correct else f"❌ Incorrect. The correct answer is '{correct_answer}'."
 
     return JsonResponse({
         'is_correct': is_correct,
@@ -875,6 +899,7 @@ def game_end(request, set_id):
 
     else:
         total_time = None
+        print("correct:", correct, "incorrect:", incorrect, "skipped:", skipped)
         score = correct/(correct+incorrect+skipped)*100
 
     brainbuck_reward = int(score / 10) if score > 0 else 0

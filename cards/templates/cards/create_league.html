@@ -23,8 +23,8 @@
         <h2>Select Friends to Invite</h2>
         {% for friend in friends %}
         <div class="friend-item">
-            <input type="checkbox" name="friends" value="{{ friend.id }}"> 
-            <label>{{ friend.user.username }}</label>
+            <input type="checkbox" class="custom-checkbox" id="friend{{ friend.id }}" name="friends" value="{{ friend.id }}">
+            <label for="friend{{ friend.id }}" class="custom-label">{{ friend.user.username }}</label>
         </div>
         {% empty %}
         <p><a href="{% url 'profile' %}" class="loginbtn">Add some friends first!</a></p>

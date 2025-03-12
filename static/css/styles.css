@@ -451,9 +451,18 @@ button:hover {
         height: 95%
     }
 
-    .game-button {
+    /* .game-button {
         width: 10rem;
         height: 10rem;
+    } */
+
+    .question-container{
+        flex-direction: column;
+    }
+    
+    .game-button img {
+        width: 80% !important;
+        height: auto;
     }
 
     .game-footer {
@@ -474,8 +483,10 @@ button:hover {
 
 .game-box {
     display: flex;
+    height: 70%;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     margin-bottom: 2rem;
     max-height: min-content;
     padding: 3rem;
@@ -500,6 +511,40 @@ button:hover {
 .game-button img {
     width: 50%;
     height: auto;
+}
+
+.friend-item {
+    margin-bottom: 10px;
+}
+
+.custom-checkbox {
+    display: none;
+}
+
+.custom-label {
+    display: block;
+    width: 60%;
+    font-size: 1.25rem;
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-label:hover {
+    border-color: #023047;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.custom-checkbox:checked + .custom-label {
+    background-color: #023047;
+    color: white;
+    border-color: #023047;
+    box-shadow: 0 0 10px rgba(2, 48, 71, 0.5);
 }
 
 .check-button {
@@ -650,6 +695,7 @@ input[type="radio"]:checked + label.custom-radio {
     border-radius: 50%;
     margin-left: 0.5rem;
 }
+
 
 .modal { 
     position: fixed;
