@@ -18,6 +18,9 @@ from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
 from django.contrib import messages
 from django import forms
+from django.core.mail import send_mail
+from django.conf import settings
+import uuid
 from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
 from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
@@ -40,13 +43,23 @@ from django.views.generic import (
     UpdateView
 )
 
+
+def email_verified_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.profile.is_verified:
+            return redirect('verify_email_prompt')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+
 def landing_page(request):
     return render(request, 'cards/landing.html')
 
 def about(request):
     return render(request, 'cards/about.html')
 
-
+@email_verified_required
 def profile(request):
     displayed_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile, displayed=True).values("badge_id"))
     owned_badges = Badge.objects.filter(id__in=UserBadge.objects.filter(user=request.user.profile).values("badge_id"))
@@ -180,6 +193,24 @@ def signup(request):
 
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save() 
+        profile = Profile.objects.create(user=user)
+
+        # Generate a verification token
+        verification_token = str(uuid.uuid4())
+        profile.verification_token = verification_token
+        profile.save()
+
+        # Send verification email
+        verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
+        send_mail(
+            'BrainSpace: Verify Your Email',
+            f'Click the link to verify your email: {verification_link}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "A verification email has been sent to your email address.")
 
         login(request, user)
         return redirect('dashboard')
@@ -196,6 +227,8 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
+            if not user.profile.is_verified:
+                return redirect('verify_email_prompt')
             return redirect('dashboard')
         else:
             messages.error(request, "Incorrect username or password.")
@@ -205,6 +238,50 @@ def login_view(request):
 
 
 @login_required
+def verify_email_prompt(request):
+    return render(request, 'cards/verify_email_prompt.html')
+
+
+def verify_email(request, token):
+    profile = get_object_or_404(Profile, verification_token=token)
+    
+    if not profile.is_verified:
+        profile.is_verified = True
+        profile.verification_token = None  # Clear the token after verification
+        profile.save()
+        messages.success(request, "Your email has been verified.")
+    else:
+        messages.warning(request, "Your email is already verified.")
+
+    return redirect('dashboard')
+
+
+def resend_verification_email(request):
+    profile = request.user.profile
+    if not profile.is_verified:
+        # Generate a new verification token
+        verification_token = str(uuid.uuid4())
+        profile.verification_token = verification_token
+        profile.save()
+
+        # Send verification email
+        verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
+        send_mail(
+            'BrainSpace: Verify Your Email',
+            f'Click the link to verify your email: {verification_link}',
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email],
+            fail_silently=False,
+        )
+
+    else:
+        messages.warning(request, "Your email is already verified.")
+
+    return redirect('verify_email_prompt')
+
+
+@login_required
+@email_verified_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     brainbucks = request.user.profile.brainbucks

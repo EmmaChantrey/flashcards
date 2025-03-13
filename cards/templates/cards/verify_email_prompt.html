@@ -1,0 +1,13 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Verify Your Email{% endblock %}
+
+{% block content %}
+<div class="verify-email-prompt">
+    <h1>Verify Your Email</h1>
+    <p>Thank you for signing up! To access BrainSpace, please verify your email address.</p>
+    <p>We've sent a verification email to <strong>{{ request.user.email }}</strong>. Please check your inbox and click the verification link.</p>
+    <p>If you didn't receive the email, <a href="{% url 'resend_verification_email' %}">click here to resend it</a>.</p>
+    <p><a href="{% url 'logout' %}">Log out</a></p>
+</div>
+{% endblock %}

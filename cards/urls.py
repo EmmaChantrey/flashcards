@@ -14,6 +14,12 @@ urlpatterns = [
 
     path('signup/', views.signup, name='signup'),
 
+    path('verify-email-prompt/', views.verify_email_prompt, name='verify_email_prompt'),
+
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
+
+    path('resend-verification-email/', views.resend_verification_email, name='resend_verification_email'),
+
     path('dashboard/', views.dashboard, name='dashboard'),
 
     path('flashcard_sidebar/', views.flashcard_sidebar, name='flashcard_sidebar'),
