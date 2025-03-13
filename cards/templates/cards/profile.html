@@ -9,7 +9,7 @@
     <div class="profile-box">
         <div class="flashcard-nav-header">
             <h1>{{ user.username }}</h1>
-            <button id="edit-profile" class="loginbtn">Settings</button>
+            <a href ="{% url 'settings_page' %}" class="signupbtn">Settings</a>
         </div>
         <div class="badge-container" id="badgeContainer">
             {% for badge in displayed_badges %}

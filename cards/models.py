@@ -15,6 +15,9 @@ class Profile(models.Model):
     points = models.IntegerField(default=0)
     brainbucks = models.IntegerField(default=0)
     friends = models.ManyToManyField('self', through='Friendship', symmetrical=False, related_name='friend_list')
+    is_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=255, blank=True, null=True)
+
 
     def __str__(self):
         return f"{self.user.username}'s Profile"

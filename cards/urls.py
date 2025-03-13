@@ -14,6 +14,12 @@ urlpatterns = [
 
     path('signup/', views.signup, name='signup'),
 
+    path('verify-email-prompt/', views.verify_email_prompt, name='verify_email_prompt'),
+
+    path('verify-email/<uuid:token>/', views.verify_email, name='verify_email'),
+
+    path('resend-verification-email/', views.resend_verification_email, name='resend_verification_email'),
+
     path('dashboard/', views.dashboard, name='dashboard'),
 
     path('flashcard_sidebar/', views.flashcard_sidebar, name='flashcard_sidebar'),
@@ -86,4 +92,17 @@ urlpatterns = [
 
     path('game_end/<int:set_id>/', views.game_end, name='game_end'),
 
+    path('settings/', views.settings_page, name='settings_page'),
+
+    path('settings/change-email/', views.change_email, name='change_email'),
+    
+    path('settings/change-username/', views.change_username, name='change_username'),
+    
+    path('settings/change-password/', views.change_password, name='change_password'),
+    
+    path('settings/delete-account/', views.delete_account, name='delete_account'),
+
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+        
+    path('reset-password-confirm/<uidb64>/<token>/', views.reset_password_confirm, name='reset_password_confirm'),
 ]

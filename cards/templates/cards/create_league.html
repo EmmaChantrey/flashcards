@@ -13,7 +13,7 @@
             <input type="text" id="league_name" name="league_name" required>
         </div>
         <div class="flashcard-nav-buttons">
-            <button type="submit" class="loginbtn">Create League</button>
+            
             <a href="{% url 'profile' %}" class="loginbtn" onclick="return confirmBack()">Back</a>
    
         </div>
@@ -30,7 +30,7 @@
         <p><a href="{% url 'profile' %}" class="loginbtn">Add some friends first!</a></p>
         {% endfor %}
     </div>
-    
+    <button type="submit" class="loginbtn">Create League</button>
     
 </form>
 
