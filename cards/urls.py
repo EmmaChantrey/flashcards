@@ -102,4 +102,7 @@ urlpatterns = [
     
     path('settings/delete-account/', views.delete_account, name='delete_account'),
 
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+        
+    path('reset-password-confirm/<uidb64>/<token>/', views.reset_password_confirm, name='reset_password_confirm'),
 ]

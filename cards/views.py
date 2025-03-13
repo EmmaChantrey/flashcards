@@ -27,6 +27,10 @@ from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_ca
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
 
 import nltk
 nltk.download('punkt_tab')
@@ -1097,6 +1101,12 @@ def change_password(request):
         elif new_password != confirm_password:
             messages.error(request, "The new passwords do not match.")
         else:
+            try:
+                validate_password(new_password)
+            except ValidationError as e:
+                messages.error(request, e.messages[0])
+                return redirect('settings_page')
+
             request.user.set_password(new_password)
             request.user.save()
             update_session_auth_hash(request, request.user)  # Keep the user logged in
@@ -1112,3 +1122,64 @@ def delete_account(request):
         return redirect('landing')  # Redirect to the landing page after deletion
 
     return redirect('settings_page')
+
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "No user found with this email address.")
+            return redirect('forgot_password')
+
+        # Generate a password reset token
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Create the reset link
+        reset_link = request.build_absolute_uri(
+            reverse('reset_password_confirm', kwargs={'uidb64': uid, 'token': token})
+        )
+
+        # Send the reset email
+        send_mail(
+            'BrainSpace: Password Reset Request',
+            f'Click the link to reset your password: {reset_link}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "A password reset link has been sent to your email address.")
+        return redirect('login')
+
+    return render(request, 'cards/forgot_password.html')
+
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = get_user_model().objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, get_user_model().DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if new_password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+            else:
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)  # Keep the user logged in
+                messages.success(request, "Your password has been reset successfully.")
+                return redirect('login')
+    else:
+        messages.error(request, "Invalid or expired password reset link.")
+        return redirect('forgot_password')
+
+    return render(request, 'cards/reset_password_confirm.html', {'uidb64': uidb64, 'token': token})
