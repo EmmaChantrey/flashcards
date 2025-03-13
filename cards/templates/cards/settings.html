@@ -1,0 +1,67 @@
+{% extends 'cards/header.html' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <h1>Account Settings</h1>
+
+    <!-- Display messages -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Change Email Form -->
+    <div class="settings-section">
+        <h2>Change Email</h2>
+        <form method="post" action="{% url 'change_email' %}">
+            {% csrf_token %}
+            <label for="new_email">New Email:</label>
+            <input type="email" id="new_email" name="new_email" required>
+            <button type="submit">Update Email</button>
+        </form>
+    </div>
+
+    <!-- Change Username Form -->
+    <div class="settings-section">
+        <h2>Change Username</h2>
+        <form method="post" action="{% url 'change_username' %}">
+            {% csrf_token %}
+            <label for="new_username">New Username:</label>
+            <input type="text" id="new_username" name="new_username" required>
+            <button type="submit">Update Username</button>
+        </form>
+    </div>
+
+    <!-- Change Password Form -->
+    <div class="settings-section">
+        <h2>Change Password</h2>
+        <form method="post" action="{% url 'change_password' %}">
+            {% csrf_token %}
+            <label for="old_password">Current Password:</label>
+            <input type="password" id="old_password" name="old_password" required>
+            <label for="new_password">New Password:</label>
+            <input type="password" id="new_password" name="new_password" required>
+            <label for="confirm_password">Confirm New Password:</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+            <button type="submit">Update Password</button>
+        </form>
+    </div>
+
+    <!-- Delete Account Section -->
+    <div class="settings-section">
+        <h2>Delete Account</h2>
+        <p>Warning: This action cannot be undone. All your data will be permanently deleted.</p>
+        <form method="post" action="{% url 'delete_account' %}" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="delete-account-btn">Delete My Account</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

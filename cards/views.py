@@ -10,7 +10,7 @@ from random import sample, shuffle
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse_lazy, reverse
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -1028,3 +1028,87 @@ def delete_set(request, set_id):
         return redirect('dashboard')
     
     return redirect('dashboard')
+
+
+@login_required
+def settings_page(request):
+    return render(request, 'cards/settings.html')
+
+@login_required
+def change_email(request):
+    if request.method == 'POST':
+        new_email = request.POST.get('new_email')
+
+        try:
+            if User.objects.filter(email=new_email).exists():
+                messages.error(request, "This email is already in use.")
+            else:
+                # Update the email
+                request.user.email = new_email
+                request.user.save()
+
+                # Generate a new verification token
+                profile = request.user.profile
+                verification_token = str(uuid.uuid4())
+                profile.verification_token = verification_token
+                profile.is_verified = False  # Mark email as unverified
+                profile.save()
+
+                # Send verification email
+                verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
+                send_mail(
+                    'BrainSpace: Verify Your Email',
+                    f'Click the link to verify your email: {verification_link}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [request.user.email],
+                    fail_silently=False,
+                )
+
+                messages.success(request, "Your email has been updated. A verification email has been sent to your new email address.")
+        except ValidationError:
+            messages.error(request, "Invalid email address.")
+
+    return redirect('verify_email_prompt')
+
+
+@login_required
+def change_username(request):
+    if request.method == 'POST':
+        new_username = request.POST.get('new_username')
+
+        if User.objects.filter(username=new_username).exists():
+            messages.error(request, "This username is already taken.")
+        else:
+            request.user.username = new_username
+            request.user.save()
+            messages.success(request, "Your username has been updated.")
+
+    return redirect('settings_page')
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not request.user.check_password(old_password):
+            messages.error(request, "Your current password is incorrect.")
+        elif new_password != confirm_password:
+            messages.error(request, "The new passwords do not match.")
+        else:
+            request.user.set_password(new_password)
+            request.user.save()
+            update_session_auth_hash(request, request.user)  # Keep the user logged in
+            messages.success(request, "Your password has been updated.")
+
+    return redirect('settings_page')
+
+@login_required
+def delete_account(request):
+    if request.method == 'POST':
+        request.user.delete()
+        logout(request)
+        return redirect('landing')  # Redirect to the landing page after deletion
+
+    return redirect('settings_page')

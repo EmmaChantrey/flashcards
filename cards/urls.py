@@ -92,4 +92,14 @@ urlpatterns = [
 
     path('game_end/<int:set_id>/', views.game_end, name='game_end'),
 
+    path('settings/', views.settings_page, name='settings_page'),
+
+    path('settings/change-email/', views.change_email, name='change_email'),
+    
+    path('settings/change-username/', views.change_username, name='change_username'),
+    
+    path('settings/change-password/', views.change_password, name='change_password'),
+    
+    path('settings/delete-account/', views.delete_account, name='delete_account'),
+
 ]
