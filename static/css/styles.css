@@ -75,7 +75,7 @@ header nav a {
     cursor: pointer;
 }
 
-    
+
 
 .landing-container {
     display: flex;
@@ -231,7 +231,7 @@ button:hover {
 
 .signup-container button:hover {
     background-color: #023047;
-    opacity: 0.75; 
+    opacity: 0.75;
 }
 
 .flashcard-sidebar {
@@ -305,6 +305,11 @@ button:hover {
 }
 
 
+.logo {
+    width: 100%;
+    height: auto;
+}
+
 .large-device {
     display: block;
 }
@@ -353,7 +358,7 @@ button:hover {
         max-width: 25rem;
         margin-bottom: 1rem;
     }
-    
+
     .page-option:hover {
         transform: scale(1.05);
     }
@@ -464,7 +469,7 @@ button:hover {
     .question-container{
         flex-direction: column;
     }
-    
+
     .game-button img {
         width: 80% !important;
         height: auto;
@@ -581,7 +586,7 @@ button:hover {
 
 button:disabled {
     background-color: #ccc;
-    color: #666;          
+    color: #666;
     cursor: not-allowed;
     border: 1px solid #aaa;
 }
@@ -639,7 +644,7 @@ input[type="radio"]:checked + label.custom-radio {
     position: relative;
     height: 20px;
     margin: 20px 0;
-    
+
 }
 
 .progress-bar {
@@ -702,29 +707,29 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 
-.modal { 
+.modal {
     position: fixed;
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: rgba(0, 0, 0, 0.5); 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-                
-.modal-content { 
-    background: white; 
-    padding: 2rem; 
-    border-radius: 10px; 
-    width: 30rem; 
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 30rem;
 }
-                
-.close { 
-    float: right; 
-    cursor: pointer; 
-    font-size: 2rem; 
+
+.close {
+    float: right;
+    cursor: pointer;
+    font-size: 2rem;
 }
 
 
@@ -809,7 +814,7 @@ input[type="radio"]:checked + label.custom-radio {
 
 .grid-item:hover {
     transform: scale(1.05);
-} 
+}
 
 .grid-item.selected {
     background-color: #023047;
