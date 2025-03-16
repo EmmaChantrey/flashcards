@@ -42,7 +42,9 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p>No friends yet.</p>
+                    <div class="brainspace-intro">
+                        No friends found. Add friends to compare badges and join leagues!
+                    </div>
                 {% endfor %}
                 </div>
             </div>
@@ -86,7 +88,9 @@
                                 <img src="{% static badge.image %}" alt="{{ badge.name }}">
                             </label>
                             {% empty %}
-                            <p>You have no badges yet. Head to the Badge Shop to purchase your first!</p>
+                            <div class="brainspace-intro">
+                                You have no badges to display. Head to the Badge Shop to purchase with BrainBucks!
+                            </div>
                             {% endfor %}
                         </div>
             
@@ -106,7 +110,9 @@
                         <a href="{% url 'league' league.id %}" class="loginbtn">{{ league.name }}</a>
                     </div>
                     {% empty %}
-                    <p>No leagues found.</p>
+                    <div class="brainspace-intro">
+                        No leagues found. Create a league to compete with friends!
+                    </div>
                     {% endfor %}
             </div>
         </div>
