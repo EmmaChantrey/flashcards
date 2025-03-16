@@ -47,7 +47,30 @@
                 </div>
             </div>
             {% empty %}
-            <p>You have no flashcard sets yet! Click above to make your first.</p>
+            <div class="brainspace-intro">
+                <h3>Welcome to BrainSpace!</h3>
+                <p>
+                    This platform helps you learn effectively with interactive flashcards and four engaging minigames designed to reinforce your knowledge.  
+                    Our <strong>spaced repetition system</strong> ensures that you review concepts at the optimal time for long-term retention.  
+                </p>
+                <p>
+                    Get started by creating your first flashcard set! You can customise sets with terms and definitions, then test yourself with:
+                </p>
+                <ul>
+                    <li><strong>True or False:</strong> Determine whether two cards are a pair or not.</li>
+                    <li><strong>Fill the Blanks:</strong> Complete missing words or phrases in a flashcard definition.</li>
+                    <li><strong>Quiz:</strong> Reinforce learning with multiple-choice questions.</li>
+                    <li><strong>Match:</strong> Race against yourself to match flashcard terms and definitions.</li>
+                </ul>
+                <p>
+                    You can earn BrainBucks to spend in the Badge Shop by playing minigames. Show off your badges to your friends by 
+                    <a href="{% url 'profile' %}">customising your profile</a>!
+                </p>
+                <p>
+                    Click the <strong>"Create Set"</strong> button above to begin!
+                </p>
+            </div>
+            
             {% endfor %}
         </div>
     </div>
