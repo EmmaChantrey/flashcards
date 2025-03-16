@@ -197,7 +197,7 @@ def signup(request):
 
         user = User.objects.create_user(username=username, email=email, password=password)
         user.save() 
-        profile = Profile.objects.create(user=user)
+        profile = Profile.objects.get_or_create(user=user)
 
         # Generate a verification token
         verification_token = str(uuid.uuid4())
