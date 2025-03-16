@@ -345,19 +345,27 @@ button:hover {
         height: 40vh;
         width: auto;
         transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+        position: relative;
     }
 
-    .page-link a {
+    .page-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
         width: 100%;
         height: 100%;
     }
 
     .page-link img {
-        align-self: center;
-        max-width: 25rem;
+        max-width: 100%;
+        max-height: 80%;
+        object-fit: contain;
         margin-bottom: 1rem;
     }
-    
+
     .page-option:hover {
         transform: scale(1.05);
     }
