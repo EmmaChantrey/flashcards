@@ -4,9 +4,12 @@
 
 {% block content %}
 <div class="settings-container">
-    <h1>Account Settings</h1>
+    
+    <div class="flashcard-nav-header">
+        <h1>Account Settings</h1>
+        <a href="{% url 'profile' %}" class="loginbtn">Back</a>
+    </div>
 
-    <!-- Display messages -->
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
@@ -17,7 +20,6 @@
     </div>
     {% endif %}
 
-    <!-- Change Email Form -->
     <div class="settings-section">
         <h2>Change Email</h2>
         <form method="post" action="{% url 'change_email' %}">
@@ -28,7 +30,6 @@
         </form>
     </div>
 
-    <!-- Change Username Form -->
     <div class="settings-section">
         <h2>Change Username</h2>
         <form method="post" action="{% url 'change_username' %}">
@@ -39,7 +40,6 @@
         </form>
     </div>
 
-    <!-- Change Password Form -->
     <div class="settings-section">
         <h2>Change Password</h2>
         <form method="post" action="{% url 'change_password' %}">
@@ -54,7 +54,6 @@
         </form>
     </div>
 
-    <!-- Delete Account Section -->
     <div class="settings-section">
         <h2>Delete Account</h2>
         <p>Warning: This action cannot be undone. All your data will be permanently deleted.</p>

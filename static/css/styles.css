@@ -1404,7 +1404,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .forgot-password-container button:hover {
-    background-color: #0056b3;
+    opacity: 0.75;
 }
 
 /* Container for the reset password form */
@@ -1466,13 +1466,13 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .reset-password-container button:hover {
-    background-color: #0056b3;
+    opacity: 0.75;
 }
 
 .btn-back {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #023047; /* Gray color */
+    background-color: #023047;
     color: #fff;
     text-decoration: none;
     border-radius: 4px;
@@ -1481,7 +1481,6 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .btn-back:hover {
-    background-color: #023047; /* Darker gray on hover */
     opacity: 0.75;
 }
 
@@ -1529,4 +1528,50 @@ input[type="radio"]:checked + label.custom-radio {
     color: #023047;
     font-weight: bold;
     text-decoration: none;
+}
+
+.countdown-box {
+    background-color: #FFFFFF;
+    border: 1px solid #8ECAE6;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.countdown-box h3 {
+    font-size: 1.5rem;
+    color: #023047;
+    margin-bottom: 15px;
+    font-weight: 600; 
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.countdown-item {
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    min-width: 80px;
+    border: 1px solid #8ECAE6;
+}
+
+.countdown-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #023047;
+}
+
+.countdown-label {
+    font-size: 1rem;
+    color: #219EBC;
+    text-transform: uppercase;
+    margin-top: 5px;
+    font-weight: 500;
 }

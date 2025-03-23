@@ -40,10 +40,25 @@
     </table>
     {% endif %}
 
-    <div class="flashcard-box">
-        <h3>Resets in: {{ days }} days, {{ hours }} hours, and {{ minutes }} minutes</h3>
+    <div class="countdown-box">
+        <h3>Resets in:</h3>
+        <div class="countdown-timer">
+            <div class="countdown-item">
+                <span class="countdown-value">{{ days }}</span>
+                <span class="countdown-label">Days</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-value">{{ hours }}</span>
+                <span class="countdown-label">Hours</span>
+            </div>
+            <div class="countdown-item">
+                <span class="countdown-value">{{ minutes }}</span>
+                <span class="countdown-label">Minutes</span>
+            </div>
+        </div>
     </div>
 </div>
+
 <div class="dashboard">
     <h2>Current Leaderboard</h2>
     <table class="league-table">
