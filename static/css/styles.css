@@ -1220,6 +1220,40 @@ input[type="radio"]:checked + label.custom-radio {
     transform: scale(1.05);
 }
 
+.timer-box {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background-color: rgba(2, 48, 71, 0.1);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid rgba(2, 48, 71, 0.2);
+}
+
+.timer-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.timer-label {
+    color: #023047;
+    font-size: 0.95rem;
+}
+
+.timer-value {
+    color: #023047;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+#live-timer {
+    color: #FB8500;
+    min-width: 4.2rem;
+    text-align: right;
+    display: inline-block;
+}
+
 .toast-container {
     align-items: center;
     margin: 0 auto;
@@ -1305,23 +1339,6 @@ input[type="radio"]:checked + label.custom-radio {
     background-color: #c82333 !important;
 }
 
-.messages .alert {
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.messages .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.messages .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* Container for the forgot password form */
 .forgot-password-container {
     max-width: 400px;
     margin: 50px auto;
@@ -1332,21 +1349,18 @@ input[type="radio"]:checked + label.custom-radio {
     text-align: center;
 }
 
-/* Heading */
 .forgot-password-container h1 {
     font-size: 24px;
     margin-bottom: 10px;
     color: #333;
 }
 
-/* Paragraph text */
 .forgot-password-container p {
     font-size: 14px;
     color: #666;
     margin-bottom: 20px;
 }
 
-/* Messages (alerts) */
 .messages {
     margin-bottom: 20px;
 }
