@@ -22,6 +22,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 import uuid
 from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
+from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import Case, When, Q
 from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
@@ -31,6 +33,11 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
+
+import os
+from django.http import HttpResponse
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 import nltk
 nltk.download('punkt_tab')
@@ -177,6 +184,7 @@ def signup(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
+        # Validation checks
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
             return redirect('signup')
@@ -195,29 +203,51 @@ def signup(request):
             messages.error(request, "Passwords do not match.")
             return redirect('signup')
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save() 
-        profile = Profile.objects.create(user=user)
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password
+                )
 
-        # Generate a verification token
-        verification_token = str(uuid.uuid4())
-        profile.verification_token = verification_token
-        profile.save()
+                if hasattr(user, 'profile'):
+                    profile = user.profile
+                    profile.verification_token = str(uuid.uuid4())
+                    profile.is_verified = False
+                else:
+                    profile = Profile.objects.create(
+                        user=user,
+                        verification_token=str(uuid.uuid4()),
+                        is_verified=False
+                    )
 
-        # Send verification email
-        verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
-        send_mail(
-            'BrainSpace: Verify Your Email',
-            f'Click the link to verify your email: {verification_link}',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
+                profile.save()
 
-        messages.success(request, "A verification email has been sent to your email address.")
+                verification_link = f"{settings.SITE_URL}/verify-email/{profile.verification_token}/"
+                send_mail(
+                    'BrainSpace: Verify Your Email',
+                    f'Click the link to verify your email: {verification_link}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [email],
+                    fail_silently=False,
+                )
 
-        login(request, user)
-        return redirect('dashboard')
+                messages.success(request, "Registration successful! Check your email for verification.")
+                login(request, user)
+                return redirect('dashboard')
+
+        except IntegrityError as e:
+            if User.objects.filter(username=username).exists():
+                User.objects.filter(username=username).delete()
+            messages.error(request, "Registration failed due to database error. Please try again.")
+            return redirect('signup')
+
+        except Exception as e:
+            if User.objects.filter(username=username).exists():
+                User.objects.filter(username=username).delete()
+            messages.error(request, f"Registration failed: {str(e)}")
+            return redirect('signup')
 
     return render(request, 'cards/signup.html')
 
@@ -226,9 +256,9 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        
+
         user = authenticate(request, username=username, password=password)
-        
+
         if user is not None:
             login(request, user)
             if not user.profile.is_verified:
@@ -237,7 +267,7 @@ def login_view(request):
         else:
             messages.error(request, "Incorrect username or password.")
             return redirect('login')
-    
+
     return render(request, 'cards/login.html')
 
 
@@ -247,17 +277,23 @@ def verify_email_prompt(request):
 
 
 def verify_email(request, token):
-    profile = get_object_or_404(Profile, verification_token=token)
-    
-    if not profile.is_verified:
-        profile.is_verified = True
-        profile.verification_token = None  # Clear the token after verification
-        profile.save()
-        messages.success(request, "Your email has been verified.")
-    else:
-        messages.warning(request, "Your email is already verified.")
+    try:
+        profile = Profile.objects.get(verification_token=token)
 
-    return redirect('dashboard')
+        profile.is_verified = True
+        profile.verification_token = None
+        profile.save()
+
+        messages.success(request, "Your email has been successfully verified!")
+        return redirect('login')
+
+    except Profile.DoesNotExist:
+        messages.error(request, "Invalid verification link. Please request a new verification email.")
+        return redirect('verify_email_prompt')
+
+    except Exception as e:
+        messages.error(request, "An error occurred during verification. Please try again.")
+        return redirect('verify_email_prompt')
 
 
 def resend_verification_email(request):
@@ -268,16 +304,18 @@ def resend_verification_email(request):
         profile.verification_token = verification_token
         profile.save()
 
-        # Send verification email
         verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
-        send_mail(
-            'BrainSpace: Verify Your Email',
-            f'Click the link to verify your email: {verification_link}',
-            settings.DEFAULT_FROM_EMAIL,
-            [request.user.email],
-            fail_silently=False,
-        )
-
+        try:
+            send_mail(
+                'BrainSpace: Verify Your Email',
+                f'Click the link to verify your email: {verification_link}',
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False,
+            )
+            messages.success(request, "A verification email has been sent to your email address.")
+        except Exception as e:
+            messages.error(request, f"Failed to send verification email: {str(e)}")
     else:
         messages.warning(request, "Your email is already verified.")
 
@@ -313,7 +351,7 @@ def badge_shop(request):
     user_badges = UserBadge.objects.filter(user=request.user.profile)
     purchased_badges = Badge.objects.filter(user_badges__in=user_badges)
     return render(request, 'cards/badge_shop.html', {
-        'badges': badges, 
+        'badges': badges,
         'brainbucks': brainbucks,
         'purchased_badges': purchased_badges,
     })
@@ -322,7 +360,7 @@ def badge_shop(request):
 def purchase_badge(request, badge_id):
     badge = get_object_or_404(Badge, id=badge_id)
     user_profile = request.user.profile
-    
+
     UserBadge.objects.create(user=user_profile, badge=badge)
     user_profile.brainbucks -= badge.price
     user_profile.save()
@@ -340,8 +378,8 @@ def user_logout(request):
 @login_required
 def create(request):
     FlashcardSetTitle = modelform_factory(
-        FlashcardSet, 
-        fields=['name'], 
+        FlashcardSet,
+        fields=['name'],
         widgets={'name': forms.TextInput(attrs={'placeholder': 'Title', 'class': 'form-control'})}
     )
 
@@ -458,7 +496,7 @@ def setup_true_false(request, set_id):
     request.session['correct'] = 0
     request.session['incorrect'] = 0
     request.session['skipped'] = 0
-    
+
     return redirect('true_false', set_id=set_id)
 
 
@@ -477,7 +515,7 @@ def true_false(request, set_id):
 
     if current_index >= len(lineup):
         return redirect('game_end', set_id=set_id)
-    
+
     # calculate progress percentage
     total_questions = len(lineup)
     progress_percentage = (current_index / total_questions) * 100
@@ -526,14 +564,14 @@ def true_false_check(request, set_id):
         evaluate_and_update_flashcard(request, flashcard, flashcard_set, skipped=True)
 
         return redirect('true_false_feedback', set_id=set_id)
-    
+
 
     # get the user's answer and time taken
     user_answer = request.GET.get('answer', 'false') == 'true'
     elapsed_time = int(request.GET.get('time', 0))
 
     is_correct = request.session.get('is_correct', False)
-    
+
     if user_answer == is_correct:
         if is_correct:
             feedback_message = "✅ Correct! These cards were a match."
@@ -544,7 +582,7 @@ def true_false_check(request, set_id):
             feedback_message = "❌ Incorrect. These cards were a match."
         else:
             feedback_message = "❌ Incorrect. These cards were not a match. Here is the pair:"
-            
+
     request.session['feedback_message'] = feedback_message
     request.session['show_feedback'] = True
     request.session['current_flashcard'] = flashcard.id  # store the flashcard for later use
@@ -606,12 +644,12 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
                 performance_level = 4
 
             flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-        
+
         else:
             request.session['incorrect'] += 1
             performance_level = 1
             flashcard.repetition = 1
-    
+
     if flashcard.repetition == 1:
         flashcard.interval = 86400
     elif flashcard.repetition == 2:
@@ -648,7 +686,7 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
     # preprocess the definition
     preprocessed_definition, words = preprocess_text(definition)
     word_scores = {}
-    
+
     # get TF-IDF scores for words in the current definition
     if preprocessed_definition:
         definition_vector = vectorizer.transform([preprocessed_definition])
@@ -656,7 +694,7 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
             if word in feature_names:
                 idx = vectorizer.vocabulary_.get(word)
                 word_scores[word] = definition_vector[0, idx]
-    
+
     # select the word with the highest TF-IDF score
     if word_scores:
         return max(word_scores, key=word_scores.get)
@@ -666,18 +704,18 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
 
 def create_blank_definition_within_set(flashcard, flashcard_set):
     definitions = [card.definition for card in flashcard_set.flashcards.all()]
-    
+
     # calculate TF-IDF
     preprocessed_corpus = [preprocess_text(defn)[0] for defn in definitions]
     tfidf_matrix, feature_names, vectorizer = calculate_tfidf_within_set(preprocessed_corpus)
-    
+
     blanked_word = select_word_to_blank(flashcard.definition, tfidf_matrix, feature_names, vectorizer)
-    
+
     # split the definition
     words = flashcard.definition.split()
     if blanked_word not in words:
         blanked_word = random.choice(words)
-    
+
     # replace the blanked word with an HTML input field
     index = words.index(blanked_word)
     words[index] = '<input type="text" class="blank" name="answer" id="fill-blank" tabindex="1" placeholder="Fill the blank" required />'
@@ -711,7 +749,7 @@ def setup_fill_the_blanks(request, set_id):
     request.session['correct'] = 0
     request.session['incorrect'] = 0
     request.session['skipped'] = 0
-    
+
     return redirect('fill_the_blanks', set_id=set_id)
 
 
@@ -723,7 +761,7 @@ def fill_the_blanks(request, set_id):
 
     if current_index >= len(lineup):
         return redirect('game_end', set_id=set_id)
-    
+
     # get current flashcard details
     current_flashcard = lineup[current_index]
     progress_percentage = (current_index / len(lineup)) * 100
@@ -769,7 +807,7 @@ def fill_the_blanks_check(request, set_id):
         # Evaluate the user's answer
         correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
         is_correct = correctness <= 1
-        feedback_message = ("✅ Correct!" if correctness == 0  
+        feedback_message = ("✅ Correct!" if correctness == 0
         else f"✅ Correct! You have a typo, but the answer is '{correct_answer}'." if correctness == 1
         else f"❌ Incorrect. The correct answer is '{correct_answer}'.")
 
@@ -828,7 +866,7 @@ def setup_quiz(request, set_id):
     # keep track of correct and incorrect answers
     request.session['correct'] = 0
     request.session['incorrect'] = 0
-    
+
     return redirect('quiz', set_id=set_id)
 
 
@@ -840,7 +878,7 @@ def quiz(request, set_id):
 
     if current_index >= len(lineup):
         return redirect('game_end', set_id=set_id)
-    
+
     # get current flashcard details
     current_flashcard = lineup[current_index]
     progress_percentage = (current_index / len(lineup)) * 100
@@ -856,7 +894,7 @@ def quiz(request, set_id):
 
 
 def quiz_check(request, set_id):
-    
+
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     lineup = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
@@ -877,7 +915,7 @@ def quiz_check(request, set_id):
         feedback_message = f"⚠️ Skipped. The correct answer is '{flashcard_data['correct_answer']}'."
         elapsed_time = 0
     else:
-        
+
         user_answer = request.POST.get('selected_answer', '').strip()
         correct_answer = flashcard_data['correct_answer']
         elapsed_time = int(request.POST.get('elapsed_time', 0))
@@ -984,7 +1022,7 @@ def game_end(request, set_id):
         score = correct/(correct+incorrect+skipped)*100
 
     brainbuck_reward = int(score / 10) if score > 0 else 0
-    
+
     if not request.session.get('reward_given'):
         user_profile.brainbucks += brainbuck_reward
         for league_user in league_users:
@@ -1025,12 +1063,12 @@ def edit_set(request, set_id):
 
 def delete_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-    
+
     if request.method == 'POST':
         flashcard_set.delete()
         messages.success(request, 'Flashcard set deleted successfully.')
         return redirect('dashboard')
-    
+
     return redirect('dashboard')
 
 
@@ -1044,6 +1082,7 @@ def change_email(request):
         new_email = request.POST.get('new_email')
 
         try:
+            # Check if the new email is already in use
             if User.objects.filter(email=new_email).exists():
                 messages.error(request, "This email is already in use.")
             else:
@@ -1058,17 +1097,21 @@ def change_email(request):
                 profile.is_verified = False  # Mark email as unverified
                 profile.save()
 
-                # Send verification email
+                # Send verification email using Outlook's SMTP server
                 verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
-                send_mail(
-                    'BrainSpace: Verify Your Email',
-                    f'Click the link to verify your email: {verification_link}',
-                    settings.DEFAULT_FROM_EMAIL,
-                    [request.user.email],
-                    fail_silently=False,
-                )
+                try:
+                    send_mail(
+                        'BrainSpace: Verify Your Email',
+                        f'Click the link to verify your email: {verification_link}',
+                        settings.DEFAULT_FROM_EMAIL,  # Sender email
+                        [new_email],  # Recipient email
+                        fail_silently=False,
+                    )
+                    messages.success(request, "Your email has been updated. A verification email has been sent to your new email address.")
+                except Exception as e:
+                    messages.error(request, f"Failed to send verification email: {str(e)}")
+                    return redirect('verify_email_prompt')
 
-                messages.success(request, "Your email has been updated. A verification email has been sent to your new email address.")
         except ValidationError:
             messages.error(request, "Invalid email address.")
 
@@ -1143,17 +1186,20 @@ def forgot_password(request):
             reverse('reset_password_confirm', kwargs={'uidb64': uid, 'token': token})
         )
 
-        # Send the reset email
-        send_mail(
-            'BrainSpace: Password Reset Request',
-            f'Click the link to reset your password: {reset_link}',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-
-        messages.success(request, "A password reset link has been sent to your email address.")
-        return redirect('login')
+        # Send the reset email using Outlook's SMTP server
+        try:
+            send_mail(
+                'BrainSpace: Password Reset Request',
+                f'Click the link to reset your password: {reset_link}',
+                settings.DEFAULT_FROM_EMAIL,  # Sender email
+                [email],  # Recipient email
+                fail_silently=False,
+            )
+            messages.success(request, "A password reset link has been sent to your email address.")
+            return redirect('login')
+        except Exception as e:
+            messages.error(request, f"Failed to send email: {str(e)}")
+            return redirect('forgot_password')
 
     return render(request, 'cards/forgot_password.html')
 
