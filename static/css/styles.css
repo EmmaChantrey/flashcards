@@ -1571,21 +1571,48 @@ input[type="radio"]:checked + label.custom-radio {
     background-color: #F5F5F5;
     border-radius: 10px;
     padding: 15px;
-    text-align: center;
     min-width: 80px;
     border: 1px solid #8ECAE6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .countdown-value {
     font-size: 2rem;
     font-weight: bold;
     color: #023047;
+    line-height: 1;
+    margin-bottom: 5px;
 }
 
 .countdown-label {
     font-size: 1rem;
     color: #219EBC;
     text-transform: uppercase;
-    margin-top: 5px;
     font-weight: 500;
+    line-height: 1;
+}
+
+.password-requirements {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #023047;
+}
+
+.password-requirements h4 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.password-requirements ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+.password-requirements li {
+    margin-bottom: 5px;
 }
