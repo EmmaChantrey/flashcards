@@ -36,8 +36,6 @@ from django.contrib.auth import get_user_model
 
 import os
 from django.http import HttpResponse
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 
 import nltk
 nltk.download('punkt_tab')
@@ -183,7 +181,7 @@ def signup(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        # Validation checks
+        # validation checks
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
             return redirect('signup')
@@ -321,8 +319,6 @@ def resend_verification_email(request):
     return redirect('verify_email_prompt')
 
 
-@login_required
-@email_verified_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     brainbucks = request.user.profile.brainbucks
