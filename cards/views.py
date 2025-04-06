@@ -624,42 +624,62 @@ def true_false_next(request, set_id):
 
 def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer=None, is_correct=None, elapsed_time=0, skipped=False):
     if skipped:
-        performance_level = 0
-        flashcard.repetition = 1
-    else:
-        if user_answer == is_correct:
-            request.session['correct'] += 1
-            flashcard.repetition += 1
+        return handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time)
 
-            if elapsed_time > 1.25 * flashcard_set.baseline:
-                performance_level = 2
-            elif elapsed_time > 0.75 * flashcard_set.baseline:
-                performance_level = 3
-            else:
-                performance_level = 4
+    performance_level = update_performance_and_stats(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
+    update_flashcard_interval(flashcard)
+    update_review_timing(flashcard, flashcard_set, elapsed_time)
 
-            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+    flashcard.save()
+    flashcard_set.save()
 
+    return performance_level
+
+
+def handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time):
+    flashcard.repetition = 1
+    flashcard.interval = 86400  # 1 day
+    flashcard.last_reviewed = now()
+    flashcard_set.baseline = (flashcard_set.baseline + elapsed_time) / 2
+    flashcard.save()
+    flashcard_set.save()
+    return 0
+
+
+def update_performance_and_stats(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
+    if user_answer == is_correct:
+        request.session['correct'] += 1
+        flashcard.repetition += 1
+
+        if elapsed_time > 1.25 * flashcard_set.baseline:
+            performance_level = 2
+        elif elapsed_time > 0.75 * flashcard_set.baseline:
+            performance_level = 3
         else:
-            request.session['incorrect'] += 1
-            performance_level = 1
-            flashcard.repetition = 1
+            performance_level = 4
 
+        flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+    else:
+        request.session['incorrect'] += 1
+        flashcard.repetition = 1
+        performance_level = 1
+
+    return performance_level
+
+
+def update_flashcard_interval(flashcard):
     if flashcard.repetition == 1:
-        flashcard.interval = 86400
+        flashcard.interval = 86400  # 1 day
     elif flashcard.repetition == 2:
-        flashcard.interval = 86400 * 6
+        flashcard.interval = 86400 * 6  # 6 days
     else:
         flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
-    flashcard.last_reviewed = now()
-    flashcard.save()
 
-    # update flashcard set's baseline time
-    new_baseline = (flashcard_set.baseline + elapsed_time) / 2
-    flashcard_set.baseline = new_baseline
+def update_review_timing(flashcard, flashcard_set, elapsed_time):
+    flashcard.last_reviewed = now()
+    flashcard_set.baseline = (flashcard_set.baseline + elapsed_time) / 2
     flashcard_set.save()
-    return performance_level
 
 
 def preprocess_text(text):
@@ -690,8 +710,13 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
                 word_scores[word] = definition_vector[0, idx]
 
     # select the word with the highest TF-IDF score
+    top_n = 3
     if word_scores:
-        return max(word_scores, key=word_scores.get)
+        sorted_words = sorted(word_scores.items(), key=lambda item: item[1], reverse=True)
+        top_words = [word for word, score in sorted_words[:top_n]]
+
+        # randomly pick a word from the top n TF-IDF words to create some variance
+        return random.choice(top_words)
     else:
         return random.choice(words)
 
