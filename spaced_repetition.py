@@ -48,13 +48,12 @@ def get_overdue_flashcards(flashcards):
 
     return [flashcard for flashcard, _ in overdue_flashcards]
 
-
 def get_lineup(flashcards, number):
     lineup = []
     overdue_flashcards = get_overdue_flashcards(flashcards)
     overdue_copy = overdue_flashcards.copy()
     lineup.extend(overdue_flashcards[:number])
-    
+
     while len(lineup) < number:
         non_overdue_flashcards = [
             card for card in flashcards
@@ -71,11 +70,14 @@ def get_lineup(flashcards, number):
         else:
             break
 
-    while len(lineup) < number:
+    while len(lineup) < number and overdue_copy:
         additional_cards_needed = number - len(lineup)
-        lineup.extend(random.choices(overdue_copy, k=additional_cards_needed))
+        cards_to_add = random.choices(overdue_copy, k=min(additional_cards_needed, len(overdue_copy)))
+        lineup.extend(cards_to_add)
+        overdue_copy = [card for card in overdue_copy if card not in cards_to_add]
 
     return lineup
+
 
 
 def quiz_user(flashcard_set):

@@ -540,13 +540,6 @@ def true_false(request, set_id):
 
 def true_false_check(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-
-    lineup_ids = request.session.get('lineup', [])
-    flashcards = Flashcard.objects.filter(id__in=lineup_ids)
-    flashcard_map = {card.id: card for card in flashcards}
-    lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
-    current_index = request.session.get('current_index', 0)
-
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
     if request.GET.get('skip') == 'true':
@@ -604,8 +597,6 @@ def true_false_feedback(request, set_id):
 
 
 def true_false_next(request, set_id):
-    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-
     lineup_ids = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
 
@@ -715,10 +706,14 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
         sorted_words = sorted(word_scores.items(), key=lambda item: item[1], reverse=True)
         top_words = [word for word, score in sorted_words[:top_n]]
 
-        # randomly pick a word from the top n TF-IDF words to create some variance
-        return random.choice(top_words)
+        if top_words:
+            return random.choice(top_words)
+        else:
+            return random.choice(words)  # fall back to a random word
     else:
+        # if no words in word_scores, fall back to random word from the input words list
         return random.choice(words)
+
 
 
 def create_blank_definition_within_set(flashcard, flashcard_set):
