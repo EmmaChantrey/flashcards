@@ -36,8 +36,7 @@ from django.contrib.auth import get_user_model
 
 import os
 from django.http import HttpResponse
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+
 
 import nltk
 nltk.download('punkt_tab')
@@ -104,7 +103,6 @@ def select_badges(request):
 def update_displayed_badges(request):
     if request.method == "POST":
         selected_badges = request.POST.getlist("selected_badges")
-        print(f"Selected badges: {selected_badges}")
 
         if len(selected_badges) > 4:
             return JsonResponse({"error": "You can only select up to 4 badges."}, status=400)
@@ -184,7 +182,8 @@ def signup(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        # Validation checks
+
+        # validation checks
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username is already taken.")
             return redirect('signup')
@@ -322,8 +321,6 @@ def resend_verification_email(request):
     return redirect('verify_email_prompt')
 
 
-@login_required
-@email_verified_required
 def dashboard(request):
     flashcard_sets = FlashcardSet.objects.filter(user=request.user.profile)
     brainbucks = request.user.profile.brainbucks
@@ -545,13 +542,6 @@ def true_false(request, set_id):
 
 def true_false_check(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-
-    lineup_ids = request.session.get('lineup', [])
-    flashcards = Flashcard.objects.filter(id__in=lineup_ids)
-    flashcard_map = {card.id: card for card in flashcards}
-    lineup = [flashcard_map[card_id] for card_id in lineup_ids if card_id in flashcard_map]
-    current_index = request.session.get('current_index', 0)
-
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
 
     if request.GET.get('skip') == 'true':
@@ -609,8 +599,6 @@ def true_false_feedback(request, set_id):
 
 
 def true_false_next(request, set_id):
-    flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
-
     lineup_ids = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
 
@@ -629,20 +617,50 @@ def true_false_next(request, set_id):
 
 def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer=None, is_correct=None, elapsed_time=0, skipped=False):
     if skipped:
-        performance_level = 0
-        flashcard.repetition = 1
+        return handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time)
+
+    performance_level = update_performance_and_stats(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time)
+    update_flashcard_interval(flashcard)
+    update_review_timing(flashcard, flashcard_set, elapsed_time)
+
+    flashcard.save()
+    flashcard_set.save()
+
+    return performance_level
+
+
+def handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time):
+    flashcard.repetition = 1
+    flashcard.interval = 86400  # 1 day
+    flashcard.last_reviewed = now()
+    flashcard_set.baseline = (flashcard_set.baseline + elapsed_time) / 2
+    flashcard.save()
+    flashcard_set.save()
+    return 0
+
+
+def update_performance_and_stats(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
+    if user_answer == is_correct:
+        request.session['correct'] += 1
+        flashcard.repetition += 1
+
+        if elapsed_time > 1.25 * flashcard_set.baseline:
+            performance_level = 2
+        elif elapsed_time > 0.75 * flashcard_set.baseline:
+            performance_level = 3
+        else:
+            performance_level = 4
+
+        flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
     else:
-        if user_answer == is_correct:
-            request.session['correct'] += 1
-            flashcard.repetition += 1
+        request.session['incorrect'] += 1
+        flashcard.repetition = 1
+        performance_level = 1
 
-            if elapsed_time > 1.25 * flashcard_set.baseline:
-                performance_level = 2
-            elif elapsed_time > 0.75 * flashcard_set.baseline:
-                performance_level = 3
-            else:
-                performance_level = 4
+    return performance_level
 
+
+def update_flashcard_interval(flashcard):
             flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
 
         else:
@@ -651,21 +669,17 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
             flashcard.repetition = 1
 
     if flashcard.repetition == 1:
-        flashcard.interval = 86400
+        flashcard.interval = 86400  # 1 day
     elif flashcard.repetition == 2:
-        flashcard.interval = 86400 * 6
+        flashcard.interval = 86400 * 6  # 6 days
     else:
         flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
-    flashcard.last_reviewed = now()
-    flashcard.save()
 
-    # update flashcard set's baseline time
-    new_baseline = (flashcard_set.baseline + elapsed_time) / 2
-    flashcard_set.baseline = new_baseline
+def update_review_timing(flashcard, flashcard_set, elapsed_time):
+    flashcard.last_reviewed = now()
+    flashcard_set.baseline = (flashcard_set.baseline + elapsed_time) / 2
     flashcard_set.save()
-    print(f"ease factor: {flashcard.ease_factor:.2f}, interval: {flashcard.interval}, baseline: {flashcard_set.baseline:.2f}")
-    return performance_level
 
 
 def preprocess_text(text):
@@ -696,10 +710,19 @@ def select_word_to_blank(definition, tfidf_matrix, feature_names, vectorizer):
                 word_scores[word] = definition_vector[0, idx]
 
     # select the word with the highest TF-IDF score
+    top_n = 3
     if word_scores:
-        return max(word_scores, key=word_scores.get)
+        sorted_words = sorted(word_scores.items(), key=lambda item: item[1], reverse=True)
+        top_words = [word for word, score in sorted_words[:top_n]]
+
+        if top_words:
+            return random.choice(top_words)
+        else:
+            return random.choice(words)  # fall back to a random word
     else:
+        # if no words in word_scores, fall back to random word from the input words list
         return random.choice(words)
+
 
 
 def create_blank_definition_within_set(flashcard, flashcard_set):
@@ -784,11 +807,7 @@ def fill_the_blanks_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    # Log the current index and flashcard data
-    print(f"Current Index: {current_index}")
-    print(f"Flashcard Data: {flashcard_data}")
-
-    # Check if user skipped the question
+    # check if user skipped the question
     skipped = request.POST.get('skipped', 'false') == 'true'
 
     if skipped:
@@ -800,11 +819,7 @@ def fill_the_blanks_check(request, set_id):
         correct_answer = flashcard_data['correct_answer']
         elapsed_time = int(request.POST.get('elapsed_time', 0))
 
-        # Log the user's answer and correct answer
-        print(f"User Answer: {user_answer}")
-        print(f"Correct Answer: {correct_answer}")
-
-        # Evaluate the user's answer
+        # evaluate the user's answer
         correctness = nltk.edit_distance(user_answer.lower(), correct_answer.lower())
         is_correct = correctness <= 1
         feedback_message = ("✅ Correct!" if correctness == 0
@@ -813,13 +828,9 @@ def fill_the_blanks_check(request, set_id):
 
         evaluate_and_update_flashcard(request, flashcard, flashcard_set, True, is_correct, elapsed_time)
 
-    # Update the current index
+    # update the current index
     current_index += 1
     request.session['current_index'] = current_index
-
-    # Log the updated current index
-    print(f"Updated Current Index: {current_index}")
-
     progress_percentage = (current_index / len(lineup)) * 100
 
     return JsonResponse({
@@ -907,7 +918,7 @@ def quiz_check(request, set_id):
     flashcard_data = lineup[current_index]
     flashcard = get_object_or_404(Flashcard, id=flashcard_data['id'])
 
-    # Check if the question was skipped
+    # check if the question was skipped
     skipped = request.POST.get('skipped', 'false') == 'true'
 
     if skipped:
@@ -1018,7 +1029,6 @@ def game_end(request, set_id):
 
     else:
         total_time = None
-        print("correct:", correct, "incorrect:", incorrect, "skipped:", skipped)
         score = correct/(correct+incorrect+skipped)*100
 
     brainbuck_reward = int(score / 10) if score > 0 else 0
@@ -1082,7 +1092,7 @@ def change_email(request):
         new_email = request.POST.get('new_email')
 
         try:
-            # Check if the new email is already in use
+            # check if the new email is already in use
             if User.objects.filter(email=new_email).exists():
                 messages.error(request, "This email is already in use.")
             else:
@@ -1090,21 +1100,22 @@ def change_email(request):
                 request.user.email = new_email
                 request.user.save()
 
-                # Generate a new verification token
+                # generate a new verification token
                 profile = request.user.profile
                 verification_token = str(uuid.uuid4())
                 profile.verification_token = verification_token
                 profile.is_verified = False  # Mark email as unverified
                 profile.save()
 
-                # Send verification email using Outlook's SMTP server
                 verification_link = f"{settings.SITE_URL}/verify-email/{verification_token}/"
                 try:
                     send_mail(
                         'BrainSpace: Verify Your Email',
                         f'Click the link to verify your email: {verification_link}',
-                        settings.DEFAULT_FROM_EMAIL,  # Sender email
-                        [new_email],  # Recipient email
+                        settings.DEFAULT_FROM_EMAIL,
+                        [new_email], 
+                        settings.DEFAULT_FROM_EMAIL,
+                        [new_email],
                         fail_silently=False,
                     )
                     messages.success(request, "Your email has been updated. A verification email has been sent to your new email address.")
@@ -1152,7 +1163,7 @@ def change_password(request):
 
             request.user.set_password(new_password)
             request.user.save()
-            update_session_auth_hash(request, request.user)  # Keep the user logged in
+            update_session_auth_hash(request, request.user)  # keep the user logged in
             messages.success(request, "Your password has been updated.")
 
     return redirect('settings_page')
@@ -1162,7 +1173,7 @@ def delete_account(request):
     if request.method == 'POST':
         request.user.delete()
         logout(request)
-        return redirect('landing')  # Redirect to the landing page after deletion
+        return redirect('landing')
 
     return redirect('settings_page')
 
@@ -1177,22 +1188,23 @@ def forgot_password(request):
             messages.error(request, "No user found with this email address.")
             return redirect('forgot_password')
 
-        # Generate a password reset token
+        # generate a password reset token
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        # Create the reset link
+        # create the reset link
         reset_link = request.build_absolute_uri(
             reverse('reset_password_confirm', kwargs={'uidb64': uid, 'token': token})
         )
 
-        # Send the reset email using Outlook's SMTP server
         try:
             send_mail(
                 'BrainSpace: Password Reset Request',
                 f'Click the link to reset your password: {reset_link}',
-                settings.DEFAULT_FROM_EMAIL,  # Sender email
-                [email],  # Recipient email
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
                 fail_silently=False,
             )
             messages.success(request, "A password reset link has been sent to your email address.")

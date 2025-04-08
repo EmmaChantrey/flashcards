@@ -143,12 +143,9 @@ class League(models.Model):
         self.save()
     
     def reset_scores(self):
-        print(f"Resetting scores for league: {self.name}")
         for league_user in self.league_users.all():
-            print(f"Resetting score for user: {league_user.user}. Current score: {league_user.score}")
             league_user.score = 0
             league_user.save()
-            print(f"Reset score for user: {league_user.user}. New score: {league_user.score}")
 
     def reward_top_users(self):
         top_users = self.league_users.order_by('-score')[:3]
@@ -177,16 +174,11 @@ class LeagueUser(models.Model):
         return f"{self.user.username} in {self.league.name}"
     
     def update_score(self, game_score):
-        print(f"Updating score for {self.user} in {self.league.name}. Current score: {self.score}")
 
         if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
-            print(f"Resetting scores for league: {self.league.name}")
             self.league.reward_top_users()
-
             self.score = 0
             self.save()
-            print(f"Reset score for {self.user} in {self.league.name}. New score: {self.score}")
 
         self.score += game_score
         self.save()
-        print(f"Updated score for {self.user} in {self.league.name}. New score: {self.score}")

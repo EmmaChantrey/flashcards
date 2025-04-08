@@ -91,6 +91,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'cards.validators.CustomPasswordValidator',
     },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
 ]
 
 

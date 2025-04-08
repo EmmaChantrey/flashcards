@@ -27,9 +27,9 @@
 
         <input type="hidden" name="elapsed_time" id="elapsed_time" value="0">
         <div class="feedback-bar">
-            <button id="check-button" type="submit" class="check-button" tabindex="1">Check</button>
             <button id="skip-button" type="button" class="check-button" tabindex="2">Skip</button>
-        </div>    
+            <button id="check-button" type="submit" class="check-button" tabindex="1">Check</button>
+        </div>
     </form>
 
     <div id="feedback-bar" class="feedback-bar hidden">
@@ -47,8 +47,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
     let startTime = Date.now();
-
-    // Function to attach event listeners
     function attachListeners() {
         const form = document.querySelector('form'); // Use the form in the quiz
         const skipButton = document.getElementById('skip-button');
@@ -61,30 +59,29 @@
         const options = document.querySelectorAll('.option');
 
         if (form && skipButton && checkButton) {
-            // Handle the Skip button click
+            // handle the Skip button click
             skipButton.addEventListener('click', () => {
-                submitForm(true); // Submit the form with skipped=true
+                submitForm(true);
             });
 
-            // Handle the form submission
+            // handle the form submission
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
-                submitForm(false); // Submit the form without skipping
+                submitForm(false);
             });
 
-            // Add tabindex and focus handling for options
+            // add tabindex and focus handling for options
             options.forEach((option) => {
                 option.addEventListener('click', () => {
                     option.querySelector('input').checked = true;
-                    checkButton.focus(); // Focus the Check button after selecting an option
+                    checkButton.focus();
                 });
 
                 option.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter') {
-                        // Prevent the default action to avoid form submission
                         event.preventDefault();
 
-                        // Ensure the option is checked and focus the Check button
+                        // ensure the option is checked and focus the Check button
                         option.querySelector('input').checked = true;
                         checkButton.focus();
                     }
@@ -92,7 +89,7 @@
             });
         }
 
-        // Handle the Next button click
+        // handle the Next button click
         if (nextButton) {
             nextButton.addEventListener('click', async () => {
                 try {
@@ -112,14 +109,14 @@
                         throw new Error('No game box found in the server response');
                     }
 
-                    // Replace the game box content with the new question
+                    // replace the game box content with the new question
                     const gameBox = document.querySelector('.game-box');
                     gameBox.innerHTML = newGameBox.innerHTML;
 
                     feedbackBar.classList.add('hidden');
                     nextButton.classList.add('hidden');
 
-                    // Reattach event listeners for the new content
+                    // reattach event listeners for the new content
                     attachListeners();
                 } catch (error) {
                     console.error('Error loading the next question:', error);
@@ -128,13 +125,13 @@
         }
     }
 
-    // Function to handle form submission
+    // function to handle form submission
     async function submitForm(skipped) {
         const form = document.querySelector('form'); // Use the form in the quiz
         const checkButton = document.getElementById('check-button');
         const skipButton = document.getElementById('skip-button');
 
-        // Disable buttons to prevent multiple submissions
+        // disable buttons to prevent multiple submissions
         checkButton.disabled = true;
         skipButton.disabled = true;
         checkButton.classList.add('disabled');
@@ -144,7 +141,7 @@
         const formData = new FormData(form);
 
         if (skipped) {
-            formData.append('skipped', 'true'); // Add skipped flag
+            formData.append('skipped', 'true'); // add skipped flag
         }
 
         formData.append('elapsed_time', elapsedTime);
@@ -163,7 +160,7 @@
             }
 
             const data = await response.json();
-            console.log(data); // Log the response data
+            console.log(data);
 
             const feedbackMessage = document.getElementById('feedback-message');
             const feedbackBar = document.getElementById('feedback-bar');
@@ -171,14 +168,14 @@
             const progressBar = document.getElementById('progress-bar');
             const progressPercentage = document.getElementById('progress-percentage');
 
-            // Update feedback and progress
+            // update feedback and progress
             feedbackMessage.textContent = data.feedback_message;
             checkButton.classList.add('hidden');
             skipButton.classList.add('hidden');
             feedbackBar.classList.remove('hidden');
             nextButton.classList.remove('hidden');
 
-            nextButton.focus(); // Focus the Next button
+            nextButton.focus();
 
             progressBar.style.width = `${data.progress_percentage}%`;
             progressPercentage.textContent = `${data.progress_percentage.toFixed(0)}%`;
@@ -193,11 +190,11 @@
         }
     }
 
-    // Initial attachment of event listeners
+    // initial attachment of event listeners
     attachListeners();
 });
 </script>
-    
+
 
 <script id="feedback-data" type="application/json">
     {{ feedback_data|json_script:"feedback-data" }}

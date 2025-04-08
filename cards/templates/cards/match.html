@@ -5,16 +5,24 @@
 <div class="flashcard-nav-header">
     <div class="flashcard-nav-title">
         <h1>Match</h1>
-        
     </div>
     <div class="flashcard-nav-buttons">
-        {% if quickest_time %}
-            <h4>Time to beat: {{ quickest_time|floatformat:2 }} seconds </h4>
-        {% endif %}
-        <h4>Time: <span id="live-timer">0.00</span> seconds</h4>
+        <div class="timer-box">
+            {% if flashcard_set.quickest_time != null %}
+            <div class="timer-item">
+                <span class="timer-label">Record:</span>
+                <span class="timer-value">{{ flashcard_set.quickest_time|floatformat:2 }}s</span>
+            </div>
+            {% endif %}
+            <div class="timer-item">
+                <span class="timer-label">Time:</span>
+                <span class="timer-value" id="live-timer">0.00s</span> s
+            </div>
+        </div>
         <a href="{% url 'study' flashcard_set.id %}" class="loginbtn">Back</a>
     </div>
 </div>
+
 
 <div class="game-box">
     <div class="grid-container">

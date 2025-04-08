@@ -32,6 +32,7 @@ h1 {
 
 .header-container {
     display: flex;
+    overflow: visible;
     justify-content: space-between;
     align-items: center;
     width: 100%;
@@ -68,11 +69,12 @@ header nav a {
 }
 
 #menu-toggle {
-    display: none;
+    display: block;
     background: none;
     border: none;
     font-size: 2rem;
     cursor: pointer;
+    z-index: 1100;
 }
 
 
@@ -304,6 +306,10 @@ button:hover {
     font-weight: 700;
 }
 
+.logo {
+    width: 100%;
+    height: auto;
+}
 
 .logo {
     width: 100%;
@@ -317,7 +323,7 @@ button:hover {
     display: none;
 }
 
-@media (max-width: 75rem) {
+@media (max-width: 65rem) {
     .large-device {
         display: none;
     }
@@ -346,16 +352,27 @@ button:hover {
         height: 40vh;
         width: auto;
         transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+        position: relative;
+        z-index: 0;
     }
 
-    .page-link a {
+    .page-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
         width: 100%;
         height: 100%;
+        position: relative;
+        z-index: 1;
     }
 
     .page-link img {
-        align-self: center;
-        max-width: 25rem;
+        max-width: 100%;
+        max-height: 80%;
+        object-fit: contain;
         margin-bottom: 1rem;
     }
 
@@ -364,6 +381,7 @@ button:hover {
     }
 
     .dashboard {
+        padding: 1rem !important;
         flex-direction: column;
         gap: 2rem !important;
     }
@@ -403,20 +421,38 @@ button:hover {
     #nav-menu {
         display: none;
         position: absolute;
-        align-items: center;
-        z-index: 10;
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 30%;
-        background-color: #ffffff;
-        opacity: 0.9;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         top: 100%;
         right: 0;
+        width: 60%;
+        max-width: 250px;
+        background-color: white;
+        opacity: 0.95;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        border-radius: 8px;
+        flex-direction: column;
+        align-items: center;
+        z-index: 9999 !important;
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateY(-10px);
+        opacity: 0;
+        pointer-events: none;
     }
-
+    
     #nav-menu.show {
         display: flex;
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+
+    .nav-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 1rem;
     }
 
     .scrollbox {
@@ -1189,6 +1225,40 @@ input[type="radio"]:checked + label.custom-radio {
     transform: scale(1.05);
 }
 
+.timer-box {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background-color: rgba(2, 48, 71, 0.1);
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    border: 1px solid rgba(2, 48, 71, 0.2);
+}
+
+.timer-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.timer-label {
+    color: #023047;
+    font-size: 0.95rem;
+}
+
+.timer-value {
+    color: #023047;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+#live-timer {
+    color: #FB8500;
+    min-width: 4.2rem;
+    text-align: right;
+    display: inline-block;
+}
+
 .toast-container {
     align-items: center;
     margin: 0 auto;
@@ -1274,23 +1344,6 @@ input[type="radio"]:checked + label.custom-radio {
     background-color: #c82333 !important;
 }
 
-.messages .alert {
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.messages .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.messages .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-/* Container for the forgot password form */
 .forgot-password-container {
     max-width: 400px;
     margin: 50px auto;
@@ -1301,21 +1354,18 @@ input[type="radio"]:checked + label.custom-radio {
     text-align: center;
 }
 
-/* Heading */
 .forgot-password-container h1 {
     font-size: 24px;
     margin-bottom: 10px;
     color: #333;
 }
 
-/* Paragraph text */
 .forgot-password-container p {
     font-size: 14px;
     color: #666;
     margin-bottom: 20px;
 }
 
-/* Messages (alerts) */
 .messages {
     margin-bottom: 20px;
 }
@@ -1373,7 +1423,7 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .forgot-password-container button:hover {
-    background-color: #0056b3;
+    opacity: 0.75;
 }
 
 /* Container for the reset password form */
@@ -1435,13 +1485,13 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .reset-password-container button:hover {
-    background-color: #0056b3;
+    opacity: 0.75;
 }
 
 .btn-back {
     display: inline-block;
     padding: 8px 16px;
-    background-color: #023047; /* Gray color */
+    background-color: #023047;
     color: #fff;
     text-decoration: none;
     border-radius: 4px;
@@ -1450,6 +1500,125 @@ input[type="radio"]:checked + label.custom-radio {
 }
 
 .btn-back:hover {
-    background-color: #023047; /* Darker gray on hover */
     opacity: 0.75;
 }
+
+.brainspace-intro {
+    background-color: #f9f9f9;
+    border-left: 5px solid #023047;
+    padding: 1.2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #023047;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.brainspace-intro h3 {
+    color: #023047;
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+}
+
+.brainspace-intro p {
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+
+.brainspace-intro ul {
+    padding-left: 1rem;
+    list-style-type: none;
+}
+
+.brainspace-intro ul li {
+    margin: 0.4rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+    font-weight: 500;
+}
+
+.brainspace-intro ul li::before {
+    color: #023047;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+.brainspace-intro a {
+    color: #023047;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.countdown-box {
+    background-color: #FFFFFF;
+    border: 1px solid #8ECAE6;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); 
+}
+
+.countdown-box h3 {
+    font-size: 1.5rem;
+    color: #023047;
+    margin-bottom: 15px;
+    font-weight: 600; 
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.countdown-item {
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    padding: 15px;
+    min-width: 80px;
+    border: 1px solid #8ECAE6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.countdown-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #023047;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.countdown-label {
+    font-size: 1rem;
+    color: #219EBC;
+    text-transform: uppercase;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.password-requirements {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #023047;
+}
+
+.password-requirements h4 {
+    margin-top: 0;
+    color: #495057;
+}
+
+.password-requirements ul {
+    margin-bottom: 0;
+    padding-left: 20px;
+}
+
+.password-requirements li {
+    margin-bottom: 5px;
+}
+
