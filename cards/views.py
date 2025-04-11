@@ -12,33 +12,28 @@ from datetime import datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
-from django.contrib.auth import (
-    login, authenticate, logout, 
-    update_session_auth_hash,
-    get_user_model
-)
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
+from .forms import FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
-from django import forms
 from django.contrib import messages
+from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
+import uuid
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.db.models import Q
-from django.core.exceptions import ValidationError
+from spaced_repetition import get_lineup, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
-from sklearn.feature_extraction.text import TfidfVectorizer
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 
 
 def email_verified_required(view_func):
@@ -648,13 +643,6 @@ def update_performance_and_stats(request, flashcard, flashcard_set, user_answer,
 
 
 def update_flashcard_interval(flashcard):
-            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-
-        else:
-            request.session['incorrect'] += 1
-            performance_level = 1
-            flashcard.repetition = 1
-
     if flashcard.repetition == 1:
         flashcard.interval = 86400  # 1 day
     elif flashcard.repetition == 2:
