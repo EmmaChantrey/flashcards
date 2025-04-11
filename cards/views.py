@@ -33,15 +33,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-
-# local application imports
-from .forms import FlashcardSetTitle, FlashcardTermDefs
-from .models import (
-    FlashcardSet, Flashcard, Badge, 
-    UserBadge, Profile, Friendship, 
-    League, LeagueUser
-)
-from spaced_repetition import get_lineup, ease_factor_calculation
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -174,6 +168,7 @@ def signup(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
+
 
         # validation checks
         if User.objects.filter(username=username).exists():
@@ -653,6 +648,13 @@ def update_performance_and_stats(request, flashcard, flashcard_set, user_answer,
 
 
 def update_flashcard_interval(flashcard):
+            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
+
+        else:
+            request.session['incorrect'] += 1
+            performance_level = 1
+            flashcard.repetition = 1
+
     if flashcard.repetition == 1:
         flashcard.interval = 86400  # 1 day
     elif flashcard.repetition == 2:
@@ -1099,6 +1101,8 @@ def change_email(request):
                         f'Click the link to verify your email: {verification_link}',
                         settings.DEFAULT_FROM_EMAIL,
                         [new_email], 
+                        settings.DEFAULT_FROM_EMAIL,
+                        [new_email],
                         fail_silently=False,
                     )
                     messages.success(request, "Your email has been updated. A verification email has been sent to your new email address.")
@@ -1184,6 +1188,8 @@ def forgot_password(request):
             send_mail(
                 'BrainSpace: Password Reset Request',
                 f'Click the link to reset your password: {reset_link}',
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
                 settings.DEFAULT_FROM_EMAIL,
                 [email],
                 fail_silently=False,
