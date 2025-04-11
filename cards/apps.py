@@ -7,3 +7,7 @@ class CardsConfig(AppConfig):
 
     def ready(self):
         import cards.signals
+        if not hasattr(self, '_nltk_initialized'):
+            from .nltk_setup import initialize_nltk
+            initialize_nltk()
+            self._nltk_initialized = True

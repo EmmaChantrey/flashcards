@@ -1,57 +1,44 @@
 
 # The view will assemble requested data and style it before generating a HTTP response
 
+# standard library imports
 import json
-import sys
-import time
-from datetime import datetime, timedelta
+import uuid
 import random
 from random import sample, shuffle
+from datetime import datetime, timedelta
+
+# django core imports
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
-from django.urls import reverse_lazy, reverse
-from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.urls import reverse
+from django.contrib.auth import (
+    login, authenticate, logout, 
+    update_session_auth_hash,
+    get_user_model
+)
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .forms import SignUpForm, FlashcardSetTitle, FlashcardTermDefs
+from django.contrib.auth.tokens import default_token_generator
 from django.forms import modelform_factory, modelformset_factory
-from django.contrib import messages
 from django import forms
+from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
-import uuid
-from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.db.models import Case, When, Q
-from spaced_repetition import get_lineup, get_overdue_flashcards, ease_factor_calculation
-from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.core.exceptions import ValidationError
-from django.template.loader import render_to_string
+from django.contrib.auth.password_validation import validate_password
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
-
-import os
 from django.http import HttpResponse
-
-
-import nltk
-nltk.download('punkt_tab')
-nltk.download('wordnet')
-nltk.download('omw-1.4')
-nltk.download('stopwords')
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView
-)
 
 
 def email_verified_required(view_func):
