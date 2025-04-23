@@ -12,30 +12,34 @@ from datetime import datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
-from django.contrib.auth import (
-    login, authenticate, logout, 
-    update_session_auth_hash,
-    get_user_model
-)
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.utils.timezone import now
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
+from .forms import FlashcardSetTitle, FlashcardTermDefs
 from django.forms import modelform_factory, modelformset_factory
-from django import forms
 from django.contrib import messages
+from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
+import uuid
+from .models import FlashcardSet, Flashcard, Badge, UserBadge, Profile, Friendship, League, LeagueUser
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.db.models import Q
-from django.core.exceptions import ValidationError
+from spaced_repetition import get_lineup, ease_factor_calculation
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
+
+import nltk
+nltk.download('punkt_tab')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+nltk.download('stopwords')
 from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -265,7 +269,6 @@ def verify_email_prompt(request):
 def verify_email(request, token):
     try:
         profile = Profile.objects.get(verification_token=token)
-
         profile.is_verified = True
         profile.verification_token = None
         profile.save()
@@ -420,6 +423,8 @@ def create(request):
         }
     )
 
+@login_required
+@email_verified_required
 def create_league(request):
     profile = request.user.profile
     friends = profile.get_friends()
@@ -439,7 +444,8 @@ def create_league(request):
 
     return render(request, "cards/create_league.html", {"friends": friends})
 
-
+@login_required
+@email_verified_required
 def league(request, league_id):
     league = get_object_or_404(League, id=league_id)
     reset_time = max(league.last_rewarded + timedelta(weeks=1) - now(), timedelta(0))
@@ -456,7 +462,8 @@ def league(request, league_id):
         'previous_top_users': previous_top_users,
         })
 
-
+@login_required
+@email_verified_required
 def study_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     flashcards = flashcard_set.flashcards.all()
@@ -466,6 +473,8 @@ def study_set(request, set_id):
     })
 
 
+@login_required
+@email_verified_required
 def setup_true_false(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -484,6 +493,8 @@ def setup_true_false(request, set_id):
     return redirect('true_false', set_id=set_id)
 
 
+@login_required
+@email_verified_required
 def true_false(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -527,6 +538,8 @@ def true_false(request, set_id):
     })
 
 
+@login_required
+@email_verified_required
 def true_false_check(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
     flashcard = get_object_or_404(Flashcard, id=request.session.get('current_flashcard_id'))
@@ -569,6 +582,8 @@ def true_false_check(request, set_id):
     return redirect('true_false_feedback', set_id=set_id)
 
 
+@login_required
+@email_verified_required
 def true_false_feedback(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -585,6 +600,8 @@ def true_false_feedback(request, set_id):
     })
 
 
+@login_required
+@email_verified_required
 def true_false_next(request, set_id):
     lineup_ids = request.session.get('lineup', [])
     current_index = request.session.get('current_index', 0)
@@ -602,6 +619,7 @@ def true_false_next(request, set_id):
     return redirect('true_false', set_id=set_id)
 
 
+# evaluates and updates flashcard performance based on user answer or if skipped
 def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer=None, is_correct=None, elapsed_time=0, skipped=False):
     if skipped:
         return handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time)
@@ -616,6 +634,7 @@ def evaluate_and_update_flashcard(request, flashcard, flashcard_set, user_answer
     return performance_level
 
 
+# handles the skipped flashcard scenario, resetting repetition and adjusting baseline time
 def handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time):
     flashcard.repetition = 1
     flashcard.interval = 86400  # 1 day
@@ -626,6 +645,7 @@ def handle_skipped_flashcard(flashcard, flashcard_set, elapsed_time):
     return 0
 
 
+# updates performance stats, repetition, and ease factor based on user answer and elapsed time
 def update_performance_and_stats(request, flashcard, flashcard_set, user_answer, is_correct, elapsed_time):
     if user_answer == is_correct:
         request.session['correct'] += 1
@@ -647,14 +667,8 @@ def update_performance_and_stats(request, flashcard, flashcard_set, user_answer,
     return performance_level
 
 
+# updates the review interval based on repetition and ease factor
 def update_flashcard_interval(flashcard):
-            flashcard.ease_factor = ease_factor_calculation(flashcard.ease_factor, performance_level)
-
-        else:
-            request.session['incorrect'] += 1
-            performance_level = 1
-            flashcard.repetition = 1
-
     if flashcard.repetition == 1:
         flashcard.interval = 86400  # 1 day
     elif flashcard.repetition == 2:
@@ -663,6 +677,7 @@ def update_flashcard_interval(flashcard):
         flashcard.interval = max(min(flashcard.interval * flashcard.ease_factor, 86400 * 365), 86400)
 
 
+# updates the last review time and adjusts the flashcard set's baseline time
 def update_review_timing(flashcard, flashcard_set, elapsed_time):
     flashcard.last_reviewed = now()
     flashcard_set.baseline = (flashcard_set.baseline + elapsed_time) / 2
@@ -733,6 +748,8 @@ def create_blank_definition_within_set(flashcard, flashcard_set):
     return blanked_definition, blanked_word
 
 
+@login_required
+@email_verified_required
 def setup_fill_the_blanks(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -827,7 +844,8 @@ def fill_the_blanks_check(request, set_id):
     })
 
 
-
+@login_required
+@email_verified_required
 def setup_quiz(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -933,6 +951,8 @@ def quiz_check(request, set_id):
     })
 
 
+@login_required
+@email_verified_required
 def setup_match(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, id=set_id, user=request.user.profile)
 
@@ -1035,6 +1055,9 @@ def game_end(request, set_id):
         'quickest_time': flashcard_set.quickest_time,
     })
 
+
+@login_required
+@email_verified_required
 def edit_set(request, set_id):
     flashcard_set = get_object_or_404(FlashcardSet, pk=set_id)
 

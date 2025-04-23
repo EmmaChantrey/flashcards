@@ -23,8 +23,16 @@ plt.figure(figsize=(10, 6))
 for i, card in enumerate(flashcards):
     if i == 1:
         plt.plot(card["intervals"], label=card["term"], color='darkorange', marker="o", linewidth=2.5, zorder=3)
-    else:
-        plt.plot(card["intervals"], label=card["term"], color='grey', marker="o", alpha=0.8, zorder=2)
+    if i == 2:
+        plt.plot(card["intervals"], label=card["term"], color='#023047', marker="o", linewidth=2.5, zorder=3)
+    if i == 3:
+        plt.plot(card["intervals"], label=card["term"], color='#219EBC', marker="o", linewidth=2.5, zorder=3)
+    if i == 4:
+        plt.plot(card["intervals"], label=card["term"], color='#FFB703', marker="o", linewidth=2.5, zorder=3)
+    if i == 5:
+        plt.plot(card["intervals"], label=card["term"], color='#8ECAE6 ', marker="o", linewidth=2.5, zorder=3)
+    if i == 0:
+        plt.plot(card["intervals"], label=card["term"], color='black', marker="o", linewidth=2.5, zorder=3)
 
 plt.title('Interval vs Repetition of Flashcards (Dynamic success rate)')
 plt.xlabel('Repetition Number')
