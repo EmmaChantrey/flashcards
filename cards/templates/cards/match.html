@@ -48,9 +48,10 @@
             timerDisplay.textContent = elapsedTime.toFixed(2);
         }
 
-        setInterval(updateTimer, 100); // Update timer every 100ms
+        setInterval(updateTimer, 100); // update timer every 100ms
     });
 
+    // function to handle the selection of grid items
     document.addEventListener('DOMContentLoaded', () => {
         const gridItems = document.querySelectorAll('.grid-item');
         const nextButtonContainer = document.querySelector('.check-button');
@@ -67,6 +68,7 @@
             });
         });
 
+        // if the user clicks on a grid item, it will be selected or deselected
         function handleSelection(item) {
             if (item.classList.contains('selected')) {
                 item.classList.remove('selected');
@@ -76,6 +78,7 @@
                 selectedItems.push(item);
             }
 
+            // starts the timer when the first item is selected
             if (selectedItems.length === 1) {
                 startTime = Date.now();
             }
@@ -85,8 +88,9 @@
 
                 const firstFlashcard = getFlashcardById(first.id);
                 const secondFlashcard = getFlashcardById(second.id);
-                const isMatch = firstFlashcard.id === secondFlashcard.id;
+                const isMatch = firstFlashcard.id === secondFlashcard.id; // check if the two selected items match
 
+                // hide the items if they match
                 if (isMatch) {
                     first.classList.add('hidden');
                     second.classList.add('hidden');
@@ -96,6 +100,7 @@
                     console.log(`No match: ${first.textContent} and ${second.textContent}`);
                 }
 
+                // takes the elapsed time for that pair
                 const elapsedTime = Math.round((Date.now() - startTime) / 1000);
                 console.log('Elapsed time:', elapsedTime);
 
@@ -109,7 +114,7 @@
 
             if ([...gridItems].every(item => item.classList.contains('hidden'))) {
                 nextButtonContainer.style.display = 'block';
-                const gameEndTime = Math.round((Date.now() - startTime) / 1000);
+                const gameEndTime = Math.round((Date.now() - startTime) / 1000); // total time for the game
             }
         }
 
@@ -117,6 +122,7 @@
             return items.find(item => item.id == id);
         }
 
+        // function to evaluate the match and send the result to the server
         function evaluateMatch(firstFlashcard, secondFlashcard, isMatch, elapsedTime) {
             const isCorrect = isMatch ? 'true' : 'false';
             const url = `{% url 'evaluate_match' flashcard_set.id %}?first_id=${firstFlashcard.id}&second_id=${secondFlashcard.id}&is_correct=${isCorrect}&time=${elapsedTime}`;

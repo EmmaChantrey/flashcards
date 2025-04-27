@@ -47,18 +47,21 @@
         const percentage = parseFloat("{{ progress_percentage|default:0 }}");
         updateProgress(percentage);
 
+        // send the selected answer and elapsed time to the server for processing
         window.submitAnswer = function(answer) {
             const elapsedTime = Math.round((Date.now() - startTime) / 1000);
             const url = `{% url 'true_false_check' flashcard_set.id %}?answer=${answer}&time=${elapsedTime}`;
             window.location.href = url;
         };
 
+        // skip the current flashcard and go to the next one
         window.skipFlashcard = function() {
             const url = `{% url 'true_false_check' flashcard_set.id %}?skip=true`;
             window.location.href = url;
         };
     });
 
+    // function to update the progress bar
     function updateProgress(percentage) {
         const progressBar = document.getElementById('progress-bar');
         const progressPercentage = document.getElementById('progress-percentage');

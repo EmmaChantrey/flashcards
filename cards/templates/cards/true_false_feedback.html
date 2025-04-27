@@ -30,27 +30,12 @@
     <a href="{% url 'true_false_next' flashcard_set.id %}" id="next-button" class="next-button">Next</a>
 </div>
 
-<style>
-    .feedback-box {
-        text-align: center;
-        font-size: 1.5rem;
-        margin: 20px auto;
-        padding: 20px;
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        width: 50%;
-    }
-
-    .next-question-container {
-        text-align: center;
-        margin-top: 20px;
-    }
-</style>
-
 <script>
+// focus on the next button when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('next-button').focus();
 
+    // keyboard navigation
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();

@@ -55,6 +55,7 @@
             return;
         }
 
+        // adds a new flashcard pair input field
         addButton.addEventListener('click', function () {
 
             const newIndex = parseInt(totalForms.value, 10);
@@ -78,6 +79,7 @@
             totalForms.value = newIndex + 1;
         });
 
+        // deletes a flashcard pair input field
         container.addEventListener('click', function (event) {
             if (event.target.closest('.delete-pair-btn')) {
             const row = event.target.closest('.flashcard-box');
@@ -87,7 +89,7 @@
                     deleteInput.value = "true";
                 }
 
-                row.style.display = 'none';
+                row.style.display = 'none'; // hide the row
                 const rows = document.querySelectorAll('.flashcard-box');
                 totalForms.value = rows.length;
             }
@@ -95,7 +97,7 @@
         });
     });
 
-
+    // confirmation message for back button
     function confirmBack() {
         return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
     }

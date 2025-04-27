@@ -60,11 +60,13 @@
 </form>
 
 <script>
+    // handles adding a new term/definition pair in the form
     document.getElementById('add-more-btn').addEventListener('click', function () {
         const container = document.getElementById('flashcard-form-container');
         const totalForms = document.querySelector('#id_form-TOTAL_FORMS');
         const newIndex = parseInt(totalForms.value, 10);
 
+        // create a new row for the term/definition pair
         const newRow = document.createElement('div');
         newRow.classList.add('flashcard-box');
         newRow.innerHTML = `
@@ -88,7 +90,7 @@
 
 
     document.getElementById('flashcard-form-container').addEventListener('click', function (event) {
-
+        // handles deleting a term/definition pair
         if (event.target.closest('.delete-pair-btn')) {
             const row = event.target.closest('.flashcard-box');
             if (row) {
@@ -101,7 +103,7 @@
         }
     });
 
-
+    // confirmation message when leaving the page
     function confirmBack() {
         return confirm('Are you sure you want to leave the page? Your changes will not be saved.');
     }

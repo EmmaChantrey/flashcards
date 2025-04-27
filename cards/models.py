@@ -10,6 +10,7 @@ from django.utils import timezone
 from math import ceil
 
 
+# profile model holds the user profile information
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     points = models.IntegerField(default=0)
@@ -51,7 +52,7 @@ class Profile(models.Model):
 
 
 
-
+# friendship model holds the relationship between two profiles
 class Friendship(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -79,6 +80,7 @@ class Friendship(models.Model):
         self.save()
 
 
+# flashcard set model holds the flashcard set information
 class FlashcardSet(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='flashcard_sets')
     name = models.CharField(max_length=255)
@@ -90,6 +92,7 @@ class FlashcardSet(models.Model):
         return self.name
     
 
+# flashcard model holds the flashcard information, including the term and definition
 class Flashcard(models.Model):
     set = models.ForeignKey(FlashcardSet, on_delete=models.CASCADE, related_name='flashcards')
     term = models.TextField()
@@ -107,6 +110,7 @@ class Flashcard(models.Model):
         super().save(*args, **kwargs)
     
 
+# badge model holds the badge information, including the name, price, and image
 class Badge(models.Model):
     name = models.CharField(max_length=255)
     price = models.IntegerField()
@@ -117,6 +121,7 @@ class Badge(models.Model):
         return self.name
 
 
+# user badge model holds the relationship between a user and a badge
 class UserBadge(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='user_badges')
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE, related_name='user_badges')
@@ -126,6 +131,7 @@ class UserBadge(models.Model):
         return f"{self.user.user.username} - {self.badge.name}"
     
 
+# league model holds the league information, including the name, owner, and last rewarded date
 class League(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owned_leagues')
@@ -138,15 +144,18 @@ class League(models.Model):
     def get_members(self):
         return self.league_users.all()
     
+    # calculates the last rewarded date based on the current time
     def last_rewarded_week(self):
         self.last_rewarded = timezone.now() - timedelta(weeks=1)
         self.save()
     
+    # resets the scores of all league users to 0
     def reset_scores(self):
         for league_user in self.league_users.all():
             league_user.score = 0
             league_user.save()
 
+    # rewards the top 3 users in the league with brainbucks and resets their scores
     def reward_top_users(self):
         top_users = self.league_users.order_by('-score')[:3]
 
@@ -165,6 +174,7 @@ class League(models.Model):
         self.save()
 
 
+# league user model holds the relationship between a user and a league, including the score
 class LeagueUser(models.Model):
     league = models.ForeignKey(League, on_delete=models.CASCADE, related_name='league_users')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='league_users')
@@ -173,12 +183,12 @@ class LeagueUser(models.Model):
     def __str__(self):
         return f"{self.user.username} in {self.league.name}"
     
+    # updates a user's score in the league
+    # if the last reward was more than a week ago, it rewards the top users and resets the scores
     def update_score(self, game_score):
-
         if timezone.now() - self.league.last_rewarded >= timedelta(weeks=1):
             self.league.reward_top_users()
             self.score = 0
             self.save()
-
         self.score += game_score
         self.save()
