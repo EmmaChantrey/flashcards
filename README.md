@@ -1,6 +1,6 @@
 # Brainspace
 
-Brainspace is a flashcard-based learning platform built with Django. It uses spaced repetition and gamification to help users revise more effectively. You can make flashcard sets, play mini games, earn points, and collect badges.
+Brainspace is a flashcard based learning platform built with Django. It uses spaced repetition and gamification to help users revise more effectively. You can make flashcard sets, play mini games, earn points, and collect badges.
 
 The app is live at [brainspace.pythonanywhere.com](https://brainspace.pythonanywhere.com) until July.
 
@@ -55,7 +55,7 @@ If you're using the DCS system, email verification should work automatically via
 
 ## Live version
 
-You can check out the live version here:  
+As mentioned, the live version of the project can be found here:  
 [https://brainspace.pythonanywhere.com](https://brainspace.pythonanywhere.com)  
 This will be active until around July.
 

@@ -49,9 +49,6 @@
                 </div>
             </div>
             
-
-            <!-- <div id="friendRequests" hx-get="{% url 'view_friend_requests' %}" hx-trigger="load" hx-swap="innerHTML"></div> -->
-
             <div id="friendRequestsModal" class="modal" style="display: none;">
                 <div class="modal-content">
                     <span id="closeRequestModal" class="close" tabindex="0">✖</span>
@@ -121,15 +118,18 @@
 
 
 <script>
+    // display the badge modal when the edit button is clicked
     document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("editBadges").addEventListener("click", () => {
         document.getElementById("badgeModal").style.display = "flex";
     });
 
+    // close the badge modal when the close button is clicked
     document.getElementById("closeBadgeModal").addEventListener("click", () => {
         document.getElementById("badgeModal").style.display = "none";
     });
 
+    // update the displayed badges when the form is submitted
     document.getElementById("badgeForm").addEventListener("submit", function(event) {
         event.preventDefault();
 
@@ -157,16 +157,22 @@
         .catch(error => console.error("Error:", error));
     });
 
+    // open the friend modal when the plus is clicked
     document.getElementById("openModal").addEventListener("click", function() {
         document.getElementById("friendModal").style.display = "flex";
     });
 
+    // close the friend modal when the close button is clicked
     document.getElementById("closeFriendModal").addEventListener("click", function() {
         document.getElementById("friendModal").style.display = "none";
     });
+
+    // open the friend requests modal when the requests is clicked
     document.getElementById("viewRequestsBtn").addEventListener("click", function() {
         document.getElementById("friendRequestsModal").style.display = "flex";
     });
+
+    // close the friend requests modal when the close button is clicked
     document.getElementById("closeRequestModal").addEventListener("click", function() {
         document.getElementById("friendRequestsModal").style.display = "none";
     });

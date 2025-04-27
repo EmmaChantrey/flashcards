@@ -237,18 +237,6 @@ button:hover {
 }
 
 .flashcard-sidebar {
-    /* flex: 3;
-    position: fixed;
-    top: 10;
-    left: 25;
-    width: 55%;
-    height: 70%;
-    z-index: 999;
-    margin-left: 25px;
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    min-width: 450px; */
     width: 55%;
     height: 100%;
     display: flex;
@@ -496,11 +484,6 @@ button:hover {
         padding: 2rem;
         height: 95%
     }
-
-    /* .game-button {
-        width: 10rem;
-        height: 10rem;
-    } */
 
     .question-container{
         flex-direction: column;
@@ -869,10 +852,7 @@ input[type="radio"]:checked + label.custom-radio {
     justify-content: center;
     align-items: center;
     padding: 1rem;
-    /* border: 2px solid #00000043; */
     border-radius: 8px;
-    /* background-color: #f8f9fa; */
-    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
     width: 90%;
     height: 100%;
     box-sizing: border-box;
@@ -1136,27 +1116,6 @@ input[type="radio"]:checked + label.custom-radio {
 .delete-pair-btn:hover {
     background-color: #0277bd;
 }
-
-
-/* .btn {
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
-    padding: 10px;
-    background-color: #023047;
-    opacity: 0.75;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    text-decoration: none;
-    float: center;
-}
-
-.btn:hover {
-    opacity: 0.5;
-} */
-
 
 .dashboard {
     display: flex;
@@ -1622,3 +1581,38 @@ input[type="radio"]:checked + label.custom-radio {
     margin-bottom: 5px;
 }
 
+.about-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    color: #333;
+    line-height: 1.6;
+}
+.about-header h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.about-content h2 {
+    font-size: 1.8rem;
+    margin-top: 1.5rem;
+    color: #023047;
+}
+.about-content p {
+    margin: 1rem 0;
+}
+.about-content ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+.about-content ul li {
+    margin-bottom: 0.5rem;
+}
+.about-content a {
+    color: #023047;
+    text-decoration: none;
+}
+.about-content a:hover {
+    text-decoration: underline;
+}

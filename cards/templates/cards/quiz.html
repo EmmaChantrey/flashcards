@@ -48,7 +48,7 @@
     document.addEventListener('DOMContentLoaded', () => {
     let startTime = Date.now();
     function attachListeners() {
-        const form = document.querySelector('form'); // Use the form in the quiz
+        const form = document.querySelector('form'); // use the form in the quiz
         const skipButton = document.getElementById('skip-button');
         const checkButton = document.getElementById('check-button');
         const feedbackBar = document.getElementById('feedback-bar');
@@ -59,7 +59,7 @@
         const options = document.querySelectorAll('.option');
 
         if (form && skipButton && checkButton) {
-            // handle the Skip button click
+            // handle the skip button click
             skipButton.addEventListener('click', () => {
                 submitForm(true);
             });
@@ -81,7 +81,7 @@
                     if (event.key === 'Enter') {
                         event.preventDefault();
 
-                        // ensure the option is checked and focus the Check button
+                        // ensure the option is checked and focus the check button
                         option.querySelector('input').checked = true;
                         checkButton.focus();
                     }
@@ -89,7 +89,7 @@
             });
         }
 
-        // handle the Next button click
+        // handle the next button click
         if (nextButton) {
             nextButton.addEventListener('click', async () => {
                 try {
@@ -127,7 +127,7 @@
 
     // function to handle form submission
     async function submitForm(skipped) {
-        const form = document.querySelector('form'); // Use the form in the quiz
+        const form = document.querySelector('form'); // use the form in the quiz
         const checkButton = document.getElementById('check-button');
         const skipButton = document.getElementById('skip-button');
 
